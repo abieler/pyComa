@@ -336,6 +336,9 @@ for i in range(pixelsX):
                         dr = distance / 250
                         if distance < 2030:
                             dr = 1
+                            
+                            
+                            
             else:
                 dr = distance / 10
             rRay = rRay + p * dr
