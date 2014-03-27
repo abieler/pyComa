@@ -242,7 +242,7 @@ elif instrumentSelector == 3:               # alice
     pixelSize = 1
     
     v_sun = alice.get_v_sun(kernelMetaFile, utcStartTime)
-    gFactor = alice.getGFactorFromDB()
+    gFactor = alice.get_gfactor_from_db()
     
     
 elif instrumentSelector == 4:               # miro
