@@ -28,7 +28,7 @@ def getAllDustIntervalIndices(filename, dim):
                     if '"X"' in element or '"Y"' in element:
                         pass
                     else:
-                        allSizeIntervals.append(\
+                        allSizeIntervals.append(
                                     np.float(element.split('=')[1][0:-2]))
                     allIndices.append(j)
             break
