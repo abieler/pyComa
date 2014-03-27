@@ -27,9 +27,9 @@ try:
     import matplotlib.pyplot as plt
     import spice
     
-    from dataLoaders import loadGasData, loadDustData, getAllDustIntervalIndices
+    from data_loaders import loadGasData, loadDustData, getAllDustIntervalIndices
     from haser import haserModel
-    from dataPlotting import plotResult
+    from data_plotting import plot_result
     import rotations
     import alice
     
@@ -50,19 +50,19 @@ useHaserModel = False
 parser = argparse.ArgumentParser()
 parser.add_argument("--modelCase", type=int, choices=[0,1,2],help='0: dsmc model, 1: haser model, 2: user model')
 parser.add_argument("--pointingCase", type=int, choices=[0,1],help='0: spice pointing, 1: user pointing')
-parser.add_argument("--instrumentSelector",type=int,choices=[1,2,3,4,5,6])
-parser.add_argument("--outputDir",type=str)
+parser.add_argument("--instrumentSelector", type=int, choices=[1,2,3,4,5,6])
+parser.add_argument("--outputDir", type=str)
 
 parser.add_argument("--dataFile", type=str)
-parser.add_argument("--isDust",type=int,choices=[0,1],help='1 for dust case, 0 for gas case')
-parser.add_argument("--minSize",type=float)
-parser.add_argument('--maxSize',type=float)
+parser.add_argument("--isDust", type=int,choices=[0,1], help='1 for dust case, 0 for gas case')
+parser.add_argument("--minSize", type=float)
+parser.add_argument('--maxSize', type=float)
 
 
-parser.add_argument("--QHaser",type=float)
-parser.add_argument("--vHaser",type=float)
-parser.add_argument("--tpHaser",type=float)
-parser.add_argument("--tdHaser",type=float)
+parser.add_argument("--QHaser", type=float)
+parser.add_argument("--vHaser", type=float)
+parser.add_argument("--tpHaser", type=float)
+parser.add_argument("--tdHaser", type=float)
 
 parser.add_argument("--userDataFile",type=str)                          # file to upload from user which contains user coma model
 parser.add_argument("--userDelimiter",type=str)                         # delimiter used in datafile
@@ -336,9 +336,7 @@ for i in range(pixelsX):
                         dr = distance / 250
                         if distance < 2030:
                             dr = 1
-                            
-                            
-                            
+
             else:
                 dr = distance / 10
             rRay = rRay + p * dr
@@ -347,12 +345,12 @@ for i in range(pixelsX):
         xTravel = np.array(xTravel)
         
         if dim == 1:
-            nRay = np.interp(xTravel,x,n)
+            nRay = np.interp(xTravel, x, n)
         elif dim == 2:
             nRay = Interpolator.__call__(xTravel[:,0], xTravel[:,1])        # interpolated local number density
         
         if instrumentSelector == 3:
-            brightness = alice.calculateColumn(nRay,dTravel,0,iFOV)
+            brightness = alice.calculate_column(nRay, dTravel, 0, iFOV)
             ccd[i][j] = brightness
         else:
             columnDensity = np.trapz(nRay,dTravel)                          # integration along xRay
@@ -382,4 +380,4 @@ f.close()
 ######################################################
 # plot results
 #######################################################
-plotResult(ccdFinal, outputDir, 'result.png', instrumentSelector,runDetails = args,showPlot=True)
+plot_result(ccdFinal, outputDir, 'result.png', instrumentSelector,runDetails = args,showPlot=True)

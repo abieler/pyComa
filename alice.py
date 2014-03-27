@@ -65,7 +65,7 @@ def calculateBrightness(pixelsX, N_oversampleX, N_oversampleY, ccd, gFactor):
     return ccdFinal
 
 
-def calculateColumn(nRay, dTravel, pixelSize=10**-6,
+def calculate_column(nRay, dTravel, pixelSize=10**-6,
                     iFOV=9.39*10**-6, gFactor=2*10**-7):
 
     N = np.trapz(iFOV * np.array(dTravel)**2 * nRay, dTravel)
