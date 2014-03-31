@@ -26,49 +26,41 @@ pixelFOV = np.array([9.39,
                     ]) * 1e-6
 
 
-def calculateBrightness(pixelsX, N_oversampleX, N_oversampleY, ccd, gFactor):
+def calculateBrightness(N_oversampleX, N_oversampleY, ccd, gFactor):
 
-    ccdNew = np.zeros(pixelsX)
+
+    print 'ccd mean:', np.mean(ccd)
     ccdFinal = np.zeros(19)
-
+    
+    ll = 0
     for k in range(7):              # loop over first 7 pixels
-        for l in range(N_oversampleX):
-            ccdFinal[k] += np.sum(ccd[k * N_oversampleX + l, :])
-
+        ccdFinal[k] = np.mean(ccd[k * N_oversampleX:(k + 1) * N_oversampleX, :])
+        
     for k in range(14, 19):          # loop over last 5 pixels
-        for l in range(N_oversampleX):
-            ccdFinal[k] += np.sum(ccd[k * N_oversampleX + l, :])
+        ccdFinal[k] = np.mean(ccd[k * N_oversampleX:(k + 1) * N_oversampleX, :])
 
     ll = int(N_oversampleY * 0.3 // 2)
     for k in range(7, 8):
-        for l in range(N_oversampleX):
-            ccdFinal[k] += np.sum(ccd[k*N_oversampleX + l, ll:-ll])
+        ccdFinal[k] = np.mean(ccd[k * N_oversampleX:(k + 1) * N_oversampleX, ll:-ll])
 
     ll = int(N_oversampleY * 0.2 // 2)
     for k in range(13, 14):
-        for l in range(N_oversampleX):
-            ccdFinal[k] += np.sum(ccd[k*N_oversampleX + l, ll:-ll])
+        ccdFinal[k] = np.mean(ccd[k * N_oversampleX:(k + 1) * N_oversampleX, ll:-ll])
 
     ll = int(N_oversampleY * 0.5 // 2)
     for k in range(8, 13):
-        for l in range(N_oversampleX):
-            ccdFinal[k] += np.sum(ccd[k*N_oversampleX + l, ll:-ll])
+        ccdFinal[k] = np.mean(ccd[k * N_oversampleX:(k + 1) * N_oversampleX, ll:-ll])
 
     ccdFinal = ccdFinal * gFactor / 4 * np.pi * pixelFOV
 
-    '''
-    print '------------'
-    print 'FOV total  : %e' %(pixelsX * pixelsY * iFOV)
-    print 'N total1   : %e' %(ccdFinal.sum())
-    print '------------'
-    '''
     return ccdFinal
 
 
 def calculate_column(nRay, dTravel, pixelSize=10**-6,
                     iFOV=9.39*10**-6, gFactor=2*10**-7):
 
-    N = np.trapz(iFOV * np.array(dTravel)**2 * nRay, dTravel)
+    #N = np.trapz(iFOV * np.array(dTravel)**2 * nRay, dTravel)
+    N = np.trapz(nRay, dTravel)
     return N
 
 

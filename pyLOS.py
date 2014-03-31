@@ -156,8 +156,8 @@ if pointingCase == 0:
     #################################################
     # get rosetta coordinates from spice
     #################################################
-    spice.furnsh(kernelMetaFile)                    # load spice kernels
-    et = spice.str2et(utcStartTime)                 # ephemeris time calculated from utc
+    spice.furnsh(kernelMetaFile)
+    et = spice.str2et(utcStartTime)
     rRosetta,lightTime = spice.spkpos("ROSETTA", et, "67P/C-G_CSO", "NONE", "CHURYUMOV-GERASIMENKO")        # s/c coordinates in CSO frame of reference
     rRosetta = np.array(rRosetta) * 1000            # transform km to m
     R = spice.pxform("ROS_SPACECRAFT", "67P/C-G_CSO", et);      # create rotation matrix R to go from instrument reference frame to CSO
@@ -165,7 +165,7 @@ if pointingCase == 0:
     print 'distance from comet:', np.sqrt( np.sum( rRosetta**2 ) )
     
 elif pointingCase == 1:
-    x0 = np.array([-userR, 0, 0])
+    x0 = np.array([-userR, 0, 0])           # -R --> start at subsolar point
     rRosetta = rotations.rotateVector(x0,userPhaseAngle, userLatitude)
     ei, ej, ek = rotations.rotateCoordinateSystem2(userPhaseAngle, userLatitude, userAlpha, userBeta, userGamma)
     
@@ -241,8 +241,11 @@ elif instrumentSelector == 3:               # alice
     print iFOV
     pixelSize = 1
     
-    v_sun = alice.get_v_sun(kernelMetaFile, utcStartTime)
-    gFactor = alice.get_gfactor_from_db()
+    #v_sun = alice.get_v_sun(kernelMetaFile, utcStartTime)
+    #gFactor = alice.get_gfactor_from_db()
+    
+    v_sun = 12
+    gFactor = 1e-7
     
     
 elif instrumentSelector == 4:               # miro
@@ -350,8 +353,11 @@ for i in range(pixelsX):
             nRay = Interpolator.__call__(xTravel[:,0], xTravel[:,1])        # interpolated local number density
         
         if instrumentSelector == 3:
-            brightness = alice.calculate_column(nRay, dTravel, 0, iFOV)
-            ccd[i][j] = brightness
+            columnDensity = np.trapz(nRay, dTravel)
+            ccd[i][j] = columnDensity
+            #print columnDensity
+            #brightness = alice.calculate_column(nRay, dTravel, 0, iFOV)
+            #ccd[i][j] = brightness
         else:
             columnDensity = np.trapz(nRay,dTravel)                          # integration along xRay
             ccd[i][j] = columnDensity
@@ -362,7 +368,7 @@ print 'pixel loop done'
 ccd = np.array(ccd)
 
 if instrumentSelector == 3:
-    ccdFinal = alice.calculateBrightness(pixelsX,N_oversampleX, N_oversampleY,ccd,gFactor)
+    ccdFinal = alice.calculateBrightness(N_oversampleX, N_oversampleY,ccd,gFactor)
 else:
     ccdFinal = ccd
 

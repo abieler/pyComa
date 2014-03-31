@@ -71,7 +71,7 @@ def plot_result(ccd, outputDir, outFileName, instrumentSelector, runDetails,
 
     plt.figure()
     if instrumentSelector == 3:           # alice
-        plt.semilogy(range(5, 24), ccd / 10**10, '-ok', linewidth=2)
+        plt.plot(range(5, 24), ccd, '-ok', linewidth=2)
         plt.grid(True)
         plt.xlabel('Pixel Number')
         plt.ylabel('Rayleigh')
