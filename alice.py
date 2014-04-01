@@ -30,6 +30,9 @@ def calculateBrightness(N_oversampleX, N_oversampleY, ccd, gFactor):
 
 
     print 'ccd mean:', np.mean(ccd)
+    print 'ccd min :', np.min(ccd)
+    print 'ccd max :', np.max(ccd)
+    
     ccdFinal = np.zeros(19)
     
     ll = 0
@@ -51,7 +54,7 @@ def calculateBrightness(N_oversampleX, N_oversampleY, ccd, gFactor):
     for k in range(8, 13):
         ccdFinal[k] = np.mean(ccd[k * N_oversampleX:(k + 1) * N_oversampleX, ll:-ll])
 
-    ccdFinal = ccdFinal * gFactor / 4 * np.pi * pixelFOV / 10**10
+    ccdFinal = ccdFinal * gFactor / (4 * np.pi) * pixelFOV
 
     return ccdFinal
 

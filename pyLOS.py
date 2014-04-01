@@ -247,7 +247,7 @@ elif instrumentSelector == 3:               # alice
     #gFactor = alice.get_gfactor_from_db()
     
     v_sun = 12
-    gFactor = 1e-7
+    gFactor = 2.09e-7
     
     
 elif instrumentSelector == 4:               # miro
@@ -311,11 +311,9 @@ for i in range(pixelsX):
             p[2] = j*dy - ly/2 + dy/2
             p[0] = 1
             p /= np.sqrt(np.sum(p**2))          # p = pointing vector in instrument coordinates
-            #p = spice.vrotv(p,(0,-1,0),np.pi/2)
             p = R.dot(p)
-            #print 'p:',p
             rRay = np.array([value for value in rRosetta])
-            #print 'rRosetta:', rRosetta
+
         #########################################
         # calculate ray for line of sight
         #########################################
@@ -353,16 +351,11 @@ for i in range(pixelsX):
             nRay = np.interp(xTravel, x, n)
         elif dim == 2:
             nRay = Interpolator.__call__(xTravel[:,0], xTravel[:,1])        # interpolated local number density
+        elif dim == 3:
+            pass
         
-        if instrumentSelector == 3:
-            columnDensity = np.trapz(nRay, dTravel)
-            ccd[i][j] = columnDensity
-            #print columnDensity
-            #brightness = alice.calculate_column(nRay, dTravel, 0, iFOV)
-            #ccd[i][j] = brightness
-        else:
-            columnDensity = np.trapz(nRay,dTravel)                          # integration along xRay
-            ccd[i][j] = columnDensity
+        columnDensity = np.trapz(nRay, dTravel)
+        ccd[i][j] = columnDensity
             
     print i
 print 'pixel loop done'

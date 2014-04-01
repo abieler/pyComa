@@ -51,8 +51,8 @@ def plot_result(ccd, outputDir, outFileName, instrumentSelector, runDetails,
         pltTitle += '%s, %s\n' % (os.path.split(runDetails.kernelMetaFile)[1],
                                   pltUtcStartTime)
     else:
-        pltTitle += 'R:%i, PA:%i, LAT:%i, a:%i, b:%i, c:%i\n' %\
-                    (runDetails.userR, runDetails.userPhaseAngle,
+        pltTitle += 'R: %i km, PA: %i, LAT: %i, a: %i, b: %i, c: %i\n' %\
+                    (runDetails.userR/1000, runDetails.userPhaseAngle,
                      runDetails.userLatitude, runDetails.userAlpha,
                      runDetails.userBeta, runDetails.userGamma)
 
@@ -74,7 +74,7 @@ def plot_result(ccd, outputDir, outFileName, instrumentSelector, runDetails,
         plt.plot(range(5, 24), ccd, '-ok', linewidth=2)
         plt.grid(True)
         plt.xlabel('Pixel Number')
-        plt.ylabel('Rayleigh')
+        plt.ylabel('Flux [photons / m2 / s]')
         plt.xticks(range(5, 24))
         plt.xlim((5, 23))
     else:
