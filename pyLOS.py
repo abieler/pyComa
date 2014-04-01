@@ -1,3 +1,4 @@
+#!/Users/abieler/anaconda/bin/python
 #!/Users/abieler/Library/Enthought/Canopy_64bit/User/bin/python
 '''
 filename: pyLOS.py
@@ -19,6 +20,7 @@ from __future__ import division                 # must be first line of program
 
 try:
     import sys
+    print sys.path
     import os
     import numpy as np
     import time
@@ -26,6 +28,7 @@ try:
     import matplotlib.tri as mtri
     import matplotlib.pyplot as plt
     import spice
+    import mpi4py
     
     from data_loaders import loadGasData, loadDustData, getAllDustIntervalIndices
     from haser import haserModel
@@ -109,7 +112,6 @@ userDataFile = args.userDataFile
 userDelimiter = args.userDelimiter
 userDim = args.userDim
 userNrOfGeaderRows= args.userNrOfHeaderRows
-
 
 
 print '##########################################'
