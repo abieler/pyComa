@@ -40,15 +40,15 @@ useHaserModel = False
 ##############################################
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--modelCase", type=int, choices=[0, 1, 2], help='0: dsmc model, 1: haser model, 2: user model')
-parser.add_argument("--pointingCase", type=int, choices=[0, 1], help='0: spice pointing, 1: user pointing')
-parser.add_argument("--instrumentSelector", type=int, choices=[1, 2, 3, 4, 5, 6])
-parser.add_argument("--outputDir", type=str)
+parser.add_argument("--iModelCase", type=int, choices=[0, 1, 2], help='0: dsmc model, 1: haser model, 2: user model')
+parser.add_argument("--iPointingCase", type=int, choices=[0, 1], help='0: spice pointing, 1: user pointing')
+parser.add_argument("--iInstrumentSelector", type=int, choices=[1, 2, 3, 4, 5, 6])
+parser.add_argument("--StringOutputDir", type=str)
 
-parser.add_argument("--dataFile", type=str)
-parser.add_argument("--isDust", type=int, choices=[0, 1], help='1 for dust case, 0 for gas case')
-parser.add_argument("--minSize", type=float)
-parser.add_argument('--maxSize', type=float)
+parser.add_argument("--StringDataFileDSMC", type=str)
+parser.add_argument("--IsDust", type=int, choices=[0, 1], help='1 for dust case, 0 for gas case')
+parser.add_argument("--DustSizeMin", type=float)
+parser.add_argument('--DustSizeMax', type=float)
 
 
 parser.add_argument("--QHaser", type=float)
@@ -56,58 +56,58 @@ parser.add_argument("--vHaser", type=float)
 parser.add_argument("--tpHaser", type=float)
 parser.add_argument("--tdHaser", type=float)
 
-parser.add_argument("--userDataFile", type=str)                          # file to upload from user which contains user coma model
-parser.add_argument("--userDelimiter", type=str)                         # delimiter used in datafile
-parser.add_argument("--userNrOfHeaderRows", type=int)                   # number of header lines in datafile
-parser.add_argument("--userDim", type=int)                               # number of dimenisons of user coma model
+parser.add_argument("--StringUserDataFile", type=str)                          # file to upload from user which contains user coma model
+parser.add_argument("--UserDelimiter", type=str)                         # delimiter used in datafile
+parser.add_argument("--iUserNrOfHeaderRows", type=int)                   # number of header lines in datafile
+parser.add_argument("--iUserDim", type=int)                               # number of dimenisons of user coma model
 
-parser.add_argument("--kernelMetaFile", type=str)
-parser.add_argument("--utcStartTime", type=str)
+parser.add_argument("--StringKernelMetaFile", type=str)
+parser.add_argument("--StringUtcStartTime", type=str)
 
-parser.add_argument("--userR", type=float)                               # distance in km from nucleus center
-parser.add_argument("--userPhaseAngle", type=float)
-parser.add_argument("--userLatitude", type=float)
-parser.add_argument("--userAlpha", type=float)
-parser.add_argument("--userBeta", type=float)
-parser.add_argument("--userGamma", type=float)
+parser.add_argument("--UserR", type=float)                               # distance in km from nucleus center
+parser.add_argument("--UserPhaseAngle", type=float)
+parser.add_argument("--UserLatitude", type=float)
+parser.add_argument("--UserAlpha", type=float)
+parser.add_argument("--UserBeta", type=float)
+parser.add_argument("--UserGamma", type=float)
 
 args = parser.parse_args()
 
-modelCase = args.modelCase
-pointingCase = args.pointingCase
-instrumentSelector = args.instrumentSelector
-outputDir = args.outputDir
+iModelCase = args.iModelCase
+iPointingCase = args.iPointingCase
+iInstrumentSelector = args.iInstrumentSelector
+StringOutputDir = args.StringOutputDir
 
-dataFile = args.dataFile
-isDust = args.isDust
-minSize = args.minSize
-maxSize = args.maxSize
+StringDataFileDSMC = args.StringDataFileDSMC
+IsDust = args.IsDust
+DustSizeMin = args.DustSizeMin
+DustSizeMax = args.DustSizeMax
 
 QHaser = args.QHaser
 vHaser = args.vHaser
 tpHaser = args.tpHaser
 tdHaser = args.tdHaser
-kernelMetaFile = args.kernelMetaFile
-utcStartTime = args.utcStartTime
+StringKernelMetaFile = args.StringKernelMetaFile
+StringUtcStartTime = args.StringUtcStartTime
 
-userR = args.userR
-userPhaseAngle = args.userPhaseAngle
-userLatitude = args.userLatitude
-userAlpha = args.userAlpha
-userBeta = args.userBeta
-userGamma = args.userGamma
+UserR = args.UserR
+UserPhaseAngle = args.UserPhaseAngle
+UserLatitude = args.UserLatitude
+UserAlpha = args.UserAlpha
+UserBeta = args.UserBeta
+UserGamma = args.UserGamma
 
-userDataFile = args.userDataFile
-userDelimiter = args.userDelimiter
-userDim = args.userDim
-userNrOfGeaderRows = args.userNrOfHeaderRows
+StringUserDataFile = args.StringUserDataFile
+UserDelimiter = args.UserDelimiter
+iUserDim = args.iUserDim
+userNrOfGeaderRows = args.iUserNrOfHeaderRows
 
 
 print '##########################################'
-print 'modelCase     :', modelCase
-print 'instrument    :', instrumentSelector
-print 'kernelMetaFile:', kernelMetaFile
-print 'utcStartTime  :', utcStartTime
+print 'modelCase     :', iModelCase
+print 'instrument    :', iInstrumentSelector
+print 'StringKernelMetaFile:', StringKernelMetaFile
+print 'StringUtcStartTime  :', StringUtcStartTime
 print 'QHaser        :', QHaser
 print 'vHaser        :', vHaser
 print 'tdHaser       :', tdHaser
@@ -115,50 +115,50 @@ print 'tpHaser       :', tpHaser
 print '##########################################'
 
 
-if modelCase == 0:
+if iModelCase == 0:
     ############################################
     # check if 1d or 2d case
     ############################################
 
-    dataDir = os.path.split(dataFile)[0]
+    dataDir = os.path.split(StringDataFileDSMC)[0]
     filenames = os.listdir(dataDir)
     allFilenamesInOneString = ''
     for filename in filenames:
         allFilenamesInOneString += filename
 
     if '2d' in allFilenamesInOneString:
-        dim = 2
+        iDim = 2
     elif '1d' in allFilenamesInOneString:
-        dim = 1
+        iDim = 1
     else:
-        dim = 0
-        print 'Could not detect number of dimensions of dsmc case. Exiting now.'
+        iDim = 0
+        print 'Could not detect number of iDimensions of dsmc case. Exiting now.'
         sys.exit()
 
-elif modelCase == 1:
-    dim = 1
+elif iModelCase == 1:
+    iDim = 1
 
-elif modelCase == 2:
-    dim = userDim
+elif iModelCase == 2:
+    iDim = iUserDim
 
-print 'dimensions:', dim
+print 'iDimensions:', iDim
 
-if pointingCase == 0:
+if iPointingCase == 0:
     #################################################
     # get rosetta coordinates from spice
     #################################################
-    spice.furnsh(kernelMetaFile)
-    et = spice.str2et(utcStartTime)
+    spice.furnsh(StringKernelMetaFile)
+    et = spice.str2et(StringUtcStartTime)
     rRosetta, lightTime = spice.spkpos("ROSETTA", et, "67P/C-G_CSO", "NONE", "CHURYUMOV-GERASIMENKO")        # s/c coordinates in CSO frame of reference
     rRosetta = np.array(rRosetta) * 1000            # transform km to m
     R = spice.pxform("ROS_SPACECRAFT", "67P/C-G_CSO", et)      # create rotation matrix R to go from instrument reference frame to CSO
 
     print 'distance from comet:', np.sqrt(np.sum(rRosetta ** 2))
 
-elif pointingCase == 1:
-    x0 = np.array([-userR, 0, 0])           # -R --> start at subsolar point
-    rRosetta = rotations.rotateVector(x0, userPhaseAngle, userLatitude)
-    ei, ej, ek = rotations.rotateCoordinateSystem2(userPhaseAngle, userLatitude, userAlpha, userBeta, userGamma)
+elif iPointingCase == 1:
+    x0 = np.array([-UserR, 0, 0])           # -R --> start at subsolar point
+    rRosetta = rotations.rotateVector(x0, UserPhaseAngle, UserLatitude)
+    ei, ej, ek = rotations.rotateCoordinateSystem2(UserPhaseAngle, UserLatitude, UserAlpha, UserBeta, UserGamma)
 
     R = rotations.createRotationMatrix(ei,ej,ek)
 
@@ -167,28 +167,28 @@ print 'rRosetta:', rRosetta
 ########################################################
 # load data
 ########################################################
-if modelCase == 0:
-    if isDust:
+if iModelCase == 0:
+    if IsDust:
         print 'dust case'
-        numberDensityIndices, allSizeIntervals = getAllDustIntervalIndices(dataFile, dim)
+        numberDensityIndices, allSizeIntervals = getAllDustIntervalIndices(StringDataFileDSMC, iDim)
 
-        x, y, n = loadDustData(allSizeIntervals, numberDensityIndices, dim, dataFile)
+        x, y, n = loadDustData(allSizeIntervals, numberDensityIndices, iDim, StringDataFileDSMC)
 
     else:
-        x, y, n = loadGasData(dataFile, dim)
+        x, y, n = loadGasData(StringDataFileDSMC, iDim)
 
-elif modelCase == 1:
+elif iModelCase == 1:
     x, n = haserModel(QHaser, vHaser, tpHaser, tdHaser)
     y = None
-    
-elif modelCase == 2:
-    x, y, n = loadGasData(userDataFile, dim, True, userDelimiter, userNrOfGeaderRows)
+
+elif iModelCase == 2:
+    x, y, n = loadGasData(StringUserDataFile, iDim, True, UserDelimiter, userNrOfGeaderRows)
 
 ##############################################################
 # triangulation and interpolation for 2d case
-if dim == 1:
+if iDim == 1:
     pass
-elif dim == 2:
+elif iDim == 2:
     triangles = mtri.Triangulation(x, y)
     Interpolator = mtri.LinearTriInterpolator(triangles, n)
 print 'interpolation done'
@@ -198,15 +198,15 @@ print 'interpolation done'
 # instrument specific definitions
 #############################################################
 
-if instrumentSelector == 1:                 # osiris wac
+if iInstrumentSelector == 1:                 # osiris wac
     pixelsX = 256                           # nr of pixels along x axis
     pixelsY = 256                           # nr of pixels along y axis
     phi_x = 12 / 2                            # instrument FOV in x (half opening angle) in degrees
     phi_y = 12 / 2                            # instrument FOV in y (half opening angle) in degrees
     iFOV = 0.000993                         # pixel FOV in rad
     pixelSize = 1                           # area of one pixel
-    
-elif instrumentSelector == 2:               # osiris nac
+
+elif iInstrumentSelector == 2:               # osiris nac
     pixelsX = 512
     pixelsY = 512
     phi_x = 3 / 2
@@ -214,7 +214,7 @@ elif instrumentSelector == 2:               # osiris nac
     iFOV = 0.0000188
     pixelSize = 1
 
-elif instrumentSelector == 3:               # alice
+elif iInstrumentSelector == 3:               # alice
     N_oversampleX = 24
     N_oversampleY = 20
 
@@ -228,13 +228,13 @@ elif instrumentSelector == 3:               # alice
     print iFOV
     pixelSize = 1
 
-    #v_sun = alice.get_v_sun(kernelMetaFile, utcStartTime)
+    #v_sun = alice.get_v_sun(StringKernelMetaFile, StringUtcStartTime)
     #gFactor = alice.get_gfactor_from_db()
 
     v_sun = 12
     gFactor = 2.09e-7
 
-elif instrumentSelector == 4:               # miro
+elif iInstrumentSelector == 4:               # miro
     pixelsX = 1
     pixelsY = 1
     phi_x = 0.33336 / 2
@@ -242,7 +242,7 @@ elif instrumentSelector == 4:               # miro
     iFOV = 0.36666
     pixelSize = 1
 
-elif instrumentSelector == 5:               # virtis m
+elif iInstrumentSelector == 5:               # virtis m
     pixelsX = 256
     pixelsY = 256
     phi_x = 3.6669 / 2
@@ -250,7 +250,7 @@ elif instrumentSelector == 5:               # virtis m
     iFOV = 0.00025
     pixelSize = 1
 
-elif instrumentSelector == 6:               # virtis h
+elif iInstrumentSelector == 6:               # virtis h
     pixelsX = 1
     pixelsY = 3
     phi_x = 0.0334
@@ -277,7 +277,7 @@ p = np.zeros(3)
 ccd = np.zeros((pixelsX, pixelsY))
 for i in range(pixelsX):
     for j in range(pixelsY):
-        if pointingCase == 0:
+        if iPointingCase == 0:
             p[0] = i*dx - lx/2 + dx/2
             p[1] = j*dy - ly/2 + dy/2
             p[2] = 1
@@ -287,7 +287,7 @@ for i in range(pixelsX):
             p[1] = -pSpice[1]
             p[2] = pSpice[2]
 
-            rRay = 5 * np.array([value for value in rRosetta])  # ray for line of sight, starting at rosetta position (transform to coords with sun on -x)
+            rRay = np.array([value for value in rRosetta])  # ray for line of sight, starting at rosetta position (transform to coords with sun on -x)
             rRay[0] *= -1
             rRay[1] *= -1
         else:
@@ -310,10 +310,10 @@ for i in range(pixelsX):
             distance = np.sqrt(np.sum(rRay**2))
             dTravel.append(drTotal)
 
-            if dim == 1:
+            if iDim == 1:
                 xTravel.append(distance)
-            elif dim == 2:
-                xTravel.append((rRay[0], np.sqrt(np.sum( rRay[1]**2 + rRay[2]**2) ) ))
+            elif iDim == 2:
+                xTravel.append((rRay[0], np.sqrt(np.sum(rRay[1]**2 + rRay[2] ** 2))))
 
             if distance < 1e4:
                 dr = distance / 40
@@ -331,11 +331,11 @@ for i in range(pixelsX):
 
         xTravel = np.array(xTravel)
 
-        if dim == 1:
+        if iDim == 1:
             nRay = np.interp(xTravel, x, n)
-        elif dim == 2:
+        elif iDim == 2:
             nRay = Interpolator.__call__(xTravel[:, 0], xTravel[:, 1])        # interpolated local number density
-        elif dim == 3:
+        elif iDim == 3:
             pass
 
         columnDensity = np.trapz(nRay, dTravel)
@@ -346,7 +346,7 @@ print 'pixel loop done'
 
 ccd = np.array(ccd)
 
-if instrumentSelector == 3:
+if iInstrumentSelector == 3:
     ccdFinal = alice.calculateBrightness(N_oversampleX, N_oversampleY, ccd, gFactor)
 else:
     ccdFinal = ccd
@@ -354,7 +354,7 @@ else:
 ######################################################
 # write results to file
 ######################################################
-f = open(outputDir + '/result.txt', 'w')
+f = open(StringOutputDir + '/result.txt', 'w')
 for row in ccd:
     for value in row:
         f.write('%e,' % value)
@@ -365,4 +365,4 @@ f.close()
 ######################################################
 # plot results
 #######################################################
-plot_result(ccdFinal, outputDir, 'result.png', instrumentSelector, runDetails=args, showPlot=True)
+plot_result(ccdFinal, StringOutputDir, 'result.png', iInstrumentSelector, RunDetails=args, showPlot=True)
