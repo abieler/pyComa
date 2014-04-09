@@ -7,38 +7,38 @@ from matplotlib import rcParams
 rcParams.update({'figure.autolayout': True})
 
 
-def plot_result(ccd, outputDir, outFileName, instrumentSelector, runDetails,
+def plot_result(ccd, StringOutputDir, StringOutFileName, iInstrumentSelector, RunDetails,
                 showPlot=False):
 
-    if instrumentSelector == 1:
+    if iInstrumentSelector == 1:
         pltInstrument = 'OSIRIS WAC'
-    elif instrumentSelector == 2:
+    elif iInstrumentSelector == 2:
         pltInstrument = 'OSIRIS NAC'
-    elif instrumentSelector == 3:
+    elif iInstrumentSelector == 3:
         pltInstrument = 'ALICE'
-    elif instrumentSelector == 4:
+    elif iInstrumentSelector == 4:
         pltInstrument = 'MIRO'
-    elif instrumentSelector == 5:
+    elif iInstrumentSelector == 5:
         pltInstrument = 'VIRTIS M'
-    elif instrumentSelector == 6:
+    elif iInstrumentSelector == 6:
         pltInstrument = 'VIRTIS H'
 
-    if runDetails.modelCase == 0:
+    if RunDetails.iModelCase == 0:
         pltModelCase = 'dsmc model'
-    elif runDetails.modelCase == 1:
+    elif RunDetails.iModelCase == 1:
         pltModelCase = 'haser model'
-        pltQHaser = str(runDetails.QHaser)
-        pltvHaser = str(runDetails.vHaser)
-        plttdHaser = str(runDetails.tdHaser)
-        plttpHaser = str(runDetails.tpHaser)
-    elif runDetails.modelCase == 2:
+        pltQHaser = str(RunDetails.QHaser)
+        pltvHaser = str(RunDetails.vHaser)
+        plttdHaser = str(RunDetails.tdHaser)
+        plttpHaser = str(RunDetails.tpHaser)
+    elif RunDetails.iModelCase == 2:
         pltModelCase = 'user model'
 
-    if runDetails.pointingCase == 0:
+    if RunDetails.iPointingCase == 0:
         pltPointing = 'spice pointing'
-        pltSpiceCase = runDetails.kernelMetaFile
-        pltUtcStartTime = runDetails.utcStartTime
-    elif runDetails.pointingCase == 1:
+        pltSpiceCase = RunDetails.StringKernelMetaFile
+        pltUtcStartTime = RunDetails.StringUtcStartTime
+    elif RunDetails.iPointingCase == 1:
         pltPointing = 'manual pointing'
         pltR = ''
         pltPhaseAngle = ''
@@ -47,30 +47,30 @@ def plot_result(ccd, outputDir, outFileName, instrumentSelector, runDetails,
         pltAz = ''
 
     pltTitle = '%s, %s, %s\n' % (pltInstrument, pltModelCase, pltPointing)
-    if runDetails.pointingCase == 0:
-        pltTitle += '%s, %s\n' % (os.path.split(runDetails.kernelMetaFile)[1],
+    if RunDetails.iPointingCase == 0:
+        pltTitle += '%s, %s\n' % (os.path.split(RunDetails.StringKernelMetaFile)[1],
                                   pltUtcStartTime)
     else:
         pltTitle += 'R: %i km, PA: %i, LAT: %i, a: %i, b: %i, c: %i\n' %\
-                    (runDetails.userR/1000, runDetails.userPhaseAngle,
-                     runDetails.userLatitude, runDetails.userAlpha,
-                     runDetails.userBeta, runDetails.userGamma)
+                    (RunDetails.UserR/1000, RunDetails.UserPhaseAngle,
+                     RunDetails.UserLatitude, RunDetails.UserAlpha,
+                     RunDetails.UserBeta, RunDetails.UserGamma)
 
-    if runDetails.modelCase == 0:
-        pltTitle += '%s\n' % (os.path.split(runDetails.dataFile)[1])
-    elif runDetails.modelCase == 1:
+    if RunDetails.iModelCase == 0:
+        pltTitle += '%s\n' % (os.path.split(RunDetails.StringDataFileDSMC)[1])
+    elif RunDetails.iModelCase == 1:
         pltTitle += 'Q: %.2e [#/s],  v: %i [m/s],  Tp: %.0e [s]' % \
-                    (runDetails.QHaser, runDetails.vHaser, runDetails.tpHaser)
+                    (RunDetails.QHaser, RunDetails.vHaser, RunDetails.tpHaser)
 
-        if runDetails.tdHaser is None:
+        if RunDetails.tdHaser is None:
             pltTitle += '\n'
         else:
-            pltTitle += ', Td: %0.e [s]\n' % (runDetails.tdHaser)
-    elif runDetails.modelCase == 2:
+            pltTitle += ', Td: %0.e [s]\n' % (RunDetails.tdHaser)
+    elif RunDetails.iModelCase == 2:
         pass
 
     plt.figure()
-    if instrumentSelector == 3:           # alice
+    if iInstrumentSelector == 3:           # alice
         plt.plot(range(5, 24), ccd, '-ok', linewidth=2)
         plt.grid(True)
         plt.xlabel('Pixel Number')
