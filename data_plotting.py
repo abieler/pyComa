@@ -7,8 +7,7 @@ from matplotlib import rcParams
 rcParams.update({'figure.autolayout': True})
 
 
-def plot_result(ccd, StringOutputDir, StringOutFileName, iInstrumentSelector, RunDetails,
-                showPlot=False):
+def plot_result(ccd, StringOutputDir, StringOutFileName, iInstrumentSelector, RunDetails, DoShowPlot=False):
 
     if iInstrumentSelector == 1:
         pltInstrument = 'OSIRIS WAC'
@@ -52,7 +51,7 @@ def plot_result(ccd, StringOutputDir, StringOutFileName, iInstrumentSelector, Ru
                                   pltUtcStartTime)
     else:
         pltTitle += 'R: %i km, PA: %i, LAT: %i, a: %i, b: %i, c: %i\n' %\
-                    (RunDetails.UserR/1000, RunDetails.UserPhaseAngle,
+                    (RunDetails.UserR / 1000, RunDetails.UserPhaseAngle,
                      RunDetails.UserLatitude, RunDetails.UserAlpha,
                      RunDetails.UserBeta, RunDetails.UserGamma)
 
@@ -82,5 +81,5 @@ def plot_result(ccd, StringOutputDir, StringOutFileName, iInstrumentSelector, Ru
         plt.colorbar()
 
     plt.title(pltTitle)
-    if showPlot:
+    if DoShowPlot:
         plt.show()

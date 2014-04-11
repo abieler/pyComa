@@ -2,6 +2,77 @@
 from __future__ import division
 import numpy as np
 
+from numba import autojit
+
+
+def createRay_2(rRay, iDim, p):
+    #########################################
+    # calculate ray for line of sight
+    #########################################
+    Distance = (np.sum(rRay**2))**0.5
+    xTravel = []
+    ColumnDensity = 0
+    DrTotal = 0
+    while (Distance <= 1e8 and Distance >= 2e3):            # adapt dr according to Distance from the nucleus, the closer to it, the smaller dr becomes.
+        Distance = np.sqrt(np.sum(rRay**2))
+        xTravel.append(rRay)
+
+        if Distance < 1e4:
+            Dr = Distance / 40
+            if Distance < 4e3:
+                Dr = Distance / 100
+                if Distance < 2.5e3:
+                    Dr = Distance / 250
+                    if Distance < 2030:
+                        Dr = 1
+        else:
+            Dr = Distance / 10
+        rRay = rRay + p * Dr
+
+    xTravel = np.array(xTravel)
+    '''
+    if iDim == 1:
+        dTravel = (np.sum((xTravel[0] - xTravel)**2, axis=1))**0.5
+        xTravel = (np.sum(xTravel ** 2, axis=1))**0.5
+    '''
+    return xTravel
+
+def createRay(rRay, iDim, p):
+
+    #########################################
+    # calculate ray for line of sight
+    #########################################
+    Distance = np.sqrt(np.sum(rRay**2))
+    xTravel = []
+    dTravel = []                                           # Distance from s/c
+    ColumnDensity = 0
+    DrTotal = 0
+    while (Distance <= 1e8 and Distance >= 2e3):            # adapt dr according to Distance from the nucleus, the closer to it, the smaller dr becomes.
+        Distance = np.sqrt(np.sum(rRay**2))
+        dTravel.append(DrTotal)
+
+        if iDim == 1:
+            xTravel.append(Distance)
+        elif iDim == 2:
+            xTravel.append((rRay[0], np.sqrt(np.sum(rRay[1]**2 + rRay[2] ** 2))))
+
+        if Distance < 1e4:
+            Dr = Distance / 40
+            if Distance < 4e3:
+                Dr = Distance / 100
+                if Distance < 2.5e3:
+                    Dr = Distance / 250
+                    if Distance < 2030:
+                        Dr = 1
+
+        else:
+            Dr = Distance / 10
+        rRay = rRay + p * Dr
+        DrTotal += Dr
+
+    xTravel = np.array(xTravel)
+    return xTravel, dTravel
+
 
 def getAllDustIntervalIndices(filename, dim):
     '''
