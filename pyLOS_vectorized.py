@@ -17,7 +17,6 @@ try:
     import matplotlib.tri as mtri
     import matplotlib.pyplot as plt
     import spice
-    import mpi4py
 
     from data_loaders import * #loadGasData, loadDustData, getAllDustIntervalIndices, createRay
     from haser import haserModel
@@ -33,9 +32,14 @@ except Exception, e:
     print '--' * 20
     sys.exit()
 
+try:
+    from mpi4py import MPI
+except:
+    'mpi4py not installed!'
+    sys.exit()
 
 startTime = time.time()
-useHaserModel = False
+#useHaserModel = False
 
 #############################################
 # setup argparser for cmd line arguments
@@ -115,6 +119,10 @@ print 'vHaser        :', vHaser
 print 'tdHaser       :', tdHaser
 print 'tpHaser       :', tpHaser
 print '##########################################'
+
+comm = MPI.COMM_WORLD
+nMpiSize = comm.Get_size()
+iMpiRank = comm.Get_rank()
 
 
 if iModelCase == 0:
@@ -291,32 +299,46 @@ p_hat = p / np.sqrt(p[0]**2 + p[1]**2 + p[2])
 
 ccd = np.zeros((nPixelsX, nPixelsY))
 cso2tenishev = np.array([-1, -1, 1])
+
+kkk = 0
+nnn = 0
 for i in range(nPixelsX):
     for j in range(nPixelsY):
-        if iPointingCase == 0:
-            p = np.dot(R, p_hat[:, i, j]) * cso2tenishev
-            rRay = np.array([value for value in rRosetta]) * cso2tenishev
-        else:
-            p = np.dot(R, p_hat[:, i, j])
-            rRay = np.array([value for value in rRosetta])
+        if (kkk == (iMpiRank + nnn * nMpiSize)):
 
-        xTravel = np.array(createRay.createRay(iDim, rRay, p))
-        dTravel = np.sqrt(np.sum((xTravel[0] - xTravel)**2, axis=1))
-        
-        
-        if iDim == 1:
-            xTravel = np.sqrt(np.sum(xTravel ** 2, axis=1))
-        elif iDim == 2:
-            xTravel[:, 1] = np.sqrt(xTravel[:, 1]**2 + xTravel[:, 2]**2)
-        
-        if iDim == 1:
-            DensityRay = np.interp(xTravel, x, n)
-        elif iDim == 2:
-            DensityRay = Interpolator.__call__(xTravel[:, 0], xTravel[:, 1])        # interpolated local number density
-        elif iDim == 3:
-            pass
-        ColumnDensity = np.trapz(DensityRay, dTravel)
-        ccd[i][j] = ColumnDensity
+            if iPointingCase == 0:
+                p = np.dot(R, p_hat[:, i, j]) * cso2tenishev
+                rRay = np.array([value for value in rRosetta]) * cso2tenishev
+            else:
+                p = np.dot(R, p_hat[:, i, j])
+                rRay = np.array([value for value in rRosetta])
+
+            xTravel = np.array(createRay.createRay(iDim, rRay, p))
+            dTravel = np.sqrt(np.sum((xTravel[0] - xTravel)**2, axis=1))
+
+            if iDim == 1:
+                xTravel = np.sqrt(np.sum(xTravel ** 2, axis=1))
+            elif iDim == 2:
+                xTravel[:, 1] = np.sqrt(xTravel[:, 1]**2 + xTravel[:, 2]**2)
+
+            if iDim == 1:
+                DensityRay = np.interp(xTravel, x, n)
+            elif iDim == 2:
+                DensityRay = Interpolator.__call__(xTravel[:, 0], xTravel[:, 1])        # interpolated local number density
+            elif iDim == 3:
+                pass
+            ColumnDensity = np.trapz(DensityRay, dTravel)
+
+            if iMpiRank != 0:
+                comm.Send([ColumnDensity, i, j], dest=0, tag=13)
+            else:
+                ccd[i][j] = ColumnDensity
+                for jjj in range(1, nMpiSize):
+                    ColumnDensity, ii, jj = comm.Recv(source=jjj, tag=13)
+                    ccd[ii][jj] = ColumnDensity
+            nnn += 1
+        kkk += 1
+    
 
     print i
 print 'pixel loop done'
@@ -327,7 +349,6 @@ if iInstrumentSelector == 3:
     ccdFinal = alice.calculateBrightness(nOversampleX, nOversampleY, ccd, gFactor)
 else:
     ccdFinal = ccd
-
 
 print '**' * 20
 print '**' * 20
@@ -343,7 +364,6 @@ for row in ccd:
         f.write('%e,' % value)
     f.write('\n')
 f.close()
-
 
 ######################################################
 # plot results
