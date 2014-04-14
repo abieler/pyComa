@@ -1,9 +1,13 @@
+#!/Users/abieler/anaconda/bin/python
 '''
 filename: pyLOS.py
 
 requires pySPICE installed
+
 requires matplotlib version 1.3.1 or higher
-requires mpi4py installed
+
+requires mpi4py installed (on osx: anaconda mpi4py package is broken for version 1.9.2, create a symlink:
+sudo ln -s /Users/yourPathTo/anaconda /opt/anaconda1anaconda2anaconda3 solves the problem
 '''
 
 from __future__ import division                 # must be first line of program
@@ -108,21 +112,21 @@ UserDelimiter = args.UserDelimiter
 iUserDim = args.iUserDim
 userNrOfGeaderRows = args.iUserNrOfHeaderRows
 
-
-print '##########################################'
-print 'modelCase     :', iModelCase
-print 'instrument    :', iInstrumentSelector
-print 'StringKernelMetaFile:', StringKernelMetaFile
-print 'StringUtcStartTime  :', StringUtcStartTime
-print 'QHaser        :', QHaser
-print 'vHaser        :', vHaser
-print 'tdHaser       :', tdHaser
-print 'tpHaser       :', tpHaser
-print '##########################################'
-
 comm = MPI.COMM_WORLD
 nMpiSize = comm.Get_size()
 iMpiRank = comm.Get_rank()
+
+if iMpiRank == 0:
+    print '##########################################'
+    print 'modelCase     :', iModelCase
+    print 'instrument    :', iInstrumentSelector
+    print 'StringKernelMetaFile:', StringKernelMetaFile
+    print 'StringUtcStartTime  :', StringUtcStartTime
+    print 'QHaser        :', QHaser
+    print 'vHaser        :', vHaser
+    print 'tdHaser       :', tdHaser
+    print 'tpHaser       :', tpHaser
+    print '##########################################'
 
 
 if iModelCase == 0:
@@ -142,7 +146,8 @@ if iModelCase == 0:
         iDim = 1
     else:
         iDim = 0
-        print 'Could not detect number of iDimensions of dsmc case. Exiting now.'
+        if iModelCase == 0:
+            print 'Could not detect number of iDimensions of dsmc case. Exiting now.'
         sys.exit()
 
 elif iModelCase == 1:
@@ -150,8 +155,8 @@ elif iModelCase == 1:
 
 elif iModelCase == 2:
     iDim = iUserDim
-
-print 'iDimensions:', iDim
+if iMpiRank == 1:
+    print 'iDimensions:', iDim
 
 if iPointingCase == 0:
     #################################################
@@ -160,10 +165,11 @@ if iPointingCase == 0:
     spice.furnsh(StringKernelMetaFile)
     Et = spice.str2et(StringUtcStartTime)
     rRosetta, lightTime = spice.spkpos("ROSETTA", Et, "67P/C-G_CSO", "NONE", "CHURYUMOV-GERASIMENKO")        # s/c coordinates in CSO frame of reference
+    rEarth, lightTime = spice.spkpos("EARTH", Et, "J2000", "NONE", "ROSETTA")        # s/c coordinates in CSO frame of reference
     rRosetta = np.array(rRosetta) * 1000            # transform km to m
     R = spice.pxform("ROS_SPACECRAFT", "67P/C-G_CSO", Et)      # create rotation matrix R to go from instrument reference frame to CSO
-
-    print 'Distance from comet:', np.sqrt(np.sum(rRosetta ** 2))
+    if iMpiRank == 0:
+        print 'Distance from comet:', np.sqrt(np.sum(rRosetta ** 2))
 
 elif iPointingCase == 1:
     x0 = np.array([-UserR, 0, 0])           # -R --> start at subsolar point
@@ -172,14 +178,16 @@ elif iPointingCase == 1:
 
     R = rotations.createRotationMatrix(ei, ej, ek)
 
-print 'rRosetta:', rRosetta
+if iMpiRank == 0:
+    print 'rRosetta:', rRosetta
 
 ########################################################
 # load data
 ########################################################
 if iModelCase == 0:
     if IsDust:
-        print 'dust case'
+        if iMpiRank == 0:
+            print 'dust case'
         NumberDensityIndices, allSizeIntervals = getAllDustIntervalIndices(StringDataFileDSMC, iDim)
 
         x, y, n = loadDustData(allSizeIntervals, NumberDensityIndices, iDim, StringDataFileDSMC)
@@ -201,7 +209,9 @@ if iDim == 1:
 elif iDim == 2:
     Triangles = mtri.Triangulation(x, y)
     Interpolator = mtri.LinearTriInterpolator(Triangles, n)
-print 'interpolation done'
+
+if iMpiRank == 0:
+    print 'interpolation done'
 #############################################################
 
 #############################################################
@@ -209,8 +219,8 @@ print 'interpolation done'
 #############################################################
 
 if iInstrumentSelector == 1:                 # osiris wac
-    nPixelsX = 256                           # nr of pixels along x axis
-    nPixelsY = 256                           # nr of pixels along y axis
+    nPixelsX = 1024                          # nr of pixels along x axis
+    nPixelsY = 1024                          # nr of pixels along y axis
     PhiX = 12 / 2                            # instrument FOV in x (half opening angle) in degrees
     PhiY = 12 / 2                            # instrument FOV in y (half opening angle) in degrees
     iFOV = 0.000993                         # pixel FOV in rad
@@ -281,7 +291,8 @@ if nPixelsY > 1:
 else:
     Dy = Ly
 
-print 'entering pixel loop'
+if iMpiRank == 0:
+    print 'entering pixel loop'
 
 ##############################################
 # create pointing vectors p
@@ -330,42 +341,45 @@ for i in range(nPixelsX):
             ColumnDensity = np.trapz(DensityRay, dTravel)
 
             if iMpiRank != 0:
-                comm.Send([ColumnDensity, i, j], dest=0, tag=13)
+                data = np.array([ColumnDensity,i,j])
+                comm.send([ColumnDensity, i, j], dest=0, tag=13)
             else:
                 ccd[i][j] = ColumnDensity
                 for jjj in range(1, nMpiSize):
-                    ColumnDensity, ii, jj = comm.Recv(source=jjj, tag=13)
+                    ColumnDensity, ii, jj = comm.recv(source=jjj, tag=13)
                     ccd[ii][jj] = ColumnDensity
             nnn += 1
         kkk += 1
+
+    if iMpiRank == 0:
+        print i
+
+if iMpiRank == 0:
+    print 'pixel loop done'
+
+    ccd = np.array(ccd)
+
+    if iInstrumentSelector == 3:
+        ccdFinal = alice.calculateBrightness(nOversampleX, nOversampleY, ccd, gFactor)
+    else:
+        ccdFinal = ccd
+
+    print '**' * 20
+    print '**' * 20
+    print time.time() - startTime
+    print '**' * 20
+    print '**' * 20
+    ######################################################
+    # write results to file
+    ######################################################
+    f = open(StringOutputDir + '/result.txt', 'w')
+    for row in ccd:
+        for value in row:
+            f.write('%e,' % value)
+        f.write('\n')
+    f.close()
     
-
-    print i
-print 'pixel loop done'
-
-ccd = np.array(ccd)
-
-if iInstrumentSelector == 3:
-    ccdFinal = alice.calculateBrightness(nOversampleX, nOversampleY, ccd, gFactor)
-else:
-    ccdFinal = ccd
-
-print '**' * 20
-print '**' * 20
-print time.time() - startTime
-print '**' * 20
-print '**' * 20
-######################################################
-# write results to file
-######################################################
-f = open(StringOutputDir + '/result.txt', 'w')
-for row in ccd:
-    for value in row:
-        f.write('%e,' % value)
-    f.write('\n')
-f.close()
-
-######################################################
-# plot results
-#######################################################
-plot_result(ccdFinal, StringOutputDir, 'result.png', iInstrumentSelector, RunDetails=args, DoShowPlot=True)
+    ######################################################
+    # plot results
+    #######################################################
+    plot_result(ccdFinal, StringOutputDir, 'result.png', iInstrumentSelector, RunDetails=args, DoShowPlot=True)
