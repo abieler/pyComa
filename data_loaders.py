@@ -1,77 +1,39 @@
 #!/usr/bin/env python
 from __future__ import division
 import numpy as np
+import os
 
-from numba import autojit
 
+def get_iDim(args):
 
-def createRay_2(rRay, iDim, p):
-    #########################################
-    # calculate ray for line of sight
-    #########################################
-    Distance = (np.sum(rRay**2))**0.5
-    xTravel = []
-    ColumnDensity = 0
-    DrTotal = 0
-    while (Distance <= 1e8 and Distance >= 2e3):            # adapt dr according to Distance from the nucleus, the closer to it, the smaller dr becomes.
-        Distance = np.sqrt(np.sum(rRay**2))
-        xTravel.append(rRay)
+    if args.iModelCase == 0:
+        ############################################
+        # check if 1d or 2d case
+        ############################################
 
-        if Distance < 1e4:
-            Dr = Distance / 40
-            if Distance < 4e3:
-                Dr = Distance / 100
-                if Distance < 2.5e3:
-                    Dr = Distance / 250
-                    if Distance < 2030:
-                        Dr = 1
+        filenames = os.listdir(os.path.split(args.StringDataFileDSMC)[0])
+        allFilenamesInOneString = ''
+        for filename in filenames:
+            allFilenamesInOneString += filename
+
+        if '2d' in allFilenamesInOneString:
+            iDim = 2
+        elif '1d' in allFilenamesInOneString:
+            iDim = 1
         else:
-            Dr = Distance / 10
-        rRay = rRay + p * Dr
+            iDim = 0
+            if args.iModelCase == 0:
+                print 'Could not detect iDim of dsmc case. Exiting now.'
+            sys.exit()
 
-    xTravel = np.array(xTravel)
-    '''
-    if iDim == 1:
-        dTravel = (np.sum((xTravel[0] - xTravel)**2, axis=1))**0.5
-        xTravel = (np.sum(xTravel ** 2, axis=1))**0.5
-    '''
-    return xTravel
+    elif args.iModelCase == 1:
+        iDim = 1
 
-def createRay(rRay, iDim, p):
+    elif args.iModelCase == 2:
+        iDim = args.iUserDim
 
-    #########################################
-    # calculate ray for line of sight
-    #########################################
-    Distance = np.sqrt(np.sum(rRay**2))
-    xTravel = []
-    dTravel = []                                           # Distance from s/c
-    ColumnDensity = 0
-    DrTotal = 0
-    while (Distance <= 1e8 and Distance >= 2e3):            # adapt dr according to Distance from the nucleus, the closer to it, the smaller dr becomes.
-        Distance = np.sqrt(np.sum(rRay**2))
-        dTravel.append(DrTotal)
-
-        if iDim == 1:
-            xTravel.append(Distance)
-        elif iDim == 2:
-            xTravel.append((rRay[0], np.sqrt(np.sum(rRay[1]**2 + rRay[2] ** 2))))
-
-        if Distance < 1e4:
-            Dr = Distance / 40
-            if Distance < 4e3:
-                Dr = Distance / 100
-                if Distance < 2.5e3:
-                    Dr = Distance / 250
-                    if Distance < 2030:
-                        Dr = 1
-
-        else:
-            Dr = Distance / 10
-        rRay = rRay + p * Dr
-        DrTotal += Dr
-
-    xTravel = np.array(xTravel)
-    return xTravel, dTravel
+    print 'iDim:', iDim
+    return iDim
 
 
 def getAllDustIntervalIndices(filename, dim):
@@ -116,7 +78,7 @@ def loadGasData(dataFile, dim, userData=False, userDelimiter=',',
         load gas data files from amps in 1d or 2d, and return values
         for x,y and number density n.
         '''
-
+        print 'opening data file', dataFile
         f = open(dataFile, 'r')
         for line in f:
             if 'VARIABLES' in line:
@@ -125,6 +87,7 @@ def loadGasData(dataFile, dim, userData=False, userDelimiter=',',
                 for element, j in zip(variables, range(len(variables))):
                     if '"n"' in element:
                         densityIndex = j
+                        print 'found density index!!', j
                         break
         f.close()
 
