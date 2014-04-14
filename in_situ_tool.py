@@ -27,6 +27,7 @@ parser.add_argument("--iInstrumentSelector", type=int, choices=[1, 2, 3, 4, 5, 6
 parser.add_argument("--StringOutputDir", type=str)
 
 parser.add_argument("--StringDSMCdir", type=str)
+parser.add_argument("--StringDataFileDSMC", type=str)
 parser.add_argument("--IsDust", type=int, choices=[0, 1], help='1 for dust case, 0 for gas case')
 parser.add_argument("--DustSizeMin", type=float)
 parser.add_argument('--DustSizeMax', type=float)
@@ -62,97 +63,88 @@ print "start:", args.StringUtcStartTime
 print "stop:", args.StringUtcStopTime
 print 'deltaT:', args.nDeltaT
 print 'outDir:', args.StringOutputDir
-print 'dsmcDur:', args.StringDSMCdir
 print '--' * 20
 
-x_SC, y_SC, z_SC = spice_functions.get_coordinates(args.StringUtcStartTime, 'ROSETTA', 'J2000', "None",
-                                                   "CHURYUMOV-GERASIMENKO", args.UtcStopTime, args.nDeltaT)
+x_SC, y_SC, z_SC, r_SC, dates_SC = spice_functions.get_coordinates(args.StringUtcStartTime, args.StringKernelMetaFile,
+                                                         'ROSETTA', 'J2000', "None", "CHURYUMOV-GERASIMENKO",
+                                                         args.StringUtcStopTime, args.nDeltaT)
 
-n_SC_all = []
-species_all = []
+iDim = get_iDim(args)
 
-firstSpecies = True
-filenames = os.listdir(dsmcDir)
-allFilenamesInOneString = ''
+if args.iModelCase == 0:
+    path = os.path.split(args.StringDataFileDSMC)[0]
+    filenames = [path + '/' + filename for filename in os.listdir(path) if (filename.split('.')[-1].lower() == 'dat') and 'Dust' not in filename]
+    print filenames
+    print '----------------------------------------------------'
+
+elif args.iModelCase == 1:
+    filenames = ['Haser']
+elif args.iModelCase == 2:
+    filenames = [args.StringUserDataFile]
+
 for filename in filenames:
-    allFilenamesInOneString += filename
+
+    ########################################################
+    # load data
+    ########################################################
+    if args.iModelCase == 0:
+        print 'dsmc case'
+        if args.IsDust:
+            print 'dust'
+            NumberDensityIndices, allSizeIntervals = getAllDustIntervalIndices(filename, iDim)
+            x, y, n = loadDustData(allSizeIntervals, NumberDensityIndices, iDim, filename)
+        else:
+            print 'gas'
+            x, y, n = loadGasData(filename, iDim)
+    elif args.iModelCase == 1:
+        print 'haser case'
+        x, n = haserModel(args.QHaser, args.vHaser, args.tpHaser, args.tdHaser)
+        y = None
+    elif args.iModelCase == 2:
+        print 'user case'
+        x, y, n = loadGasData(args.StringUserDataFile, iDim, True, args.UserDelimiter, args.iUserNrOfHeaderRows)
+
+    ##############################################################
+    # triangulation and interpolation for 2d case
+    if iDim == 1:
+        pass
+    elif iDim == 2:
+        Triangles = mtri.Triangulation(x, y)
+        Interpolator = mtri.LinearTriInterpolator(Triangles, n)
+
+    print 'interpolation done'
+    #############################################################
+
+    if iDim == 1:
+        n_SC = np.interp(np.sqrt(x_SC**2 + y_SC**2 + z_SC**2), x, n)
+    elif iDim == 2:
+        n_SC = Interpolator.__call__(x_SC, np.sqrt(y_SC**2 + z_SC**2))
+    elif iDim == 3:
+        n_SC = 0
+
+    ############################################
+    # write results to file
+    ###############################################
+    species = filename.split('.')[-2]
+    file = open(args.StringOutputDir + '/' + species + '.out', 'w')
+    file.write('Local number densities for the rosetta spacecraft at selected dates. Comet is at (0,0,0) with the sun on the positive x axis.(inf,0,0)\n')
+    file.write('DSMC case: %s\n' % (os.path.split(args.StringDataFileDSMC)[0].split('/')[-1]))
+    file.write('spice kernel: %s\n' % (args.StringKernelMetaFile.split('/')[-1]))
+    file.write('date,x[m],y[m],z[m],numberDensity [1/m3]\n')
+    for dd, xx, yy, zz, nn in zip(dates_SC, x_SC, y_SC, z_SC, n_SC):
+        file.write("%s,%e,%e,%e,%e\n" % (dd, xx, yy, zz, nn))
+    file.close()
+    print 'done'
 
 
-if '2d' in allFilenamesInOneString:
-    dim = 2
-elif '1d' in allFilenamesInOneString:
-    dim = 1
-else:
-    dim = 0
 
-print "dimension: ", dim
-for filename in filenames:
-    if ("Dust" not in filename) and (filename.split('.')[-1] == 'dat'):
-        #####################################################
-        # load data
-        #####################################################
-        species = filename.split('.')[-2]
-        print "load dsmc data", species
 
-        if dim == 1:
-            r, n = np.genfromtxt(dsmcDir + '/' + filename, skip_header=2, autostrip=True, usecols=(0, 3), unpack=True)
-            n_SC = np.interp(r_SC, r, n)
-        elif dim == 2:
-            if triImport:
-                file = open(dsmcDir + '/' + filename, 'r')
-                for line in file:
-                    if 'VARIABLES' in line:
-                        if 'Gx' in line:
-                            densityIndex = 7
-                        else:
-                            densityIndex = 5
 
-                x, y, n = np.genfromtxt(dsmcDir + '/' + filename, skip_header=3, skip_footer=155236,
-                                        autostrip=True, usecols=(0, 1, densityIndex), unpack=True)
-                triangles = mtri.Triangulation(x, y)
-                Interpolator = mtri.LinearTriInterpolator(triangles, n)
-                n_SC = Interpolator.__call__(x_SC, np.sqrt(y_SC**2 + z_SC**2))
-                print "successfully imported 2d data"
-            else:
-                print "2d cases not supported. install matplotlib version 0.1.3.1 or newer"
 
-        n_SC_all.append(n_SC)
-        species_all.append(species)
-        #####################################################
-        # create dates for the figure
-        #####################################################
-        if firstSpecies:
-            yy = np.int(utcStartTime.split('-')[0])
-            mm = np.int(utcStartTime.split('-')[1])
-            dd = np.int(utcStartTime.split('-')[2][0:2])
-            HH = np.int(utcStartTime.split('T')[1].split(':')[0])
-            MM = np.int(utcStartTime.split('T')[1].split(':')[1])
-            SS = np.int(utcStartTime.split('T')[1].split(':')[2])
 
-            dates = []
 
-            t = datetime.datetime(yy,mm,dd,HH,MM,SS)
-            dt = datetime.timedelta(seconds = deltaT)
 
-            while len(dates) < len(n_SC):
-                dates.append(t)
-                t += dt
-            firstSpecies = False
-        
-        ############################################
-        # write results to file
-        ###############################################
-
-        file = open(outputDir + '/' + species + '.out','w')
-        file.write('Local number densities for the rosetta spacecraft at selected dates. Comet is at (0,0,0) with the sun on the positive x axis.(inf,0,0)\n')
-        file.write('DSMC case: %s\n' %(dsmcDir.split('/')[-1]))
-        file.write('spice kernel: %s\n' %(mkFile.split('/')[-1]))
-        file.write('date,x[m],y[m],z[m],numberDensity [1/m3]\n')
-        #print "outfile:", outputDir + '/' + species + '.out'
-        for dd,xx,yy,zz,nn in zip(dates,x_SC,y_SC,z_SC,n_SC):
-            file.write("%s,%e,%e,%e,%e\n" %(dd,xx,yy,zz,nn))
-        file.close()
-
+'''
         ####################################################
         # plot results
         ####################################################
@@ -176,10 +168,15 @@ for dd,xx,yy,zz,i in zip(dates,x_SC,y_SC,z_SC,range(len(x_SC))):
     file.write("\n")
 file.close()
 
-plt.title('Neutral densitiy along trajectory')
+
+
+
+
+
 plt.ylabel('Number density [1/m^3]')
 plt.grid(True)
 plt.gcf().autofmt_xdate()
 plt.legend()
 #plt.show()
 plt.savefig(outputDir + '/' + 'result.png')
+'''
