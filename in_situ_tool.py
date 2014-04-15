@@ -104,7 +104,8 @@ for filename in filenames:
         y = None
     elif args.iModelCase == 2:
         print 'user case'
-        x, y, n = loadGasData(args.StringUserDataFile, iDim, True, args.UserDelimiter, args.iUserNrOfHeaderRows)
+        #x, y, n = loadGasData(args.StringUserDataFile, iDim, True, args.UserDelimiter, args.iUserNrOfHeaderRows)
+        x, y, n = load_user_data(args.StringUserDataFile, iDim, args.UserDelimiter, args.iUserNrOfHeaderRows)
 
     ##############################################################
     # triangulation and interpolation for 2d case
