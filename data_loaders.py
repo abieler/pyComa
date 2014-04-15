@@ -2,6 +2,7 @@
 from __future__ import division
 import numpy as np
 import os
+import datetime
 
 
 def get_iDim(args):
@@ -170,3 +171,21 @@ def loadDustData(allSizeIntervals, numberDensityIndices, dim, dataFile):
         n += data[:, i]
 
     return x, y, n
+
+
+def load_in_situ_output(filename):
+    i = 0
+    dates_SC, r_SC, n_SC = [], [], []
+    file = open(filename, 'r')
+    for line in file:
+        if i >= 0:
+            try:
+                dd, xx, yy, zz, rr, nn = line.split(',')
+                dates_SC.append(datetime.datetime.strptime(dd, '%Y-%m-%d %H:%M:%S'))
+                r_SC.append(np.float(rr))
+                n_SC.append(np.float(nn))
+            except Exception, e:
+                print e
+        i += 1
+    file.close()
+    return dates_SC, np.array(r_SC), np.array(n_SC)
