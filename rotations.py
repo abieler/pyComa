@@ -11,164 +11,132 @@ import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
-def plotVector(x0,x_hat, ax):
+
+def plotVector(x0, x_hat, ax):
     x_hat = x_hat / np.sqrt(np.sum(x_hat**2))
-    
     x = x0 + x_hat
     xplt = [x0[0], x[0]]
     yplt = [x0[1], x[1]]
     zplt = [x0[2], x[2]]
-    ax.plot(xplt,yplt,zplt)
+    ax.plot(xplt, yplt, zplt)
 
-def rotateVector(x0,phaseAngle=0,latitude=0):
-    theta = phaseAngle / 180 *np.pi
+
+def rotateVector(x0, phaseAngle=0, latitude=0):
+    theta = phaseAngle / 180 * np.pi
     latitude = latitude / 180 * np.pi
-    
-    xr = np.array([1,0,0])
-    yr = np.array([0,1,0])
-    zr = np.array([0,0,1])
-    
-    xNew = spice.vrotv(x0,zr,theta)
-    yNew = spice.vrotv(yr,zr,theta)
-    
-    xNew = spice.vrotv(xNew,yNew,latitude)
-    
-    return np.array( xNew )
+
+    xr = np.array([1, 0, 0])
+    yr = np.array([0, 1, 0])
+    zr = np.array([0, 0, 1])
+
+    xNew = spice.vrotv(x0, zr, theta)
+    yNew = spice.vrotv(yr, zr, theta)
+
+    xNew = spice.vrotv(xNew, yNew, latitude)
+
+    return np.array(xNew)
+
 
 def rotateCoordinateSystem(phaseAngle=0, latitude=5, el=0, az=0):
-    
+
     theta = phaseAngle / 180 * np.pi
     latitude = latitude / 180 * np.pi
     el = el / 180 * np.pi
     az = az / 180 * np.pi
-    
-    print 'theta:', theta
-    print ''
-    
-    xr = np.array([1,0,0])
-    yr = np.array([0,1,0])
-    zr = np.array([0,0,1])
-    
+
+    xr = np.array([1, 0, 0])
+    yr = np.array([0, 1, 0])
+    zr = np.array([0, 0, 1])
+
     ########################################
     # rotate around z axis for phase angle
     ########################################
-    xr = spice.vrotv(xr,zr,theta)
-    yr = spice.vrotv(yr,zr,theta)
-    zr = spice.vrotv(zr,zr,theta)
-    
-    
-    print 'x1:', xr
-    print 'y1:', yr
-    print 'z1:', zr
-    print ''
-    print ''
+    xr = spice.vrotv(xr, zr, theta)
+    yr = spice.vrotv(yr, zr, theta)
+    zr = spice.vrotv(zr, zr, theta)
 
-    rotAxis1 = spice.vcrss(xr,-np.array(zr))
+    rotAxis1 = spice.vcrss(xr, -np.array(zr))
 
-    print rotAxis1
-    print ''
-    print ''
-    
-    xr = spice.vrotv(xr,rotAxis1,latitude)
-    yr = spice.vrotv(yr,rotAxis1,latitude)
-    zr = spice.vrotv(zr,rotAxis1,latitude)
-    
+    xr = spice.vrotv(xr, rotAxis1, latitude)
+    yr = spice.vrotv(yr, rotAxis1, latitude)
+    zr = spice.vrotv(zr, rotAxis1, latitude)
+
     xr = np.array(xr)
     yr = np.array(yr)
     zr = np.array(zr)
-    
-    
-    print 'x2:', xr, np.sqrt(np.sum(xr**2))
-    print 'y2:', yr, np.sqrt(np.sum(yr**2))
-    print 'z2:', zr, np.sqrt(np.sum(zr**2))
-    print ''
-    
-    print 'x*y:', xr.dot(yr)
-    print 'x*z:', xr.dot(zr)
-    print 'z*y:', yr.dot(zr)
-    
-    
-    xr = spice.vrotv(xr,-zr,az)
-    yr = spice.vrotv(yr,-zr,az)
-    
+
+    xr = spice.vrotv(xr, -zr, az)
+    yr = spice.vrotv(yr, -zr, az)
+
     xr = np.array(xr)
     yr = np.array(yr)
-    
-    xr = spice.vrotv(xr,-yr,el)
-    zr = spice.vrotv(zr,-yr,el)
-    
+
+    xr = spice.vrotv(xr, -yr, el)
+    zr = spice.vrotv(zr, -yr, el)
+
     xr = np.array(xr)
     zr = np.array(zr)
-    
+
     return xr, yr, zr
 
 
 def rotateCoordinateSystem2(phaseAngle=0, latitude=5, alpha=0, beta=0, gamma=0):
-    
+
     theta = phaseAngle / 180 * np.pi
     latitude = latitude / 180 * np.pi
     alpha = alpha / 180 * np.pi
     beta = beta / 180 * np.pi
     gamma = gamma / 180 * np.pi
-    
-    print 'theta:', theta
-    print ''
-    
-    xr = np.array([1,0,0])
-    yr = np.array([0,1,0])
-    zr = np.array([0,0,1])
-    
+
+    xr = np.array([1, 0, 0])
+    yr = np.array([0, 1, 0])
+    zr = np.array([0, 0, 1])
+
     ########################################
     # rotate around z axis for phase angle
     ########################################
-    xr = spice.vrotv(xr,zr,theta)
-    yr = spice.vrotv(yr,zr,theta)
-    zr = spice.vrotv(zr,zr,theta)
+    xr = spice.vrotv(xr, zr, theta)
+    yr = spice.vrotv(yr, zr, theta)
+    zr = spice.vrotv(zr, zr, theta)
 
-    rotAxis1 = spice.vcrss(xr,-np.array(zr))
+    rotAxis1 = spice.vcrss(xr, -np.array(zr))
 
-    xr = spice.vrotv(xr,rotAxis1,latitude)
-    yr = spice.vrotv(yr,rotAxis1,latitude)
-    zr = spice.vrotv(zr,rotAxis1,latitude)
-    
+    xr = spice.vrotv(xr, rotAxis1, latitude)
+    yr = spice.vrotv(yr, rotAxis1, latitude)
+    zr = spice.vrotv(zr, rotAxis1, latitude)
+
     xr = np.array(xr)
     yr = np.array(yr)
     zr = np.array(zr)
-    
-    print 'x*y:', xr.dot(yr)
-    print 'x*z:', xr.dot(zr)
-    print 'z*y:', yr.dot(zr)
-  
+
     # rotate around x-axis by alpha
-    yr = spice.vrotv(yr,-xr,alpha)
-    zr = spice.vrotv(zr,-xr,alpha)
+    yr = spice.vrotv(yr, -xr, alpha)
+    zr = spice.vrotv(zr, -xr, alpha)
     yr = np.array(yr)
     zr = np.array(zr)
-    
+
     # rotate around y-axis by beta
-    xr = spice.vrotv(xr,yr,beta)
-    zr = spice.vrotv(zr,yr,beta)
+    xr = spice.vrotv(xr, yr, beta)
+    zr = spice.vrotv(zr, yr, beta)
     xr = np.array(xr)
     zr = np.array(zr)
 
-    
     # rotate around z-axis by gamma
-    xr = spice.vrotv(xr,zr,gamma)
-    yr = spice.vrotv(yr,zr,gamma)
+    xr = spice.vrotv(xr, zr, gamma)
+    yr = spice.vrotv(yr, zr, gamma)
     xr = np.array(xr)
     yr = np.array(yr)
-    
+
     return xr, yr, zr
 
+
 def createRotationMatrix(i,j,k):
-    C = [np.array([1,0,0]), np.array([0,1,0]), np.array([0,0,1])]
-    Cr = [i,j,k]
-    
-    R = np.zeros((3,3))
+    C = [np.array([1, 0, 0]), np.array([0, 1, 0]), np.array([0, 0, 1])]
+    Cr = [i, j, k]
+    R = np.zeros((3, 3))
     for l in range(3):
         for m in range(3):
             R[l][m] = C[l].dot(Cr[m])
-            
     return R
 
 
