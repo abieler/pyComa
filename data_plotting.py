@@ -2,9 +2,47 @@
 from __future__ import division
 import os
 import matplotlib.pyplot as plt
+import matplotlib
 from matplotlib import rcParams
+import datetime
+
+from data_loaders import load_in_situ_output
 
 rcParams.update({'figure.autolayout': True})
+
+
+def plot_in_situ(args):
+
+    path = args.StringOutputDir
+    pltTitle = 'ICES in-situ tool\n'
+    fig = plt.figure(figsize=(8,8))
+    ax1 = fig.add_subplot(211)
+    ax2 = fig.add_subplot(212)
+
+    if args.iModelCase == 0:
+        pltTitle += 'model: DSMC, case: %s\n' % (os.path.split(args.StringDataFileDSMC)[0].split('/')[-1])
+        pltTitle += 'spice: %s' % (os.path.split(args.StringKernelMetaFile)[1].split('.')[0])
+    elif args.iModelCase == 1:
+        pltTitle += 'model: HASER, spice: %s\n'% (os.path.split(args.StringKernelMetaFile)[1].split('.')[0])
+        pltTitle += 'Q = %.2e [#/s], v = %.0f [m/s], tp = %.2e [s]' % (args.QHaser, args.vHaser, args.tpHaser)
+
+    filenames = [path + '/' + filename for filename in os.listdir(path) if filename.split('.')[-1] == 'out']
+    for filename in filenames:
+        species = os.path.split(filename)[1].split('.')[0]
+        dates_SC, r_SC, n_SC = load_in_situ_output(filename)
+        ax1.semilogy(dates_SC, n_SC, label=species, lw=2)
+
+    ax2.plot(dates_SC, r_SC / 1000, '-k', lw=2)
+    ax1.set_title(pltTitle)
+    ax1.set_ylabel('Number density [#/m3]')
+    ax1.grid(True)
+    ax1.legend()
+
+    ax2.set_ylabel('Distance from comet center [km]')
+    ax2.grid(True)
+    plt.gcf().autofmt_xdate()
+    plt.savefig(path + '/' + 'result.png')
+    plt.show()
 
 
 def plot_result(ccd, StringOutputDir, StringOutFileName, iInstrumentSelector, RunDetails, DoShowPlot=False):
