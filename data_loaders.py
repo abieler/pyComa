@@ -142,6 +142,36 @@ def loadGasData(dataFile, dim, userData=False, userDelimiter=',',
     return x, y, n
 
 
+def load_user_data(DataFile, iDim, Delimiter, nHeaderRows):
+
+    if iDim == 1:
+        DataIndices = [0, 1]
+    elif iDim == 2:
+        DataIndices = [0, 1, 2]
+    elif iDim == 3:
+        DataIndices = [0, 1, 2, 3]
+        
+    if Delimiter == 'SPACE':
+        Delimiter = ' '
+
+    data = np.genfromtxt(DataFile, dtype=float,
+                     skip_header=nHeaderRows,
+                     delimiter=Delimiter,
+                     usecols=DataIndices)
+
+    if iDim == 1:
+        x = data[:, 0]
+        y = None
+        n = data[:, 1]
+    elif iDim == 2:
+        x = data[:, 0]
+        y = data[:, 1]
+        n = data[:, 2]
+
+    return x, y, n
+
+
+
 def loadDustData(allSizeIntervals, numberDensityIndices, dim, dataFile):
 
     userIndices = []
