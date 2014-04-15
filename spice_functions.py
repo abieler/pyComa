@@ -16,7 +16,6 @@ def get_coordinates(UtcStartTime, KernelMetaFile, Target, RefFrame, Abcorr, Obse
         EndDate = datetime.datetime.strptime(UtcStartTime, '%Y-%m-%dT%H:%M:%S')
 
     dt = datetime.timedelta(seconds=nDeltaT)
-
     while date < EndDate:
         UtcString = date.strftime("%Y-%m-%dT%H:%M:%S")
         et = spice.str2et(UtcString)
@@ -30,4 +29,5 @@ def get_coordinates(UtcStartTime, KernelMetaFile, Target, RefFrame, Abcorr, Obse
         dd.append(datetime.datetime.strptime(UtcString, '%Y-%m-%dT%H:%M:%S'))
         date += dt
 
-    return np.array(x), np.array(y), np.array(z), np.array(r), dd
+    # return values in meters, hence * 1000
+    return np.array(x) * 1000, np.array(y) * 1000, np.array(z) * 1000, np.array(r) * 1000, dd
