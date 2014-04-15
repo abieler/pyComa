@@ -110,7 +110,7 @@ UserGamma = args.UserGamma
 StringUserDataFile = args.StringUserDataFile
 UserDelimiter = args.UserDelimiter
 iUserDim = args.iUserDim
-userNrOfGeaderRows = args.iUserNrOfHeaderRows
+iUserNrOfHeaderRows = args.iUserNrOfHeaderRows
 
 comm = MPI.COMM_WORLD
 nMpiSize = comm.Get_size()
@@ -165,11 +165,11 @@ if iPointingCase == 0:
     spice.furnsh(StringKernelMetaFile)
     Et = spice.str2et(StringUtcStartTime)
     rRosetta, lightTime = spice.spkpos("ROSETTA", Et, "67P/C-G_CSO", "NONE", "CHURYUMOV-GERASIMENKO")        # s/c coordinates in CSO frame of reference
-    rEarth, lightTime = spice.spkpos("EARTH", Et, "J2000", "NONE", "ROSETTA")        # s/c coordinates in CSO frame of reference
+    #rEarth, lightTime = spice.spkpos("EARTH", Et, "J2000", "NONE", "ROSETTA")        # s/c coordinates in CSO frame of reference
     rRosetta = np.array(rRosetta) * 1000            # transform km to m
     R = spice.pxform("ROS_SPACECRAFT", "67P/C-G_CSO", Et)      # create rotation matrix R to go from instrument reference frame to CSO
     if iMpiRank == 0:
-        print 'Distance from comet:', np.sqrt(np.sum(rRosetta ** 2))
+        print 'Distance from comet: %.2e' % (np.sqrt(np.sum(rRosetta ** 2)))
 
 elif iPointingCase == 1:
     x0 = np.array([-UserR, 0, 0])           # -R --> start at subsolar point
@@ -179,7 +179,8 @@ elif iPointingCase == 1:
     R = rotations.createRotationMatrix(ei, ej, ek)
 
 if iMpiRank == 0:
-    print 'rRosetta:', rRosetta
+    print 'Distance from comet: %.2e' % (np.sqrt(np.sum(rRosetta ** 2)))
+    print 'rRosetta: %.2e, %.2e, %.2e' % (rRosetta[0], rRosetta[1], rRosetta[2])
 
 ########################################################
 # load data
@@ -200,7 +201,8 @@ elif iModelCase == 1:
     y = None
 
 elif iModelCase == 2:
-    x, y, n = loadGasData(StringUserDataFile, iDim, True, UserDelimiter, iUserNrOfHeaderRows)
+    #x, y, n = loadGasData(StringUserDataFile, iDim, True, UserDelimiter, iUserNrOfHeaderRows)
+    x, y, n = load_user_data(StringUserDataFile, iDim, UserDelimiter, iUserNrOfHeaderRows)
 
 ##############################################################
 # triangulation and interpolation for 2d case
@@ -219,8 +221,8 @@ if iMpiRank == 0:
 #############################################################
 
 if iInstrumentSelector == 1:                 # osiris wac
-    nPixelsX = 1024                          # nr of pixels along x axis
-    nPixelsY = 1024                          # nr of pixels along y axis
+    nPixelsX = 256                          # nr of pixels along x axis
+    nPixelsY = 256                          # nr of pixels along y axis
     PhiX = 12 / 2                            # instrument FOV in x (half opening angle) in degrees
     PhiY = 12 / 2                            # instrument FOV in y (half opening angle) in degrees
     iFOV = 0.000993                         # pixel FOV in rad
@@ -302,11 +304,17 @@ j = np.arange(nPixelsY)
 ii, jj = np.meshgrid(i, j, indexing='ij')
 p = np.array([np.zeros((len(i), len(j))) for k in range(3)])
 
-p[0] = ii*Dx - Lx/2 + Dx/2
-p[1] = jj*Dy - Ly/2 + Dy/2
-p[2] = np.ones((len(i), len(j)))
+if args.iPointingCase == 0:
+    p[0] = ii*Dx - Lx/2 + Dx/2
+    p[1] = jj*Dy - Ly/2 + Dy/2
+    p[2] = np.ones((len(i), len(j)))
+    p_hat = p / np.sqrt(p[0]**2 + p[1]**2 + p[2]**2)
 
-p_hat = p / np.sqrt(p[0]**2 + p[1]**2 + p[2])
+elif args.iPointingCase == 1:
+    p[1] =  ii*Dx - Lx/2 + Dx/2
+    p[2] = jj*Dy - Ly/2 + Dy/2
+    p[0] = np.ones((len(i), len(j)))
+    p_hat = p / np.sqrt(p[0]**2 + p[1]**2 + p[2]**2)
 
 ccd = np.zeros((nPixelsX, nPixelsY))
 cso2tenishev = np.array([-1, -1, 1])
