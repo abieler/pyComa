@@ -1,6 +1,3 @@
-#!/opt/local/bin/python2.7
-#!/usr/bin/env python2.7
-
 from __future__ import division
 import os
 import sys
@@ -14,10 +11,13 @@ try:
 except:
     print "Error importing tirangulation module matplotlib.tri"
     triImport = False
+import matplotlib
 
 import spice
 from data_loaders import *
 import spice_functions
+from data_plotting import plot_in_situ
+from haser import haserModel
 
 
 parser = argparse.ArgumentParser()
@@ -68,6 +68,8 @@ print '--' * 20
 x_SC, y_SC, z_SC, r_SC, dates_SC = spice_functions.get_coordinates(args.StringUtcStartTime, args.StringKernelMetaFile,
                                                          'ROSETTA', 'J2000', "None", "CHURYUMOV-GERASIMENKO",
                                                          args.StringUtcStopTime, args.nDeltaT)
+
+os.system('rm ' + args.StringOutputDir + '/*.out' )
 
 iDim = get_iDim(args)
 
@@ -124,59 +126,25 @@ for filename in filenames:
 
     ############################################
     # write results to file
-    ###############################################
-    species = filename.split('.')[-2]
+    ############################################
+    if args.iModelCase == 0:
+        species = filename.split('.')[-2]
+    elif args.iModelCase == 1:
+        species = 'Haser'
+    elif args.iModelCase == 2:
+        species = 'User'
+
     file = open(args.StringOutputDir + '/' + species + '.out', 'w')
     file.write('Local number densities for the rosetta spacecraft at selected dates. Comet is at (0,0,0) with the sun on the positive x axis.(inf,0,0)\n')
     file.write('DSMC case: %s\n' % (os.path.split(args.StringDataFileDSMC)[0].split('/')[-1]))
     file.write('spice kernel: %s\n' % (args.StringKernelMetaFile.split('/')[-1]))
-    file.write('date,x[m],y[m],z[m],numberDensity [1/m3]\n')
-    for dd, xx, yy, zz, nn in zip(dates_SC, x_SC, y_SC, z_SC, n_SC):
-        file.write("%s,%e,%e,%e,%e\n" % (dd, xx, yy, zz, nn))
+    file.write('date,x[m],y[m],z[m],distance_from_center[m],numberDensity [1/m3]\n')
+    for dd, xx, yy, zz, rr, nn in zip(dates_SC, x_SC, y_SC, z_SC, r_SC, n_SC):
+        file.write("%s,%e,%e,%e,%e,%e\n" % (dd, xx, yy, zz, rr, nn))
     file.close()
     print 'done'
 
-
-
-
-
-
-
-
-
-'''
-        ####################################################
-        # plot results
-        ####################################################
-
-        plt.semilogy(dates,n_SC,label=species)
-
-
-n_SC_all = np.array(n_SC_all)
-file = open(outputDir + '/' + 'allSpecies.out','w')
-file.write('Local number densities [1/m3] for the rosetta spacecraft at selected dates. Comet is at (0,0,0) with the sun on the positive x axis.(inf,0,0)\n')
-file.write('DSMC case: %s\n' %(dsmcDir.split('/')[-1]))
-file.write('spice kernel: %s\n' %(mkFile.split('/')[-1]))
-file.write('date,x[m],y[m],z[m],')
-for spec in species_all:
-    file.write("nrDensity_"+ spec + ",")
-file.write("\n")
-for dd,xx,yy,zz,i in zip(dates,x_SC,y_SC,z_SC,range(len(x_SC))):
-    file.write("%s,%e,%e,%e," %(dd,xx,yy,zz))
-    for value in n_SC_all[:,i]:
-        file.write("%e," %value)
-    file.write("\n")
-file.close()
-
-
-
-
-
-
-plt.ylabel('Number density [1/m^3]')
-plt.grid(True)
-plt.gcf().autofmt_xdate()
-plt.legend()
-#plt.show()
-plt.savefig(outputDir + '/' + 'result.png')
-'''
+#######################################################
+# plot results
+#######################################################
+plot_in_situ(args)
