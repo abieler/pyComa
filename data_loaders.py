@@ -5,6 +5,11 @@ import os
 import datetime
 
 
+def load_hybrid2_data(filename):
+    x,y,z,n = np.genfromtxt(filename, usecols=(0,1,2,13))
+    return np.array(x, y, z), n
+
+
 def get_iDim(args):
 
     if args.iModelCase == 0:
