@@ -18,44 +18,11 @@ from data_loaders import *
 import spice_functions
 from data_plotting import plot_in_situ
 from haser import haserModel
+from cmdline_args import cmdline_args
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--iModelCase", type=int, choices=[0, 1, 2], help='0: dsmc model, 1: haser model, 2: user model')
-parser.add_argument("--iPointingCase", type=int, choices=[0, 1], help='0: spice pointing, 1: user pointing')
-parser.add_argument("--iInstrumentSelector", type=int, choices=[1, 2, 3, 4, 5, 6])
-parser.add_argument("--StringOutputDir", type=str)
-
-parser.add_argument("--StringDSMCdir", type=str)
-parser.add_argument("--StringDataFileDSMC", type=str)
-parser.add_argument("--IsDust", type=int, choices=[0, 1], help='1 for dust case, 0 for gas case')
-parser.add_argument("--DustSizeMin", type=float)
-parser.add_argument('--DustSizeMax', type=float)
-
-
-parser.add_argument("--QHaser", type=float)
-parser.add_argument("--vHaser", type=float)
-parser.add_argument("--tpHaser", type=float)
-parser.add_argument("--tdHaser", type=float)
-
-parser.add_argument("--StringUserDataFile", type=str)                          # file to upload from user which contains user coma model
-parser.add_argument("--UserDelimiter", type=str)                         # delimiter used in datafile
-parser.add_argument("--iUserNrOfHeaderRows", type=int)                   # number of header lines in datafile
-parser.add_argument("--iUserDim", type=int)                               # number of dimenisons of user coma model
-
-parser.add_argument("--StringKernelMetaFile", type=str)
-parser.add_argument("--StringUtcStartTime", type=str)
-parser.add_argument("--StringUtcStopTime", type=str)
-parser.add_argument("--nDeltaT", type=int)
-
-parser.add_argument("--UserR", type=float)                               # Distance in km from nucleus center
-parser.add_argument("--UserPhaseAngle", type=float)
-parser.add_argument("--UserLatitude", type=float)
-parser.add_argument("--UserAlpha", type=float)
-parser.add_argument("--UserBeta", type=float)
-parser.add_argument("--UserGamma", type=float)
-
-args = parser.parse_args()
+args = cmdline_args(parser)
 
 print '--' * 20
 print "mkFile:", args.StringKernelMetaFile
@@ -69,7 +36,7 @@ x_SC, y_SC, z_SC, r_SC, dates_SC = spice_functions.get_coordinates(args.StringUt
                                                          'ROSETTA', 'J2000', "None", "CHURYUMOV-GERASIMENKO",
                                                          args.StringUtcStopTime, args.nDeltaT)
 
-os.system('rm ' + args.StringOutputDir + '/*.out' )
+os.system('rm ' + args.StringOutputDir + '/*.out')
 
 iDim = get_iDim(args)
 
@@ -78,6 +45,8 @@ if args.iModelCase == 0:
     filenames = [path + '/' + filename for filename in os.listdir(path) if (filename.split('.')[-1].lower() == 'dat') and 'Dust' not in filename]
     print filenames
     print '----------------------------------------------------'
+    x_SC *= -1      # cso reference frame to tenishev reference frame
+    y_SC *= -1      # cso reference frame to tenishev reference frame
 
 elif args.iModelCase == 1:
     filenames = ['Haser']
@@ -130,6 +99,8 @@ for filename in filenames:
     ############################################
     if args.iModelCase == 0:
         species = filename.split('.')[-2]
+        x_SC *= -1          # transform back from tenishev to cso frame of reference
+        y_SC *= -1          # transform back from thenisev to cso frame of reference
     elif args.iModelCase == 1:
         species = 'Haser'
     elif args.iModelCase == 2:
