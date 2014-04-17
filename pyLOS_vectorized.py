@@ -22,12 +22,13 @@ try:
     import matplotlib.pyplot as plt
     import spice
 
-    from data_loaders import * #loadGasData, loadDustData, getAllDustIntervalIndices, createRay
+    from data_loaders import *     # loadGasData, loadDustData, getAllDustIntervalIndices, createRay
     from haser import haserModel
     from data_plotting import plot_result
     import rotations
     import alice
     import createRay
+    from cmdline_args import cmdline_args
 
 except Exception, e:
     print '--' * 20
@@ -43,45 +44,13 @@ except:
     sys.exit()
 
 startTime = time.time()
-#useHaserModel = False
 
 #############################################
 # setup argparser for cmd line arguments
 ##############################################
-
 parser = argparse.ArgumentParser()
-parser.add_argument("--iModelCase", type=int, choices=[0, 1, 2], help='0: dsmc model, 1: haser model, 2: user model')
-parser.add_argument("--iPointingCase", type=int, choices=[0, 1], help='0: spice pointing, 1: user pointing')
-parser.add_argument("--iInstrumentSelector", type=int, choices=[1, 2, 3, 4, 5, 6])
-parser.add_argument("--StringOutputDir", type=str)
+args = cmdline_args(parser)
 
-parser.add_argument("--StringDataFileDSMC", type=str)
-parser.add_argument("--IsDust", type=int, choices=[0, 1], help='1 for dust case, 0 for gas case')
-parser.add_argument("--DustSizeMin", type=float)
-parser.add_argument('--DustSizeMax', type=float)
-
-
-parser.add_argument("--QHaser", type=float)
-parser.add_argument("--vHaser", type=float)
-parser.add_argument("--tpHaser", type=float)
-parser.add_argument("--tdHaser", type=float)
-
-parser.add_argument("--StringUserDataFile", type=str)                          # file to upload from user which contains user coma model
-parser.add_argument("--UserDelimiter", type=str)                         # delimiter used in datafile
-parser.add_argument("--iUserNrOfHeaderRows", type=int)                   # number of header lines in datafile
-parser.add_argument("--iUserDim", type=int)                               # number of dimenisons of user coma model
-
-parser.add_argument("--StringKernelMetaFile", type=str)
-parser.add_argument("--StringUtcStartTime", type=str)
-
-parser.add_argument("--UserR", type=float)                               # Distance in km from nucleus center
-parser.add_argument("--UserPhaseAngle", type=float)
-parser.add_argument("--UserLatitude", type=float)
-parser.add_argument("--UserAlpha", type=float)
-parser.add_argument("--UserBeta", type=float)
-parser.add_argument("--UserGamma", type=float)
-
-args = parser.parse_args()
 
 iModelCase = args.iModelCase
 iPointingCase = args.iPointingCase
@@ -152,9 +121,9 @@ if iModelCase == 0:
 
 elif iModelCase == 1:
     iDim = 1
-
 elif iModelCase == 2:
     iDim = iUserDim
+
 if iMpiRank == 1:
     print 'iDimensions:', iDim
 
@@ -165,7 +134,6 @@ if iPointingCase == 0:
     spice.furnsh(StringKernelMetaFile)
     Et = spice.str2et(StringUtcStartTime)
     rRosetta, lightTime = spice.spkpos("ROSETTA", Et, "67P/C-G_CSO", "NONE", "CHURYUMOV-GERASIMENKO")        # s/c coordinates in CSO frame of reference
-    #rEarth, lightTime = spice.spkpos("EARTH", Et, "J2000", "NONE", "ROSETTA")        # s/c coordinates in CSO frame of reference
     rRosetta = np.array(rRosetta) * 1000            # transform km to m
     R = spice.pxform("ROS_SPACECRAFT", "67P/C-G_CSO", Et)      # create rotation matrix R to go from instrument reference frame to CSO
     if iMpiRank == 0:
@@ -311,7 +279,7 @@ if args.iPointingCase == 0:
     p_hat = p / np.sqrt(p[0]**2 + p[1]**2 + p[2]**2)
 
 elif args.iPointingCase == 1:
-    p[1] =  ii*Dx - Lx/2 + Dx/2
+    p[1] = ii*Dx - Lx/2 + Dx/2
     p[2] = jj*Dy - Ly/2 + Dy/2
     p[0] = np.ones((len(i), len(j)))
     p_hat = p / np.sqrt(p[0]**2 + p[1]**2 + p[2]**2)
