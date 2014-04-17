@@ -15,7 +15,8 @@ def plot_in_situ(args):
 
     path = args.StringOutputDir
     pltTitle = 'ICES in-situ tool\n'
-    fig = plt.figure(figsize=(8,8))
+    plt.xkcd()
+    fig = plt.figure(figsize=(8, 8))
     ax1 = fig.add_subplot(211)
     ax2 = fig.add_subplot(212)
 
@@ -23,7 +24,7 @@ def plot_in_situ(args):
         pltTitle += 'model: DSMC, case: %s\n' % (os.path.split(args.StringDataFileDSMC)[0].split('/')[-1])
         pltTitle += 'spice: %s' % (os.path.split(args.StringKernelMetaFile)[1].split('.')[0])
     elif args.iModelCase == 1:
-        pltTitle += 'model: HASER, spice: %s\n'% (os.path.split(args.StringKernelMetaFile)[1].split('.')[0])
+        pltTitle += 'model: HASER, spice: %s\n' % (os.path.split(args.StringKernelMetaFile)[1].split('.')[0])
         pltTitle += 'Q = %.2e [#/s], v = %.0f [m/s], tp = %.2e [s]' % (args.QHaser, args.vHaser, args.tpHaser)
 
     filenames = [path + '/' + filename for filename in os.listdir(path) if filename.split('.')[-1] == 'out']
