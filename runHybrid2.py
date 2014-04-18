@@ -40,7 +40,7 @@ with open(args.StringRuntimeDir + '/' + 'traj.dat', 'w') as file:
     file.write('#START\n')
     for xx,yy,zz in zip(x,y,z):
         file.write('%e %e %e\n' % (xx, yy, zz))
-os.chdir(args.StringRuntimeDir)
+#os.chdir(args.StringRuntimeDir)
 os.system(pathToExecutable + '/aikef.py %s run . traj.dat' % (args.StringHybridCase))
 
 ##############################################################
