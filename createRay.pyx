@@ -9,7 +9,7 @@ cdef extern from "math.h":
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-def createRay(int iDim, np.ndarray[np.float_t, ndim=1] rRay, np.ndarray[np.float_t, ndim=1] p):
+def createRay(np.ndarray[np.float_t, ndim=1] rRay, np.ndarray[np.float_t, ndim=1] p):
 
     cdef float dr
     cdef float distance
