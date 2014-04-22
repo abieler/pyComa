@@ -39,6 +39,9 @@ def cmdline_args(parser):
     
     parser.add_argument("--StringHybridCase", type=str)
     parser.add_argument("--StringRuntimeDir", type=str)
+    
+    parser.add_argument('--StringPlotting', type=str, default='matplotlib')
+    parser.add_argument('--DoShowPlots', type=str)
 
     args = parser.parse_args()
 
