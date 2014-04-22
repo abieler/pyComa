@@ -16,9 +16,7 @@ rcParams.update({'figure.autolayout': True})
 
 def plot_in_situ(args):
 
-    #bokehPlotting = True
     print 'plotting results...'
-
     path = args.StringOutputDir
     pltTitle = 'ICES in-situ tool\n'
     nLinesPerFig = 4
@@ -39,7 +37,7 @@ def plot_in_situ(args):
 
         if args.StringPlotting.lower() == 'bokeh':
             if (i % nLinesPerFig == 0):
-                bplt.output_file('lines_%i.html' % ((i-(nLinesPerFig-1)) // nLinesPerFig))
+                bplt.output_file('result_%i.html' % (i // nLinesPerFig))
                 bplt.figure(x_axis_type='datetime')
                 bplt.hold()
             bplt.line(dates_SC, np.log10(n_SC), legend=species, line_width=2, line_color=pltColors[i % nLinesPerFig])
