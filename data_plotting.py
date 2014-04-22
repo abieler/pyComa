@@ -16,7 +16,8 @@ rcParams.update({'figure.autolayout': True})
 
 def plot_in_situ(args):
 
-    bokehPlotting = True
+    #bokehPlotting = True
+    print 'plotting results...'
 
     path = args.StringOutputDir
     pltTitle = 'ICES in-situ tool\n'
@@ -36,7 +37,7 @@ def plot_in_situ(args):
         species = os.path.split(filename)[1].split('.')[0]
         dates_SC, r_SC, n_SC = load_in_situ_output(filename)
 
-        if bokehPlotting:
+        if args.StringPlotting.lower() == 'bokeh':
             if (i % nLinesPerFig == 0):
                 bplt.output_file('lines_%i.html' % ((i-(nLinesPerFig-1)) // nLinesPerFig))
                 bplt.figure(x_axis_type='datetime')
@@ -49,7 +50,7 @@ def plot_in_situ(args):
                 bplt.grid().grid_line_alpha = 0.4
                 bplt.save()
 
-        else:
+        elif args.StringPlotting.lower() == 'matplotlib':
             if (i % nLinesPerFig == 0):   # make new figure for every 4 species
                 fig = plt.figure(figsize=(8, 8))
                 ax2 = fig.add_subplot(211)
@@ -68,12 +69,14 @@ def plot_in_situ(args):
                 ax2.grid(True)
                 plt.gcf().autofmt_xdate()
                 plt.savefig(path + '/' + 'result_%i.png' % ((i-(nLinesPerFig-1)) // nLinesPerFig))
-    
-    if bokehPlotting:
-        bplt.show()
+
+    if args.DoShowPlots:
+        if args.StringPlotting.lower() == 'bokeh':
+            bplt.show()
+        elif args.StringPlotting.lower() == 'matplotlib':
+            plt.show()
     else:
-        plt.show()
-    
+        print 'not showing results on screen'
 
 
 def plot_result(ccd, StringOutputDir, StringOutFileName, iInstrumentSelector, RunDetails, DoShowPlot=False):
