@@ -6,7 +6,7 @@ import datetime
 
 
 def load_hybrid2_data(filename):
-    x,y,z,n = np.genfromtxt(filename, usecols=(0,1,2,13))
+    x, y, z, n = np.genfromtxt(filename, usecols=(0,1,2,13))
     return np.array(x, y, z), n
 
 
@@ -155,7 +155,7 @@ def load_user_data(DataFile, iDim, Delimiter, nHeaderRows):
         DataIndices = [0, 1, 2]
     elif iDim == 3:
         DataIndices = [0, 1, 2, 3]
-        
+
     if Delimiter == 'SPACE':
         Delimiter = ' '
 
@@ -174,7 +174,6 @@ def load_user_data(DataFile, iDim, Delimiter, nHeaderRows):
         n = data[:, 2]
 
     return x, y, n
-
 
 
 def loadDustData(allSizeIntervals, numberDensityIndices, dim, dataFile):
@@ -220,7 +219,7 @@ def load_in_situ_output(filename):
                 r_SC.append(np.float(rr))
                 n_SC.append(np.float(nn))
             except Exception, e:
-                print e
+                pass
         i += 1
     file.close()
     return dates_SC, np.array(r_SC), np.array(n_SC)

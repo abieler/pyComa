@@ -317,7 +317,7 @@ for i in range(nPixelsX):
             ColumnDensity = np.trapz(DensityRay, dTravel)
 
             if iMpiRank != 0:
-                data = np.array([ColumnDensity,i,j])
+                data = np.array([ColumnDensity, i, j])
                 comm.send([ColumnDensity, i, j], dest=0, tag=13)
             else:
                 ccd[i][j] = ColumnDensity
@@ -348,13 +348,14 @@ if iMpiRank == 0:
     ######################################################
     # write results to file
     ######################################################
-    f = open(StringOutputDir + '/result.txt', 'w')
+    with open((StringOutputDir + '/result.txt', 'w') as f:
+    #f = open(StringOutputDir + '/result.txt', 'w')
     for row in ccd:
         for value in row:
             f.write('%e,' % value)
         f.write('\n')
-    f.close()
-    
+    #f.close()
+
     ######################################################
     # plot results
     #######################################################

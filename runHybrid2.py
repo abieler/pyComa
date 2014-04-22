@@ -18,7 +18,7 @@ spice.furnsh(args.StringKernelMetaFile)
 Et = spice.str2et(args.StringUtcStartTime)
 rEarth, lightTime = spice.spkpos("EARTH", Et, "67P/C-G_CSO", "NONE", "ROSETTA")        # s/c coordinates in CSO frame of reference
 rRosetta, lightTime = spice.spkpos("ROSETTA", Et, "67P/C-G_CSO", "NONE", "CHURYUMOV-GERASIMENKO")
-rEarth = np.array(rEarth)            # transform km to m
+rEarth = np.array(rEarth)                           # transform km to m
 rRosetta = np.array(rRosetta) * 1000
 print 'Distance from comet: %.2e' % (np.sqrt(np.sum(rRosetta ** 2)))
 
@@ -27,12 +27,12 @@ rRay = np.array([value for value in rRosetta])      # position of rosetta s/c in
 
 xTravel = np.array(createRay(rRay, p))
 print xTravel
-x = xTravel[:,0]
-y = xTravel[:,1]
-z = xTravel[:,2]
+x = xTravel[:, 0]
+y = xTravel[:, 1]
+z = xTravel[:, 2]
 with open(args.StringRuntimeDir + '/' + 'traj.dat', 'w') as file:
     file.write('#START\n')
-    for xx,yy,zz in zip(x,y,z):
+    for xx, yy, zz in zip(x, y, z):
         file.write('%e %e %e\n' % (xx, yy, zz))
 os.chdir(args.StringRuntimeDir)
 os.system(pathToExecutable + '/aikef.py %s run . traj.dat' % (args.StringHybridCase))
@@ -46,7 +46,7 @@ os.system(pathToExecutable + '/aikef.py %s run . traj.dat' % (args.StringHybridC
 
 xTravelRay, density = load_hybrid2_data('output-orbit.txt')
 
-xTravelRay = np.array([ np.array([xx,yy,zz]) for xx,yy,zz in zip(xTravelRay[:,0], xTravelRay[:,1], xTravelRay[:,2])])
+xTravelRay = np.array([np.array([xx, yy, zz]) for xx, yy, zz in zip(xTravelRay[:, 0], xTravelRay[:, 1], xTravelRay[:, 2])])
 dTravelRay = np.sqrt((xTravelRay[0] - xTravelRay)**2)
 
 columnDensity = np.trapz(dTravel, density)
