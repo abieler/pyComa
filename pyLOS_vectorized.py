@@ -1,3 +1,4 @@
+#!/opt/anaconda/bin/python
 '''
 filename: pyLOS_vectorized.py
 
@@ -22,7 +23,6 @@ by pyLOS_vectorized.py
 ****************************************************
 
 '''
-
 from __future__ import division                 # must be first line of program
 
 try:
@@ -361,12 +361,12 @@ if iMpiRank == 0:
     ######################################################
     # write results to file
     ######################################################
-    with open((StringOutputDir + '/result.txt', 'w') as f:
+    with open(StringOutputDir + '/result.txt', 'w') as f:
     #f = open(StringOutputDir + '/result.txt', 'w')
-    for row in ccd:
-        for value in row:
-            f.write('%e,' % value)
-        f.write('\n')
+        for row in ccd:
+            for value in row:
+                f.write('%e,' % value)
+            f.write('\n')
     #f.close()
 
     ######################################################
