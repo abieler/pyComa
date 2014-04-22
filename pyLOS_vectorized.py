@@ -305,14 +305,12 @@ if iMpiRank == 0:
 for i in range(nPixelsX):
     for j in range(nPixelsY):
         if (kkk == (iMpiRank + nnn * nMpiSize)):
-
             if iPointingCase == 0:
                 p = np.dot(R, p_hat[:, i, j]) * cso2tenishev
                 rRay = np.array([value for value in rRosetta]) * cso2tenishev
             else:
                 p = np.dot(R, p_hat[:, i, j])
                 rRay = np.array([value for value in rRosetta])
-
             xTravel = np.array(createRay.createRay(rRay, p))
             dTravel = np.sqrt(np.sum((xTravel[0] - xTravel)**2, axis=1))
 
@@ -320,7 +318,6 @@ for i in range(nPixelsX):
                 xTravel = np.sqrt(np.sum(xTravel ** 2, axis=1))
             elif iDim == 2:
                 xTravel[:, 1] = np.sqrt(xTravel[:, 1]**2 + xTravel[:, 2]**2)
-
             if iDim == 1:
                 DensityRay = np.interp(xTravel, x, n)
             elif iDim == 2:
@@ -328,7 +325,6 @@ for i in range(nPixelsX):
             elif iDim == 3:
                 pass
             ColumnDensity = np.trapz(DensityRay, dTravel)
-
             if iMpiRank != 0:
                 data = np.array([ColumnDensity, i, j])
                 comm.send([ColumnDensity, i, j], dest=0, tag=13)
@@ -339,7 +335,7 @@ for i in range(nPixelsX):
                     ccd[ii][jj] = ColumnDensity
             nnn += 1
         kkk += 1
-
+        
     if iMpiRank == 0:
         print i
 
