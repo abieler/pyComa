@@ -1,4 +1,3 @@
-#!/Users/abieler/anaconda/bin/python
 '''
 filename: pyLOS.py
 
