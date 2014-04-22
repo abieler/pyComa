@@ -300,7 +300,7 @@ for i in range(nPixelsX):
                 p = np.dot(R, p_hat[:, i, j])
                 rRay = np.array([value for value in rRosetta])
 
-            xTravel = np.array(createRay.createRay(iDim, rRay, p))
+            xTravel = np.array(createRay.createRay(rRay, p))
             dTravel = np.sqrt(np.sum((xTravel[0] - xTravel)**2, axis=1))
 
             if iDim == 1:

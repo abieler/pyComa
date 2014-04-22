@@ -1,12 +1,19 @@
-#!/opt/local/bin/python2.7
+'''
+python wrapper for the hybrid2 ICES tool. combines
+the line of sight capability with the hybrid2 model.
+calculates column density of electrons between rosetta
+space craft and the earth.
+'''
 import numpy as np
 import subprocess
 import argparse
 import os
+import matplotlib.pyplot as plt
 
 import spice
 from cmdline_args import cmdline_args
-from create_ray_noCython import createRay
+#from create_ray_noCython import createRay
+from createRay import createRay
 from data_loaders import load_hybrid2_data
 
 parser = argparse.ArgumentParser()
@@ -34,19 +41,17 @@ with open(args.StringRuntimeDir + '/' + 'traj.dat', 'w') as file:
     file.write('#START\n')
     for xx, yy, zz in zip(x, y, z):
         file.write('%e %e %e\n' % (xx, yy, zz))
-os.chdir(args.StringRuntimeDir)
+#os.chdir(args.StringRuntimeDir)
 os.system(pathToExecutable + '/aikef.py %s run . traj.dat' % (args.StringHybridCase))
-
-#runTimePath = '/Users/ices/www-v4.1/htdocs/ICES/Runtime/hybrid2TestAndre'
-#os.system('/Users/ices/www-v4.1/htdocs/ICES/Models/Hybrid2/aikef.py CG_2.5_au_02 run . traj.dat')
 
 ##############################################################
 # load data and perform LOS
 ##############################################################
 
-xTravelRay, density = load_hybrid2_data('output-orbit.txt')
+xTravelRay, density = load_hybrid2_data('orbit-output.txt')
+xTravelRay = np.array([np.array([xx,yy,zz]) for xx,yy,zz in zip(xTravelRay[0,:], xTravelRay[1,:], xTravelRay[2,:])])
+dTravelRay = np.sqrt(np.sum((xTravelRay[0] - xTravelRay)**2,axis=1))
 
-xTravelRay = np.array([np.array([xx, yy, zz]) for xx, yy, zz in zip(xTravelRay[:, 0], xTravelRay[:, 1], xTravelRay[:, 2])])
-dTravelRay = np.sqrt((xTravelRay[0] - xTravelRay)**2)
+columnDensity = np.trapz(density, dTravelRay)
 
-columnDensity = np.trapz(dTravel, density)
+print "columnDensity: %.2e" %(columnDensity)
