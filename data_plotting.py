@@ -1,10 +1,13 @@
 #!/usr/bin/env python
 from __future__ import division
 import os
+import datetime
+import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib
 from matplotlib import rcParams
-import datetime
+
+import bokeh.plotting as bplt
 
 from data_loaders import load_in_situ_output
 
@@ -13,12 +16,12 @@ rcParams.update({'figure.autolayout': True})
 
 def plot_in_situ(args):
 
+    bokehPlotting = True
+
     path = args.StringOutputDir
     pltTitle = 'ICES in-situ tool\n'
-    plt.xkcd()
-    fig = plt.figure(figsize=(8, 8))
-    ax1 = fig.add_subplot(211)
-    ax2 = fig.add_subplot(212)
+    nLinesPerFig = 4
+    pltColors = ['black', 'red', '#006400', 'blue', '#8B008B', '#66CDAA', '#FF8C00', 'cyan']
 
     if args.iModelCase == 0:
         pltTitle += 'model: DSMC, case: %s\n' % (os.path.split(args.StringDataFileDSMC)[0].split('/')[-1])
@@ -28,22 +31,49 @@ def plot_in_situ(args):
         pltTitle += 'Q = %.2e [#/s], v = %.0f [m/s], tp = %.2e [s]' % (args.QHaser, args.vHaser, args.tpHaser)
 
     filenames = [path + '/' + filename for filename in os.listdir(path) if filename.split('.')[-1] == 'out']
-    for filename in filenames:
+
+    for filename, i in zip(filenames, range(len(filenames))):
         species = os.path.split(filename)[1].split('.')[0]
         dates_SC, r_SC, n_SC = load_in_situ_output(filename)
-        ax1.semilogy(dates_SC, n_SC, label=species, lw=2)
 
-    ax2.plot(dates_SC, r_SC / 1000, '-k', lw=2)
-    ax1.set_title(pltTitle)
-    ax1.set_ylabel('Number density [#/m3]')
-    ax1.grid(True)
-    ax1.legend()
+        if bokehPlotting:
+            if (i % nLinesPerFig == 0):
+                bplt.output_file('lines_%i.html' % ((i-(nLinesPerFig-1)) // nLinesPerFig))
+                bplt.figure(x_axis_type='datetime')
+                bplt.hold()
+            bplt.line(dates_SC, np.log10(n_SC), legend=species, line_width=2, line_color=pltColors[i % nLinesPerFig])
+            if (i % nLinesPerFig == (nLinesPerFig - 1)) or (i == len(filenames) - 1):
+                bplt.grid().grid_line_alpha = 0.4
+                bplt.figure(x_axis_type='datetime')
+                bplt.line(dates_SC, r_SC, line_width=2, line_color='black')
+                bplt.grid().grid_line_alpha = 0.4
+                bplt.save()
 
-    ax2.set_ylabel('Distance from comet center [km]')
-    ax2.grid(True)
-    plt.gcf().autofmt_xdate()
-    plt.savefig(path + '/' + 'result.png')
-    plt.show()
+        else:
+            if (i % nLinesPerFig == 0):   # make new figure for every 4 species
+                fig = plt.figure(figsize=(8, 8))
+                ax2 = fig.add_subplot(211)
+                ax1 = fig.add_subplot(212)
+            ax1.semilogy(dates_SC, n_SC, label=species, lw=2)
+
+            # plot distance from comet and save figure
+            if (i % nLinesPerFig == (nLinesPerFig - 1)) or (i == len(filenames) - 1):
+                ax2.plot(dates_SC, r_SC / 1000, '-k', lw=2)
+                ax2.set_title(pltTitle)
+                ax1.set_ylabel('Number density [#/m3]')
+                ax1.grid(True)
+                ax1.legend(framealpha=1)
+
+                ax2.set_ylabel('Distance from comet center [km]')
+                ax2.grid(True)
+                plt.gcf().autofmt_xdate()
+                plt.savefig(path + '/' + 'result_%i.png' % ((i-(nLinesPerFig-1)) // nLinesPerFig))
+    
+    if bokehPlotting:
+        bplt.show()
+    else:
+        plt.show()
+    
 
 
 def plot_result(ccd, StringOutputDir, StringOutFileName, iInstrumentSelector, RunDetails, DoShowPlot=False):
