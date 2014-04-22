@@ -274,9 +274,6 @@ if nPixelsY > 1:
 else:
     Dy = Ly
 
-if iMpiRank == 0:
-    print 'entering pixel loop'
-
 ##############################################
 # create pointing vectors p
 ##############################################
@@ -302,6 +299,9 @@ cso2tenishev = np.array([-1, -1, 1])
 
 kkk = 0
 nnn = 0
+
+if iMpiRank == 0:
+    print 'entering pixel loop'
 for i in range(nPixelsX):
     for j in range(nPixelsY):
         if (kkk == (iMpiRank + nnn * nMpiSize)):
