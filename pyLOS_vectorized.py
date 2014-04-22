@@ -1,12 +1,26 @@
 '''
-filename: pyLOS.py
+filename: pyLOS_vectorized.py
 
 requires pySPICE installed
 
 requires matplotlib version 1.3.1 or higher
 
+***********************************************************************************************************
 requires mpi4py installed (on osx: anaconda mpi4py package is broken for version 1.9.2, create a symlink:
-sudo ln -s /Users/yourPathTo/anaconda /opt/anaconda1anaconda2anaconda3 solves the problem
+sudo ln -s /yourPathTo/anaconda /opt/anaconda1anaconda2anaconda3 solves the problem
+***********************************************************************************************************
+
+***************************************************
+requires cython installed.
+--> execute:
+
+python setupOSX.py build_ext --inplace
+
+in the pyComa directory, this compiles the cython
+module to build createRay.so which is then imported
+by pyLOS_vectorized.py
+****************************************************
+
 '''
 
 from __future__ import division                 # must be first line of program
