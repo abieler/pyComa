@@ -3,6 +3,7 @@ import os
 import sys
 import datetime
 import argparse
+import time
 import numpy as np
 import matplotlib.pyplot as plt
 try:
@@ -16,11 +17,11 @@ import matplotlib
 import spice
 from data_loaders import *
 import spice_functions
-from data_plotting import plot_in_situ
+from data_plotting import plot_result_insitu
 from haser import haserModel
 from cmdline_args import cmdline_args
 
-
+t0 = time.time()
 parser = argparse.ArgumentParser()
 args = cmdline_args(parser)
 
@@ -53,6 +54,7 @@ elif args.iModelCase == 1:
 elif args.iModelCase == 2:
     filenames = [args.StringUserDataFile]
 
+Triangles = None
 for filename in filenames:
 
     ########################################################
@@ -67,6 +69,7 @@ for filename in filenames:
         else:
             print 'gas'
             x, y, n = loadGasData(filename, iDim)
+            #x, y, n = load_gas_data(filename, iDim)
     elif args.iModelCase == 1:
         print 'haser case'
         x, n = haserModel(args.QHaser, args.vHaser, args.tpHaser, args.tdHaser)
@@ -81,7 +84,8 @@ for filename in filenames:
     if iDim == 1:
         pass
     elif iDim == 2:
-        Triangles = mtri.Triangulation(x, y)
+        if not Triangles:
+            Triangles = mtri.Triangulation(x, y)
         Interpolator = mtri.LinearTriInterpolator(Triangles, n)
 
     print 'interpolation done'
@@ -119,4 +123,5 @@ for filename in filenames:
 #######################################################
 # plot results
 #######################################################
-plot_in_situ(args)
+plot_result_insitu(args)
+print 'Time elapsed:', time.time() - t0
