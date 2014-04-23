@@ -8,6 +8,7 @@ import matplotlib
 from matplotlib import rcParams
 
 import bokeh.plotting as bplt
+from bokeh.objects import Range1d
 
 from data_loaders import load_in_situ_output
 
@@ -102,6 +103,21 @@ def plot_result_LOS(ccd, StringOutputDir, StringOutFileName, iInstrumentSelector
 
     elif args.StringPlotting == 'bokeh':
         print 'bokeh plotting not supported yet for LOS cases'
+        create_plot_LOS_2d_bokeh(args, ccd, pltTitle)
+
+
+def create_plot_LOS_2d_bokeh(args, ccd, pltTitle):
+    
+    print 'type:', type(ccd)
+    bplt.output_file(args.StringOutputDir + '/' + 'result.html')
+    bplt.image(image=[ccd], x=[0], y=[0], dw=[100], dh=[100 ], palette=["Spectral-11"], )
+    bplt.save()
+
+    if args.DoShowPlots:
+        bplt.show()
+    else:
+        print 'not showing results on screen'
+
 
 
 def build_plot_title(args, measurement='LOS'):
