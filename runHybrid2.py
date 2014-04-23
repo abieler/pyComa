@@ -53,5 +53,10 @@ xTravelRay = np.array([np.array([xx,yy,zz]) for xx,yy,zz in zip(xTravelRay[0,:],
 dTravelRay = np.sqrt(np.sum((xTravelRay[0] - xTravelRay)**2,axis=1))
 
 columnDensity = np.trapz(density, dTravelRay)
-
+with open('result.txt','w') as f:
+    f.write('Electron column density between s/c and Earth in [#/m3] as calculated from the Hybrid2 model.\n')
+    f.write('Case : %s\n' % (args.StringHybridCase))
+    f.write('Spice: %s\n' % (args.StringKernelMetaFile))
+    f.write('Date : %s\n' % (args.StringUtcStartTime))
+    f.write('ColumnDensity: %e\n' % (columnDensity))
 print "columnDensity: %.2e" %(columnDensity)

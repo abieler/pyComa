@@ -18,7 +18,7 @@ def cmdline_args(parser):
     parser.add_argument("--QHaser", type=float, default=1e27)
     parser.add_argument("--vHaser", type=float, default=500.0)
     parser.add_argument("--tpHaser", type=float, default=1e5)
-    parser.add_argument("--tdHaser", type=float, default=1e4)
+    parser.add_argument("--tdHaser", type=float, default=0)
 
     parser.add_argument("--StringUserDataFile", type=str)                          # file to upload from user which contains user coma model
     parser.add_argument("--UserDelimiter", type=str)                         # delimiter used in datafile
@@ -36,10 +36,10 @@ def cmdline_args(parser):
     parser.add_argument("--UserAlpha", type=float, default=0.0)
     parser.add_argument("--UserBeta", type=float, default=0.0)
     parser.add_argument("--UserGamma", type=float, default=0.0)
-    
+
     parser.add_argument("--StringHybridCase", type=str)
     parser.add_argument("--StringRuntimeDir", type=str)
-    
+
     parser.add_argument('--StringPlotting', type=str, default='matplotlib')
     parser.add_argument('--DoShowPlots', type=str)
 
