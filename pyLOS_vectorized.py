@@ -37,7 +37,7 @@ try:
 
     from data_loaders import *     # loadGasData, loadDustData, getAllDustIntervalIndices, createRay
     from haser import haserModel
-    from data_plotting import plot_result
+    from data_plotting import plot_result_LOS
     import rotations
     import alice
     import createRay
@@ -351,7 +351,7 @@ if iMpiRank == 0:
 
     print '**' * 20
     print '**' * 20
-    print time.time() - startTime
+    print 'Time elapsed: %.2f seconds' % (time.time() - startTime)
     print '**' * 20
     print '**' * 20
     ######################################################
@@ -368,4 +368,4 @@ if iMpiRank == 0:
     ######################################################
     # plot results
     #######################################################
-    plot_result(ccdFinal, StringOutputDir, 'result.png', iInstrumentSelector, RunDetails=args, DoShowPlot=True)
+    plot_result_LOS(ccdFinal, StringOutputDir, 'result.png', iInstrumentSelector, args, DoShowPlot=True)
