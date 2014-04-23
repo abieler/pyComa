@@ -3,6 +3,8 @@ from __future__ import division
 import numpy as np
 import os
 import datetime
+import time
+from pandas import read_csv
 
 
 def load_hybrid2_data(filename):
@@ -74,6 +76,79 @@ def getAllDustIntervalIndices(filename, dim):
     f.close()
     print len(allSizeIntervals), "size intervals found."
     return allIndices, allSizeIntervals
+
+
+def load_gas_data(dataFile, dim, userData=False, userDelimiter=',', userNrOfHeaderRows=0):
+
+    if not userData:
+        '''
+        load gas data files from amps in 1d or 2d, and return values
+        for x,y and number density n.
+        '''
+        print 'opening data file', dataFile
+        f = open(dataFile, 'r')
+        for line in f:
+            if 'VARIABLES' in line:
+                variables = line.split(',')
+
+                for element, j in zip(variables, range(len(variables))):
+                    if '"n"' in element:
+                        densityIndex = j
+                        print 'found density index!!', j
+                        break
+        f.close()
+
+        if dim == 1:
+            dataIndices = [0, densityIndex]
+            headerRows = 2
+            footerRows = 0
+            varNames = ['x', 'n']
+        elif dim == 2:
+            dataIndices = [0, 1, densityIndex]
+            headerRows = 3
+            footerRows = 155236
+            varNames = ['x', 'y', 'n']
+
+        # load data from amps
+        print 'usecols: ', dataIndices
+        data = read_csv(dataFile, dtype=float, skiprows=headerRows,
+                        skip_footer=footerRows, usecols=(dataIndices),
+                        names=varNames, sep=r"\s+")
+        print 'gas data loaded'
+
+        if dim == 1:
+            x = data['x']
+            y = None
+            n = data['n']
+
+        elif dim == 2:
+            x = data['x']
+            y = data['y']
+            n = data['n']                           # number density
+    else:
+
+        print 'userDim:', dim
+
+        if dim == 1:
+            dataIndices = [0, 1]
+        elif dim == 2:
+            dataIndices = [0, 1, 2]
+
+        data = np.genfromtxt(dataFile, dtype=float,
+                             skip_header=userNrOfHeaderRows,
+                             delimiter=userDelimiter,
+                             usecols=(0, 1))
+
+        if dim == 1:
+            x = data[:, 0]
+            y = None
+            n = data[:, 1]
+        elif dim == 2:
+            x = data[:, 0]
+            y = data[:, 1]
+            n = data[:, 2]
+
+    return x, y, n
 
 
 def loadGasData(dataFile, dim, userData=False, userDelimiter=',',
