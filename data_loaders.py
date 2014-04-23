@@ -208,7 +208,7 @@ def loadGasData(dataFile, dim, userData=False, userDelimiter=',',
         data = np.genfromtxt(dataFile, dtype=float,
                              skip_header=userNrOfHeaderRows,
                              delimiter=userDelimiter,
-                             usecols=(0, 1))
+                             usecols=dataIndices)
 
         if dim == 1:
             x = data[:, 0]
