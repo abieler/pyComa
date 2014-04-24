@@ -33,9 +33,14 @@ print 'deltaT:', args.nDeltaT
 print 'outDir:', args.StringOutputDir
 print '--' * 20
 
-x_SC, y_SC, z_SC, r_SC, dates_SC = spice_functions.get_coordinates(args.StringUtcStartTime, args.StringKernelMetaFile,
-                                                         'ROSETTA', 'J2000', "None", "CHURYUMOV-GERASIMENKO",
-                                                         args.StringUtcStopTime, args.nDeltaT)
+if args.iPointingCase == 0:
+    x_SC, y_SC, z_SC, r_SC, dates_SC = spice_functions.get_coordinates(args.StringUtcStartTime, args.StringKernelMetaFile,
+                                                             'ROSETTA', '67P/C-G_CSO', "None", "CHURYUMOV-GERASIMENKO",
+                                                             args.StringUtcStopTime, args.nDeltaT)
+elif args.iPointingCase == 1:
+    print 'upload user data file...'
+    x_SC, y_SC, z_SC = load_user_trajectory(dataFile, args.UserDelimiter, args.iUserNrOfHeaderRows)
+    dates_SC = np.arange(len(x_SC))
 
 os.system('rm ' + args.StringOutputDir + '/*.out')
 
