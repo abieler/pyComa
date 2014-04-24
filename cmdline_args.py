@@ -5,7 +5,7 @@ parser = argparse.ArgumentParser()
 def cmdline_args(parser):
 
     parser.add_argument("--iModelCase", type=int, choices=[0, 1, 2], default=1, help='0: dsmc model, 1: haser model, 2: user model')
-    parser.add_argument("--iPointingCase", type=int, choices=[0, 1], default=1, help='0: spice pointing, 1: user pointing')
+    parser.add_argument("--iPointingCase", type=int, choices=[0, 1, 2], default=1, help='0: spice pointing, 1: user pointing, 2: user trajectory')
     parser.add_argument("--iInstrumentSelector", type=int, choices=[1, 2, 3, 4, 5, 6], default=1)
     parser.add_argument("--StringOutputDir", type=str, default='.')
 
@@ -39,6 +39,7 @@ def cmdline_args(parser):
 
     parser.add_argument("--StringHybridCase", type=str)
     parser.add_argument("--StringRuntimeDir", type=str)
+    parser.add_argument("--StringMeasurement", type=str, default='LOS')
 
     parser.add_argument('--StringPlotting', type=str, default='matplotlib')
     parser.add_argument('--DoShowPlots', type=str)
