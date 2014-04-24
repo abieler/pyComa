@@ -221,6 +221,12 @@ def loadGasData(dataFile, dim, userData=False, userDelimiter=',',
 
     return x, y, n
 
+def load_user_trajectory(DataFile, Delimiter, nHeaderRows):
+
+    x, y, z = np.genfromtxt(DataFile, dtype=float, skip_header=nHeaderRows,
+                         delimiter=Delimiter, unpack=True)
+    return x, y, z
+
 
 def load_user_data(DataFile, iDim, Delimiter, nHeaderRows):
 
