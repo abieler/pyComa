@@ -37,7 +37,7 @@ try:
 
     from data_loaders import *     # loadGasData, loadDustData, getAllDustIntervalIndices, createRay
     from haser import haserModel
-    from data_plotting import plot_result_LOS
+    from data_plotting import plot_result_LOS, build_plot_title
     import rotations
     import alice
     import createRay
@@ -202,8 +202,8 @@ if iMpiRank == 0:
 #############################################################
 
 if iInstrumentSelector == 1:                 # osiris wac
-    nPixelsX = 256                          # nr of pixels along x axis
-    nPixelsY = 256                          # nr of pixels along y axis
+    nPixelsX = 512                          # nr of pixels along x axis
+    nPixelsY = 512                          # nr of pixels along y axis
     PhiX = 12 / 2                            # instrument FOV in x (half opening angle) in degrees
     PhiY = 12 / 2                            # instrument FOV in y (half opening angle) in degrees
     iFOV = 0.000993                         # pixel FOV in rad
@@ -335,7 +335,7 @@ for i in range(nPixelsX):
                     ccd[ii][jj] = ColumnDensity
             nnn += 1
         kkk += 1
-        
+
     if iMpiRank == 0:
         print i
 
@@ -357,13 +357,18 @@ if iMpiRank == 0:
     ######################################################
     # write results to file
     ######################################################
+    pltTitle = build_plot_title(args, 'LOS')
     with open(StringOutputDir + '/result.txt', 'w') as f:
-    #f = open(StringOutputDir + '/result.txt', 'w')
+        f.write(pltTitle)
+        f.write('\n')
+        f.write("Each datapoint is the column number density in 1/m2 for an instrument  pixel.\n")
+        f.write("Rows correspond to pixels in instruments X axis, starting with the most negative value.\n")
+        f.write("Columns correspond to pixels in instrument Y axis, starting with the most negative value.\n")
+        f.write("/begin data\n")
         for row in ccd:
             for value in row:
                 f.write('%e,' % value)
             f.write('\n')
-    #f.close()
 
     ######################################################
     # plot results
