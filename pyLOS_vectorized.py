@@ -26,16 +26,21 @@ by pyLOS_vectorized.py
 from __future__ import division                 # must be first line of program
 
 try:
+    # import standard modules
     import sys
     import os
-    import numpy as np
     import time
-    import argparse
+
+    # import 3rd party modules
+    import spice
+    import numpy as np
     import matplotlib.tri as mtri
     import matplotlib.pyplot as plt
-    import spice
+    from mpi4py import MPI
+    import argparse
 
-    from data_loaders import *     # loadGasData, loadDustData, getAllDustIntervalIndices, createRay
+    # import own modules
+    from data_loaders import *
     from haser import haserModel
     from data_plotting import plot_result_LOS, build_plot_title
     import rotations
@@ -50,11 +55,6 @@ except Exception, e:
     print '--' * 20
     sys.exit()
 
-try:
-    from mpi4py import MPI
-except:
-    'mpi4py not installed!'
-    sys.exit()
 
 startTime = time.time()
 
@@ -350,9 +350,7 @@ if iMpiRank == 0:
         ccdFinal = ccd
 
     print '**' * 20
-    print '**' * 20
     print 'Time elapsed: %.2f seconds' % (time.time() - startTime)
-    print '**' * 20
     print '**' * 20
     ######################################################
     # write results to file
