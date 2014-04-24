@@ -113,7 +113,7 @@ def create_plot_LOS_2d_bokeh(args, ccd, pltTitle):
 
     nPixels = len(ccd[:, 0])
     bplt.output_file(args.StringOutputDir + '/' + 'result.html')
-    bplt.image(image=[ccd], x=[0], y=[0], dw=[nPixels], dh=[nPixels], palette=["Spectral-11"],
+    bplt.image(image=[np.log10(ccd)], x=[0], y=[0], dw=[nPixels], dh=[nPixels], palette=["Spectral-11"],
                x_range=Range1d(start=0, end=nPixels), y_range=Range1d(start=0, end=nPixels))
     print pltTitle
     bplt.curplot().title = pltTitle
