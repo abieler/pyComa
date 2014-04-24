@@ -12,51 +12,87 @@ import matplotlib.pyplot as plt
 
 import spice
 from cmdline_args import cmdline_args
-#from create_ray_noCython import createRay
 from createRay import createRay
 from data_loaders import load_hybrid2_data
+import spice_functions
+from data_plotting import plot_result_insitu
 
 parser = argparse.ArgumentParser()
 args = cmdline_args(parser)
 
 pathToExecutable = '/Users/ices/www-v4.1/htdocs/ICES/Models/Hybrid2'
 
-spice.furnsh(args.StringKernelMetaFile)
-Et = spice.str2et(args.StringUtcStartTime)
-rEarth, lightTime = spice.spkpos("EARTH", Et, "67P/C-G_CSO", "NONE", "ROSETTA")        # s/c coordinates in CSO frame of reference
-rRosetta, lightTime = spice.spkpos("ROSETTA", Et, "67P/C-G_CSO", "NONE", "CHURYUMOV-GERASIMENKO")
-rEarth = np.array(rEarth)                           # transform km to m
-rRosetta = np.array(rRosetta) * 1000
-print 'Distance from comet: %.2e' % (np.sqrt(np.sum(rRosetta ** 2)))
+if args.StringMeasurement == 'LOS':
+    #####################################################################
+    # get position of s/c and pointing towards Earth from SPICE
+    #####################################################################
+    spice.furnsh(args.StringKernelMetaFile)
+    Et = spice.str2et(args.StringUtcStartTime)
+    rEarth, lightTime = spice.spkpos("EARTH", Et, "67P/C-G_CSO", "NONE", "ROSETTA")
+    rRosetta, lightTime = spice.spkpos("ROSETTA", Et, "67P/C-G_CSO", "NONE", "CHURYUMOV-GERASIMENKO")
+    rEarth = np.array(rEarth)
+    rRosetta = np.array(rRosetta) * 1000  # transform km to m
+    print 'Distance from comet: %.2e' % (np.sqrt(np.sum(rRosetta ** 2)))
 
-p = rEarth / np.sqrt(np.sum(rEarth**2))             # normalized vector pointing from s/c to Earth in cso coordinates
-rRay = np.array([value for value in rRosetta])      # position of rosetta s/c in cso coordinates
+    # p = normalized vector pointing from s/c to Earth in cso coordinates
+    p = rEarth / np.sqrt(np.sum(rEarth**2))
 
-xTravel = np.array(createRay(rRay, p))
-print xTravel
-x = xTravel[:, 0]
-y = xTravel[:, 1]
-z = xTravel[:, 2]
+    # rRay = position of rosetta s/c in cso coordinates
+    rRay = np.array([value for value in rRosetta])
+
+    ######################################################################
+    # build line of sight ray xTravel, and extract x, y, z coordinates
+    #######################################################################
+    xTravel = np.array(createRay(rRay, p))
+    print xTravel
+    x = xTravel[:, 0]
+    y = xTravel[:, 1]
+    z = xTravel[:, 2]
+
+elif args.StringMeasurement == 'insitu':
+
+    x, y, z, r, dates = spice_functions.get_coordinates(args.StringUtcStartTime, args.StringKernelMetaFile,
+                                                             'ROSETTA', '67P/C-G_CSO', "None", "CHURYUMOV-GERASIMENKO",
+                                                             args.StringUtcStopTime, args.nDeltaT)
+
+#############################################################################
+# write coordinates to traj.dat file and execute aikef.py
+##############################################################################
 with open(args.StringRuntimeDir + '/' + 'traj.dat', 'w') as file:
     file.write('#START\n')
     for xx, yy, zz in zip(x, y, z):
         file.write('%e %e %e\n' % (xx, yy, zz))
-#os.chdir(args.StringRuntimeDir)
 os.system(pathToExecutable + '/aikef.py %s run . traj.dat' % (args.StringHybridCase))
 
-##############################################################
-# load data and perform LOS
-##############################################################
+##################################################################
+# load output from aikef.py (hybrid2) and perform LOS calculation
+##################################################################
 
 xTravelRay, density = load_hybrid2_data('orbit-output.txt')
-xTravelRay = np.array([np.array([xx,yy,zz]) for xx,yy,zz in zip(xTravelRay[0,:], xTravelRay[1,:], xTravelRay[2,:])])
-dTravelRay = np.sqrt(np.sum((xTravelRay[0] - xTravelRay)**2,axis=1))
 
-columnDensity = np.trapz(density, dTravelRay)
-with open('result.txt','w') as f:
-    f.write('Electron column density between s/c and Earth in [#/m3] as calculated from the Hybrid2 model.\n')
-    f.write('Case : %s\n' % (args.StringHybridCase))
-    f.write('Spice: %s\n' % (args.StringKernelMetaFile))
-    f.write('Date : %s\n' % (args.StringUtcStartTime))
-    f.write('ColumnDensity: %e\n' % (columnDensity))
-print "columnDensity: %.2e" %(columnDensity)
+if args.StringMeasurement == 'LOS':
+
+    xTravelRay = np.array([np.array([xx, yy, zz]) for xx, yy, zz in zip(xTravelRay[0, :],
+                                                                        xTravelRay[1, :],
+                                                                        xTravelRay[2, :])])
+    dTravelRay = np.sqrt(np.sum((xTravelRay[0] - xTravelRay)**2, axis=1))
+    columnDensity = np.trapz(density, dTravelRay)
+
+    with open(args.StringOutputDir + '/result.txt', 'w') as f:
+        f.write('Electron column density between s/c and Earth in [#/m3] as calculated from the Hybrid2 model.\n')
+        f.write('Case : %s\n' % (args.StringHybridCase))
+        f.write('Spice: %s\n' % (args.StringKernelMetaFile))
+        f.write('Date : %s\n' % (args.StringUtcStartTime))
+        f.write('ColumnDensity: %.3e\n' % (columnDensity))
+    print "electron column density: %.3e" % (columnDensity)
+
+elif args.StringMeasurement == 'insitu':
+    with open(args.StringOutputDir + '/' + 'electrons' + '.out', 'w') as f:
+        f.write('Local number densities for the rosetta spacecraft at selected dates. Comet is at (0,0,0) with the sun on the positive x axis.(inf,0,0)\n')
+        f.write('DSMC case: %s\n' % (os.path.split(args.StringDataFileDSMC)[0].split('/')[-1]))
+        f.write('spice kernel: %s\n' % (args.StringKernelMetaFile.split('/')[-1]))
+        f.write('date,x[m],y[m],z[m],distance_from_center[m],numberDensity [1/m3]\n')
+        for dd, xx, yy, zz, rr, nn in zip(dates, x, y, z, r, density):
+            f.write("%s,%e,%e,%e,%e,%e\n" % (dd, xx, yy, zz, rr, nn))
+
+    plot_result_insitu(args)
