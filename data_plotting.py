@@ -96,10 +96,13 @@ def plot_result_LOS(ccd, StringOutputDir, StringOutFileName, iInstrumentSelector
     pltTitle = build_plot_title(args, 'LOS')
 
     if args.StringPlotting == 'matplotlib':
-        if args.iInstrumentSelector in [1, 2, 4]:
+        if args.iInstrumentSelector in [1, 2, 5]:
             create_plot_LOS_2d(args, ccd, pltTitle)
-        else:
+        elif args.iInstrumentSelector in [3, 6]:
             create_plot_LOS_1d(args, ccd, pltTitle)
+        elif args.iInstrumentSelector == 4:
+            print 'not generating plot for MIRO'
+            print 'Column Density: %.3e [#/m2]' % (ccd[0])
 
     elif args.StringPlotting == 'bokeh':
         print 'bokeh plotting not supported yet for LOS cases'
@@ -120,7 +123,6 @@ def create_plot_LOS_2d_bokeh(args, ccd, pltTitle):
         bplt.show()
     else:
         print 'not showing results on screen'
-
 
 
 def build_plot_title(args, measurement='LOS'):
