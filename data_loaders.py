@@ -221,10 +221,12 @@ def loadGasData(dataFile, dim, userData=False, userDelimiter=',',
 
     return x, y, n
 
-def load_user_trajectory(DataFile, Delimiter, nHeaderRows):
 
-    x, y, z = np.genfromtxt(DataFile, dtype=float, skip_header=nHeaderRows,
-                         delimiter=Delimiter, unpack=True)
+def load_user_trajectory(args):
+    
+    print args.StringUserTrajectoryFile
+    x, y, z = np.genfromtxt(args.StringUserTrajectoryFile, dtype=float, skip_header=args.iUserNrOfHeaderRows,
+                            delimiter=args.UserDelimiter, unpack=True)
     return x, y, z
 
 
@@ -296,9 +298,12 @@ def load_in_situ_output(filename):
         if i >= 0:
             try:
                 dd, xx, yy, zz, rr, nn = line.split(',')
-                dates_SC.append(datetime.datetime.strptime(dd, '%Y-%m-%d %H:%M:%S'))
                 r_SC.append(np.float(rr))
                 n_SC.append(np.float(nn))
+                try:
+                    dates_SC.append(datetime.datetime.strptime(dd, '%Y-%m-%d %H:%M:%S'))
+                except:
+                    dates_SC.append(dd)
             except Exception, e:
                 pass
         i += 1
