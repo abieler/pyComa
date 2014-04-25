@@ -44,7 +44,6 @@ if args.StringMeasurement == 'LOS':
     # build line of sight ray xTravel, and extract x, y, z coordinates
     #######################################################################
     xTravel = np.array(createRay(rRay, p))
-    print xTravel
     x = xTravel[:, 0]
     y = xTravel[:, 1]
     z = xTravel[:, 2]
