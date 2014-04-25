@@ -37,10 +37,11 @@ if args.iPointingCase == 0:
     x_SC, y_SC, z_SC, r_SC, dates_SC = spice_functions.get_coordinates(args.StringUtcStartTime, args.StringKernelMetaFile,
                                                              'ROSETTA', '67P/C-G_CSO', "None", "CHURYUMOV-GERASIMENKO",
                                                              args.StringUtcStopTime, args.nDeltaT)
-elif args.iPointingCase == 1:
+elif args.iPointingCase == 2:
     print 'upload user data file...'
-    x_SC, y_SC, z_SC = load_user_trajectory(dataFile, args.UserDelimiter, args.iUserNrOfHeaderRows)
+    x_SC, y_SC, z_SC = load_user_trajectory(args)
     dates_SC = np.arange(len(x_SC))
+    r_SC = np.sqrt(x_SC**2 + y_SC**2 + z_SC**2)
 
 os.system('rm ' + args.StringOutputDir + '/*.out')
 
