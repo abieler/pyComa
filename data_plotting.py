@@ -141,61 +141,48 @@ def build_plot_title(args, measurement='LOS'):
         elif args.iInstrumentSelector == 6:
             pltInstrument = 'VIRTIS H'
 
+        pltTitle = 'ICES line of sight tool\n'
+        pltTitle += pltInstrument
         if args.iModelCase == 0:
-            pltModelCase = 'dsmc model'
+            pltTitle += 'Coma model: DSMC (%s)\n' % (os.path.split(args.StringDataFileDSMC)[1])
         elif args.iModelCase == 1:
-            pltModelCase = 'haser model'
-            pltQHaser = str(args.QHaser)
-            pltvHaser = str(args.vHaser)
-            plttdHaser = str(args.tdHaser)
-            plttpHaser = str(args.tpHaser)
+            pltTitle += 'Coma model: Haser (Q: %.2e [#/s],  v: %i [m/s],  Tp: %.0e [s]' % \
+                        (args.QHaser, args.vHaser, args.tpHaser)
+            if args.tdHaser is None:
+                pltTitle += ')\n'
+            else:
+                pltTitle += ', Td: %0.e [s])\n' % (args.tdHaser)
         elif args.iModelCase == 2:
-            pltModelCase = 'user model'
+            pltTitle += 'Coma model: user defined (%s)\n' % (os.path.split(args.StringUserDataFile)[1])
 
         if args.iPointingCase == 0:
-            pltPointing = 'spice pointing'
-            pltSpiceCase = args.StringKernelMetaFile
-            pltUtcStartTime = args.StringUtcStartTime
-        elif args.iPointingCase == 1:
-            pltPointing = 'manual pointing'
-            pltR = ''
-            pltPhaseAngle = ''
-            pltLatitude = ''
-            pltEl = ''
-            pltAz = ''
-
-        pltTitle = '%s, %s, %s\n' % (pltInstrument, pltModelCase, pltPointing)
-        if args.iPointingCase == 0:
-            pltTitle += '%s, %s\n' % (os.path.split(args.StringKernelMetaFile)[1],
+            pltTitle += 'Pointing: SPICE (%s, %s)\n' % (os.path.split(args.StringKernelMetaFile)[1],
                                       pltUtcStartTime)
         else:
-            pltTitle += 'R: %i km, PA: %i, LAT: %i, a: %i, b: %i, c: %i\n' %\
+            pltTitle += 'Pointing: user defined (R: %i km, PA: %i, LAT: %i, a: %i, b: %i, c: %i)\n' %\
                         (args.UserR / 1000, args.UserPhaseAngle,
                          args.UserLatitude, args.UserAlpha,
                          args.UserBeta, args.UserGamma)
 
-        if args.iModelCase == 0:
-            pltTitle += '%s\n' % (os.path.split(args.StringDataFileDSMC)[1])
-        elif args.iModelCase == 1:
-            pltTitle += 'Q: %.2e [#/s],  v: %i [m/s],  Tp: %.0e [s]' % \
-                        (args.QHaser, args.vHaser, args.tpHaser)
-
-            if args.tdHaser is None:
-                pltTitle += '\n'
-            else:
-                pltTitle += ', Td: %0.e [s]\n' % (args.tdHaser)
-        elif args.iModelCase == 2:
-            pass
-
     elif measurement == 'insitu':
         pltTitle = 'ICES in-situ tool\n'
         if args.iModelCase == 0:
-            pltTitle += 'model: DSMC, case: %s\n' % (os.path.split(args.StringDataFileDSMC)[0].split('/')[-1])
-            pltTitle += 'spice: %s' % (os.path.split(args.StringKernelMetaFile)[1].split('.')[0])
+            pltTitle += 'Coma model: DSMC '
+            if args.IsDust:
+                pltTitle += 'Dust, rmin=%.2e, rmax=%.2e ' %(args.DustSizeMin, args.DustSizeMax)
+            pltTitle += '(%s)\n' % (os.path.split(args.StringDataFileDSMC)[0].split('/')[-1])
         elif args.iModelCase == 1:
-            pltTitle += 'model: HASER, spice: %s\n' % (os.path.split(args.StringKernelMetaFile)[1].split('.')[0])
-            pltTitle += 'Q = %.2e [#/s], v = %.0f [m/s], tp = %.2e [s]' % (args.QHaser, args.vHaser, args.tpHaser)
+            pltTitle += 'Coma model: HASER '
+            pltTitle += 'Q = %.2e [#/s], v = %.0f [m/s], tp = %.2e [s]\n' % (args.QHaser, args.vHaser, args.tpHaser)
+        elif args.iModelCase == 2:
+            pltTitle += 'Coma model: user defined (%s)\n' % (os.path.split(args.StringUserDataFile)[1])
 
+        if args.iPointingCase == 0:
+            pltTitle += 'Trajectory: spice (%s)\n' % (os.path.split(args.StringKernelMetaFile)[1].split('.')[0])
+        elif args.iPointingCase == 2:
+            pltTitle += 'Trajectory: user defined (%s)\n' % (os.path.split(args.StringUserTrajectoryFile)[1])
+        else:
+            pltTitle += '\n'
     return pltTitle
 
 
