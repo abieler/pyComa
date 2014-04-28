@@ -223,10 +223,14 @@ def loadGasData(dataFile, dim, userData=False, userDelimiter=',',
 
 
 def load_user_trajectory(args):
-    
-    print args.StringUserTrajectoryFile
-    x, y, z = np.genfromtxt(args.StringUserTrajectoryFile, dtype=float, skip_header=args.iUserNrOfHeaderRows,
-                            delimiter=args.UserDelimiter, unpack=True)
+
+    print 'loading trajectory from: ', args.StringUserTrajectoryFile
+    if args.DelimiterTraj.lower() == 'space':
+        args.DelimiterTraj = " "
+
+    print 'trajectory file delimiter:"%s"' % args.DelimiterTraj
+    x,y,z = np.genfromtxt(args.StringUserTrajectoryFile, dtype=float, skip_header=args.iUserNrOfHeaderRows,
+                            delimiter=args.DelimiterTraj, unpack=True)
     return x, y, z
 
 
@@ -259,11 +263,11 @@ def load_user_data(DataFile, iDim, Delimiter, nHeaderRows):
     return x, y, n
 
 
-def loadDustData(allSizeIntervals, numberDensityIndices, dim, dataFile):
+def load_dust_data(allSizeIntervals, numberDensityIndices, dim, dataFile, args):
 
     userIndices = []
     for size, index in zip(allSizeIntervals, numberDensityIndices):
-        if minSize <= size <= maxSize:
+        if args.DustSizeMin <= size <= args.DustSizeMax:
             if dim == 1:
                 userIndices.append(index + 1)
                 # add +1 becaus x is also contained in data
