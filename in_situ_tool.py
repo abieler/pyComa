@@ -49,11 +49,12 @@ iDim = get_iDim(args)
 
 if args.iModelCase == 0:
     path = os.path.split(args.StringDataFileDSMC)[0]
-    filenames = [path + '/' + filename for filename in os.listdir(path) if (filename.split('.')[-1].lower() == 'dat') and 'Dust' not in filename]
+    if args.IsDust:
+        filenames = [path + '/' + filename for filename in os.listdir(path) if (filename.split('.')[-1].lower() == 'dat') and 'Dust' in filename]
+    else:
+        filenames = [path + '/' + filename for filename in os.listdir(path) if (filename.split('.')[-1].lower() == 'dat') and 'Dust' not in filename]
     print filenames
     print '----------------------------------------------------'
-    x_SC *= -1      # cso reference frame to tenishev reference frame
-    y_SC *= -1      # cso reference frame to tenishev reference frame
 
 elif args.iModelCase == 1:
     filenames = ['Haser']
@@ -63,6 +64,9 @@ elif args.iModelCase == 2:
 Triangles = None
 for filename in filenames:
 
+    if args.iModelCase == 0:
+        x_SC *= -1      # cso reference frame to tenishev reference frame
+        y_SC *= -1      # cso reference frame to tenishev reference frame
     ########################################################
     # load data
     ########################################################
@@ -71,7 +75,7 @@ for filename in filenames:
         if args.IsDust:
             print 'dust'
             NumberDensityIndices, allSizeIntervals = getAllDustIntervalIndices(filename, iDim)
-            x, y, n = loadDustData(allSizeIntervals, NumberDensityIndices, iDim, filename)
+            x, y, n = load_dust_data(allSizeIntervals, NumberDensityIndices, iDim, filename, args)
         else:
             print 'gas'
             x, y, n = loadGasData(filename, iDim)
