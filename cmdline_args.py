@@ -21,10 +21,12 @@ def cmdline_args(parser):
     parser.add_argument("--tdHaser", type=float, default=0)
 
     parser.add_argument("--StringUserDataFile", type=str)                          # file to upload from user which contains user coma model
-    parser.add_argument("--StringUserTrajectoryFile", type=str)                          # file to upload from user which contains user coma model
     parser.add_argument("--UserDelimiter", type=str)                         # delimiter used in datafile
     parser.add_argument("--iUserNrOfHeaderRows", type=int)                   # number of header lines in datafile
     parser.add_argument("--iUserDim", type=int)                               # number of dimenisons of user coma model
+    parser.add_argument("--StringUserTrajectoryFile", type=str)                          # file to upload from user which contains user coma model
+    parser.add_argument("--DelimiterTraj", type=str)                               # number of dimenisons of user coma model
+    parser.add_argument("--nHeaderRowsTraj", type=int)                               # number of dimenisons of user coma model
 
     parser.add_argument("--StringKernelMetaFile", type=str)
     parser.add_argument("--StringUtcStartTime", type=str)
