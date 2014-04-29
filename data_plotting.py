@@ -74,6 +74,9 @@ def create_plot_insitu_matplotlib(args, all_n_SC, all_species, dates_SC, r_SC, n
 
             # plot distance from comet and save figure
             if (i % nLinesPerFig == (nLinesPerFig - 1)) or (i == len(all_species) - 1):
+                nFig = (i-(nLinesPerFig-1)) // nLinesPerFig
+                if nFig < 0:
+                    nFig = 0
                 ax1.set_title(pltTitle)
                 ax1.set_ylabel('Number density [#/m3]')
                 ax1.grid(True)
@@ -83,7 +86,7 @@ def create_plot_insitu_matplotlib(args, all_n_SC, all_species, dates_SC, r_SC, n
                 ax2.set_ylabel('Distance from comet center [km]')
                 ax2.grid(True)
                 plt.gcf().autofmt_xdate()
-                plt.savefig(args.StringOutputDir + '/' + 'result_%i.png' % ((i-(nLinesPerFig-1)) // nLinesPerFig))
+                plt.savefig(args.StringOutputDir + '/' + 'result_%i.png' % nFig)
 
     if args.DoShowPlots:
         plt.show()
