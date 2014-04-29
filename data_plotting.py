@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 from __future__ import division
 import os
 import datetime
@@ -208,7 +207,7 @@ def create_plot_LOS_1d(args, ccd, pltTitle):
 
 def create_plot_LOS_2d(args, ccd, pltTitle):
 
-    plt.figure()
+    plt.figure(figsize=(14,12))
     if args.iInstrumentSelector == 1:
         N = 8
         phi = 12
@@ -225,13 +224,15 @@ def create_plot_LOS_2d(args, ccd, pltTitle):
     yyticks = np.arange(-phi/2, phi/2 + dphi, dphi)
 
     plt.contourf(np.log10(ccd+0.1), 200)
-    plt.colorbar(label='Column density [#/m2]')
+    plt.colorbar(label='log10 column density [#/m2]')
     plt.xlabel("Instrument y axis [deg]")
     plt.ylabel("Instrument x axis [deg]")
     plt.xticks(np.arange(N+1)/N * (len(ccd[0])-1), np.round(xxticks,2))
     plt.yticks(np.arange(N+1)/N*(len(ccd[0])-1), np.round(yyticks,2))
 
     plt.title(pltTitle)
+    plt.savefig(args.StringOutputDir + '/' + 'result_0.png')
+    print 'saved result as', args.StringOutputDir +'/' + 'result_0.png'
     if args.DoShowPlots:
         plt.show()
 
