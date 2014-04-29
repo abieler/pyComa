@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 import os
 
-iModelCase = 2
+iModelCase = 0
 iPointingCase = 0
 iInstrumentSelector = 1
-StringOutputDir = '/Users/ices/www-v4.1/htdocs/ICES/Models/LoS/pyComa/results'
+StringOutputDir = '/Users/ices/www-dev/htdocs/ICES/Models/LoS/pyComa/results'
 StringDataFileDSMC = '/Users/ices/Data/Coma/DSMC/CG_1.3_au_03/CG_1.3_au_03.CO.dat'
 isDust = 1
 DustSizeMin = 0
@@ -37,7 +37,7 @@ DelimiterTraj = 'space'
 nHeaderRowsTraj = 0
 
 
-cmd_string = '/Users/abieler/anaconda/bin/python in_situ_tool.py '
+cmd_string = '/opt/local/anaconda/bin/python in_situ_tool.py '
 
 cmd_string += "--iModelCase=%i --iPointingCase=%i --iInstrumentSelector=%i --StringOutputDir=%s --StringDataFileDSMC=%s " %(iModelCase,
                                                                                                                           iPointingCase,
@@ -61,7 +61,7 @@ cmd_string += "--StringUserDataFile=%s --UserDelimiter=%s --iUserNrOfHeaderRows=
                                                                                                    iUserNrOfHeaderRows,
                                                                                                    iUserDim)
 #cmd_string += "--StringPlotting=bokeh"
-cmd_string += "--DoShowPlots='y' --StringPlotting=matplotlib --StringUserTrajectoryFile=%s " % (StringUserTrajectoryFile)
+cmd_string += "--StringPlotting=matplotlib --StringUserTrajectoryFile=%s " % (StringUserTrajectoryFile)
 cmd_string += "--DelimiterTraj=%s --nHeaderRowsTraj=%i --IsDust=%i --DustSizeMin=%e --DustSizeMax=%e" % (DelimiterTraj, nHeaderRowsTraj, isDust, DustSizeMin, DustSizeMax)
 
 print cmd_string

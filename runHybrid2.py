@@ -9,6 +9,7 @@ import subprocess
 import argparse
 import os
 import matplotlib.pyplot as plt
+import time
 
 import spice
 from cmdline_args import cmdline_args
@@ -20,7 +21,7 @@ from data_plotting import plot_result_insitu
 parser = argparse.ArgumentParser()
 args = cmdline_args(parser)
 
-pathToExecutable = '/Users/ices/www-v4.1/htdocs/ICES/Models/Hybrid2'
+pathToExecutable = '/Users/ices/www-dev/htdocs/ICES/Models/LoS/pyComa'
 
 if args.StringMeasurement == 'LOS':
     #####################################################################
@@ -57,16 +58,18 @@ elif args.StringMeasurement == 'insitu':
 #############################################################################
 # write coordinates to traj.dat file and execute aikef.py
 ##############################################################################
-with open(args.StringRuntimeDir + '/' + 'traj.dat', 'w') as file:
+with open('traj.dat', 'w') as file:
     file.write('#START\n')
     for xx, yy, zz in zip(x, y, z):
         file.write('%e %e %e\n' % (xx, yy, zz))
-os.system(pathToExecutable + '/aikef.py %s run . traj.dat' % (args.StringHybridCase))
+print 'running aikef script now'
+os.system(pathToExecutable + '/aikef_andre.py %s run . traj.dat' % (args.StringHybridCase))
+print 'done running script'
 
 ##################################################################
 # load output from aikef.py (hybrid2) and perform LOS calculation
 ##################################################################
-
+time.sleep(3)
 xTravelRay, density = load_hybrid2_data('orbit-output.txt')
 
 if args.StringMeasurement == 'LOS':
