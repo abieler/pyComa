@@ -1,4 +1,4 @@
-#!/opt/anaconda/bin/python
+#!/opt/local/anaconda/bin/python
 '''
 filename: pyLOS_vectorized.py
 
