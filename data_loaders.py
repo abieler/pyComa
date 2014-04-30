@@ -38,7 +38,7 @@ def get_iDim(args):
         iDim = 1
 
     elif args.iModelCase == 2:
-        iDim = args.iUserDim
+        iDim = args.iDimUser
 
     print 'iDim:', iDim
     return iDim
@@ -229,7 +229,7 @@ def load_user_trajectory(args):
         args.DelimiterTraj = " "
 
     print 'trajectory file delimiter:"%s"' % args.DelimiterTraj
-    x,y,z = np.genfromtxt(args.StringUserTrajectoryFile, dtype=float, skip_header=args.iUserNrOfHeaderRows,
+    x,y,z = np.genfromtxt(args.StringUserTrajectoryFile, dtype=float, skip_header=args.nHeaderRowsData,
                             delimiter=args.DelimiterTraj, unpack=True)
     return x, y, z
 

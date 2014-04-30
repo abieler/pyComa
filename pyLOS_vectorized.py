@@ -90,9 +90,9 @@ UserBeta = args.UserBeta
 UserGamma = args.UserGamma
 
 StringUserDataFile = args.StringUserDataFile
-UserDelimiter = args.UserDelimiter
-iUserDim = args.iUserDim
-iUserNrOfHeaderRows = args.iUserNrOfHeaderRows
+DelimiterData = args.DelimiterData
+iDimUser = args.iDimUser
+nHeaderRowsData = args.nHeaderRowsData
 
 comm = MPI.COMM_WORLD
 nMpiSize = comm.Get_size()
@@ -101,6 +101,7 @@ iMpiRank = comm.Get_rank()
 if iMpiRank == 0:
     print '##########################################'
     print 'modelCase     :', iModelCase
+    print 'pointing case :', iPointingCase
     print 'instrument    :', iInstrumentSelector
     print 'StringKernelMetaFile:', StringKernelMetaFile
     print 'StringUtcStartTime  :', StringUtcStartTime
@@ -135,7 +136,7 @@ if iModelCase == 0:
 elif iModelCase == 1:
     iDim = 1
 elif iModelCase == 2:
-    iDim = iUserDim
+    iDim = iDimUser
 
 if iMpiRank == 1:
     print 'iDimensions:', iDim
@@ -182,8 +183,8 @@ elif iModelCase == 1:
     y = None
 
 elif iModelCase == 2:
-    #x, y, n = loadGasData(StringUserDataFile, iDim, True, UserDelimiter, iUserNrOfHeaderRows)
-    x, y, n = load_user_data(StringUserDataFile, iDim, UserDelimiter, iUserNrOfHeaderRows)
+    #x, y, n = loadGasData(StringUserDataFile, iDim, True, DelimiterData, nHeaderRowsData)
+    x, y, n = load_user_data(StringUserDataFile, iDim, DelimiterData, nHeaderRowsData)
 
 ##############################################################
 # triangulation and interpolation for 2d case

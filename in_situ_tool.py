@@ -37,6 +37,11 @@ if args.iPointingCase == 0:
     x_SC, y_SC, z_SC, r_SC, dates_SC = spice_functions.get_coordinates(args.StringUtcStartTime, args.StringKernelMetaFile,
                                                              'ROSETTA', '67P/C-G_CSO', "None", "CHURYUMOV-GERASIMENKO",
                                                              args.StringUtcStopTime, args.nDeltaT)
+elif args.iPointingCase == 1:
+    print 'user pointing is not a valid choice for in situ tool!'
+    print 'for user defined trajectory select iPointingCase = 2'
+    print 'exiting now'
+    sys.exit()
 elif args.iPointingCase == 2:
     print 'upload user data file...'
     x_SC, y_SC, z_SC = load_user_trajectory(args)
@@ -86,8 +91,8 @@ for filename in filenames:
         y = None
     elif args.iModelCase == 2:
         print 'user case'
-        #x, y, n = loadGasData(args.StringUserDataFile, iDim, True, args.UserDelimiter, args.iUserNrOfHeaderRows)
-        x, y, n = load_user_data(args.StringUserDataFile, iDim, args.UserDelimiter, args.iUserNrOfHeaderRows)
+        #x, y, n = loadGasData(args.StringUserDataFile, iDim, True, args.DelimiterData, args.nHeaderRowsData)
+        x, y, n = load_user_data(args.StringUserDataFile, iDim, args.DelimiterData, args.nHeaderRowsData)
 
     ##############################################################
     # triangulation and interpolation for 2d case

@@ -29,9 +29,9 @@ UserGamma = 0
 
 StringUserDataFile = 'test_data/testUserFile_1d.txt'
 StringUserTrajectoryFile = '/Users/abieler/pyComa/test_data/testUserTrajFile.txt'
-UserDelimiter = ','
-iUserNrOfHeaderRows = 0
-iUserDim = 1
+DelimiterData = ','
+nHeaderRowsData = 0
+iDimUser = 1
 
 DelimiterTraj = 'space'
 nHeaderRowsTraj = 0
@@ -56,10 +56,10 @@ cmd_string += "--UserR=%f --UserPhaseAngle=%f --UserLatitude=%f --UserAlpha=%f -
                                                                                                                 UserAlpha,
                                                                                                                 UserBeta,
                                                                                                                 UserGamma)
-cmd_string += "--StringUserDataFile=%s --UserDelimiter=%s --iUserNrOfHeaderRows=%i --iUserDim=%i " % (StringUserDataFile,
-                                                                                                   UserDelimiter,
-                                                                                                   iUserNrOfHeaderRows,
-                                                                                                   iUserDim)
+cmd_string += "--StringUserDataFile=%s --DelimiterData=%s --nHeaderRowsData=%i --iDimUser=%i " % (StringUserDataFile,
+                                                                                                   DelimiterData,
+                                                                                                   nHeaderRowsData,
+                                                                                                   iDimUser)
 #cmd_string += "--StringPlotting=bokeh"
 cmd_string += "--StringPlotting=matplotlib --StringUserTrajectoryFile=%s " % (StringUserTrajectoryFile)
 cmd_string += "--DelimiterTraj=%s --nHeaderRowsTraj=%i --IsDust=%i --DustSizeMin=%e --DustSizeMax=%e" % (DelimiterTraj, nHeaderRowsTraj, isDust, DustSizeMin, DustSizeMax)
