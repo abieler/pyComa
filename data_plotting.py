@@ -93,13 +93,13 @@ def create_plot_insitu_matplotlib(args, all_n_SC, all_species, dates_SC, r_SC, n
         print 'not showing plots on screen'
 
 
-def plot_result_LOS(ccd, StringOutputDir, StringOutFileName, iInstrumentSelector, args, DoShowPlot=False):
+def plot_result_LOS(ccd, StringOutFileName, args, ccd_limits):
 
     pltTitle = build_plot_title(args, 'LOS')
 
     if args.StringPlotting == 'matplotlib':
         if args.iInstrumentSelector in [1, 2, 5]:
-            create_plot_LOS_2d_matplotlib(args, ccd, pltTitle, StringOutFileName)
+            create_plot_LOS_2d_matplotlib(args, ccd, pltTitle, StringOutFileName, ccd_limits)
         elif args.iInstrumentSelector in [3, 6]:
             create_plot_LOS_1d_matplotlib(args, ccd, pltTitle, StringOutFileName)
         elif args.iInstrumentSelector == 4:
@@ -137,6 +137,58 @@ def create_plot_LOS_2d_bokeh(args, ccd, pltTitle, StringOutFileName):
         bplt.show()
     else:
         print 'not showing plots on screen'
+
+
+def create_plot_LOS_1d_matplotlib(args, ccd, pltTitle, figName):
+
+    plt.figure()
+    if args.iInstrumentSelector == 3:           # alice
+        plt.plot(range(5, 24), ccd, '-ok', linewidth=2)
+        plt.grid(True)
+        plt.xlabel('Pixel Number')
+        plt.ylabel('Flux [photons / m2 / s]')
+        plt.xticks(range(5, 24))
+        plt.xlim((5, 23))
+
+    plt.title(pltTitle)
+    plt.savefig(args.StringOutputDir + '/' + figName)
+    if args.DoShowPlots:
+        plt.show()
+
+
+def create_plot_LOS_2d_matplotlib(args, ccd, pltTitle, figName, ccd_limits):
+
+    plt.figure(figsize=(14, 12))
+    if args.iInstrumentSelector == 1:
+        N = 8
+        phi = 12
+    elif args.iInstrumentSelector == 2:
+        N = 8
+        phi = 6
+    elif args.iInstrumentSelector == 5:
+        N = 6
+        phi = 3.7
+
+    dphi = phi/N
+
+    xxticks = np.arange(-phi/2, phi/2 + dphi, dphi)
+    yyticks = np.arange(-phi/2, phi/2 + dphi, dphi)
+
+    nLevels = 20
+    dLevels = (np.log10(ccd_limits[1]) - np.log10(ccd_limits[0])) / nLevels
+    pltLevels = np.arange(np.log10(ccd_limits[0]), np.log10(ccd_limits[1] + dLevels), dLevels)
+    plt.contourf(np.log10(ccd+0.1), levels=pltLevels)
+    plt.colorbar(label='log10 column density [#/m2]')
+    plt.xlabel("Instrument y axis [deg]")
+    plt.ylabel("Instrument x axis [deg]")
+    plt.xticks(np.arange(N+1)/N * (len(ccd[0])-1), np.round(xxticks,2))
+    plt.yticks(np.arange(N+1)/N*(len(ccd[0])-1), np.round(yyticks,2))
+
+    plt.title(pltTitle)
+    plt.savefig(args.StringOutputDir + '/' + figName)
+    print 'saved result as', args.StringOutputDir +'/' + figName
+    if args.DoShowPlots:
+        plt.show()
 
 
 def build_plot_title(args, measurement='LOS'):
@@ -198,53 +250,3 @@ def build_plot_title(args, measurement='LOS'):
         else:
             pltTitle += '\n'
     return pltTitle
-
-
-def create_plot_LOS_1d_matplotlib(args, ccd, pltTitle, figName):
-
-    plt.figure()
-    if args.iInstrumentSelector == 3:           # alice
-        plt.plot(range(5, 24), ccd, '-ok', linewidth=2)
-        plt.grid(True)
-        plt.xlabel('Pixel Number')
-        plt.ylabel('Flux [photons / m2 / s]')
-        plt.xticks(range(5, 24))
-        plt.xlim((5, 23))
-
-    plt.title(pltTitle)
-    plt.savefig(args.StringOutputDir + '/' + figName)
-    if args.DoShowPlots:
-        plt.show()
-
-
-def create_plot_LOS_2d_matplotlib(args, ccd, pltTitle, figName):
-
-    plt.figure(figsize=(14, 12))
-    if args.iInstrumentSelector == 1:
-        N = 8
-        phi = 12
-    elif args.iInstrumentSelector == 2:
-        N = 8
-        phi = 6
-    elif args.iInstrumentSelector == 5:
-        N = 6
-        phi = 3.7
-
-    dphi = phi/N
-
-    xxticks = np.arange(-phi/2, phi/2 + dphi, dphi)
-    yyticks = np.arange(-phi/2, phi/2 + dphi, dphi)
-
-    plt.contourf(np.log10(ccd+0.1), 200)
-    plt.colorbar(label='log10 column density [#/m2]')
-    plt.xlabel("Instrument y axis [deg]")
-    plt.ylabel("Instrument x axis [deg]")
-    plt.xticks(np.arange(N+1)/N * (len(ccd[0])-1), np.round(xxticks,2))
-    plt.yticks(np.arange(N+1)/N*(len(ccd[0])-1), np.round(yyticks,2))
-
-    plt.title(pltTitle)
-    plt.savefig(args.StringOutputDir + '/' + figName)
-    print 'saved result as', args.StringOutputDir +'/' + figName
-    if args.DoShowPlots:
-        plt.show()
-

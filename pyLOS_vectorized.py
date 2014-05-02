@@ -362,9 +362,12 @@ for i in range(nPixelsX):
     if iMpiRank == 0:
         print i
 
-
 if iMpiRank == 0:
     print 'pixel loop done'
+    ccd_limits = (ccd.min(), ccd.max())
+    print 'max ccd:', ccd_limits[1]
+    print 'min ccd:', ccd_limits[0]
+
     for spIndex in range(nSpecies):
         if iInstrumentSelector == 3:
             ccdFinal[:, spIndex] = alice.calculateBrightness(nOversampleX, nOversampleY, ccd[:, :, spIndex], gFactor)
@@ -401,9 +404,9 @@ if iMpiRank == 0:
             plotName = 'result_%i.html' % (spIndex)
 
         if iInstrumentSelector == 3:
-            plot_result_LOS(ccdFinal[:, spIndex], StringOutputDir, plotName, iInstrumentSelector, args, DoShowPlot=True)
+            plot_result_LOS(ccdFinal[:, spIndex], plotName, args, ccd_limits)
         else:
-            plot_result_LOS(ccdFinal[:, :, spIndex], StringOutputDir, plotName, iInstrumentSelector, args, DoShowPlot=True)
+            plot_result_LOS(ccdFinal[:, :, spIndex], plotName, args, ccd_limits)
 if iMpiRank == 0:
     print '**' * 20
     print 'Time elapsed: %.2f seconds' % (time.time() - startTime)
