@@ -172,27 +172,34 @@ if iModelCase == 0:
         if iMpiRank == 0:
             print 'dust case'
         NumberDensityIndices, allSizeIntervals = getAllDustIntervalIndices(StringDataFileDSMC, iDim)
-
-        x, y, n = loadDustData(allSizeIntervals, NumberDensityIndices, iDim, StringDataFileDSMC)
-
+        x, y, numberDensities, massDensities = load_dust_data_miro(allSizeIntervals, NumberDensityIndices, iDim, StringDataFileDSMC, args)
     else:
-        x, y, n = loadGasData(StringDataFileDSMC, iDim)
+        x, y, numberDensities = loadGasData(StringDataFileDSMC, iDim)
 
 elif iModelCase == 1:
-    x, n = haserModel(QHaser, vHaser, tpHaser, tdHaser)
+    x, numberDensities = haserModel(QHaser, vHaser, tpHaser, tdHaser)
     y = None
 
 elif iModelCase == 2:
     #x, y, n = loadGasData(StringUserDataFile, iDim, True, DelimiterData, nHeaderRowsData)
-    x, y, n = load_user_data(StringUserDataFile, iDim, DelimiterData, nHeaderRowsData)
+    x, y, numberDensities = load_user_data(StringUserDataFile, iDim, DelimiterData, nHeaderRowsData)
+
+
+if numberDensities.ndim == 1:
+    numberDensities = np.array([[n] for n in numberDensities])
+
+print '+++++++++++++++++++++++++++++'
+print numberDensities[:, 0]
+print '+++++++++++++++++++++++++++++'
 
 ##############################################################
 # triangulation and interpolation for 2d case
+print 'start interpolation'
 if iDim == 1:
     pass
 elif iDim == 2:
     Triangles = mtri.Triangulation(x, y)
-    Interpolator = mtri.LinearTriInterpolator(Triangles, n)
+        Interpolator = [mtri.LinearTriInterpolator(Triangles, numberDensities[:, i]) for i in range(numberDensities.shape[1]))]
 
 if iMpiRank == 0:
     print 'interpolation done'
@@ -319,6 +326,9 @@ for i in range(nPixelsX):
                 xTravel = np.sqrt(np.sum(xTravel ** 2, axis=1))
             elif iDim == 2:
                 xTravel[:, 1] = np.sqrt(xTravel[:, 1]**2 + xTravel[:, 2]**2)
+            elif iDim == 3:
+                pass
+
             if iDim == 1:
                 DensityRay = np.interp(xTravel, x, n)
             elif iDim == 2:
