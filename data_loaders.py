@@ -46,7 +46,7 @@ def get_iDim(args):
 
 def getAllDustIntervalIndices(filename, dim):
     '''
-    returna a list containing x,y indices and the indices of
+    returna a list containing the indices of
     number density variables in the amps dust output file.
     also returns a list of all size intervals contained in the data file.
     '''
@@ -74,7 +74,9 @@ def getAllDustIntervalIndices(filename, dim):
                     allIndices.append(j)
             break
     f.close()
-    print len(allSizeIntervals), "size intervals found."
+    print len(allSizeIntervals), "dust size intervals found."
+    for size, index in zip(allSizeIntervals, allIndices):
+        print 'size: %.2e m, index: %i' % (size, index)
     return allIndices, allSizeIntervals
 
 
@@ -263,7 +265,39 @@ def load_user_data(DataFile, iDim, Delimiter, nHeaderRows):
     return x, y, n
 
 
+def load_dust_data_miro(allSizeIntervals, numberDensityIndices, iDim, dataFile, args):
+
+    if iDim == 1:
+        allIndices = [0]
+    elif iDim == 2:
+        allIndices = [0, 1]
+
+    for i in numberDensityIndices[iDim:]:
+        allIndices.append(i)
+        allIndices.append(i+1)
+
+    data = np.genfromtxt(dataFile, dtype=float, skip_header=3,
+                                    skip_footer=155236, usecols=allIndices)
+
+    if iDim == 1:
+        x = data[:, 0]
+        y = None
+    elif iDim == 2:
+        x = data[:, 0]
+        y = data[:, 1]
+
+    ndIndices = np.arange(iDim,len(data[0,:]),2)
+    mdIndices = ndIndices + 1
+
+    numberDensities = data[:, iDim::2]
+    massDensities = data[:, iDim+1::2]
+
+    return x, y, numberDensities, massDensities
+
 def load_dust_data(allSizeIntervals, numberDensityIndices, dim, dataFile, args):
+
+    print len(allSizeIntervals)
+    print len(numberDensityIndices)
 
     userIndices = []
     for size, index in zip(allSizeIntervals, numberDensityIndices):
