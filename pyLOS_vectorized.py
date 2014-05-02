@@ -188,18 +188,23 @@ elif iModelCase == 2:
 if numberDensities.ndim == 1:
     numberDensities = np.array([[n] for n in numberDensities])
 
+nSpecies = numberDensities.shape[1]
+nSpecies = 4
 print '+++++++++++++++++++++++++++++'
 print numberDensities[:, 0]
 print '+++++++++++++++++++++++++++++'
 
 ##############################################################
 # triangulation and interpolation for 2d case
-print 'start interpolation'
+if iMpiRank == 0:
+    print 'start interpolation'
 if iDim == 1:
     pass
 elif iDim == 2:
     Triangles = mtri.Triangulation(x, y)
-        Interpolator = [mtri.LinearTriInterpolator(Triangles, numberDensities[:, i]) for i in range(numberDensities.shape[1]))]
+    Interpolator = [mtri.LinearTriInterpolator(Triangles, numberDensities[:, i]) for i in range(nSpecies)]
+elif iDim == 3:
+    pass
 
 if iMpiRank == 0:
     print 'interpolation done'
@@ -210,8 +215,8 @@ if iMpiRank == 0:
 #############################################################
 
 if iInstrumentSelector == 1:                 # osiris wac
-    nPixelsX = 512                          # nr of pixels along x axis
-    nPixelsY = 512                          # nr of pixels along y axis
+    nPixelsX = 256                          # nr of pixels along x axis
+    nPixelsY = 256                          # nr of pixels along y axis
     PhiX = 12 / 2                            # instrument FOV in x (half opening angle) in degrees
     PhiY = 12 / 2                            # instrument FOV in y (half opening angle) in degrees
     iFOV = 0.000993                         # pixel FOV in rad
@@ -302,7 +307,11 @@ elif args.iPointingCase == 1:
     p[0] = np.ones((len(i), len(j)))
     p_hat = p / np.sqrt(p[0]**2 + p[1]**2 + p[2]**2)
 
-ccd = np.zeros((nPixelsX, nPixelsY))
+ccd = np.zeros((nPixelsX, nPixelsY, nSpecies))
+ccdFinal = np.zeros((nPixelsX, nPixelsY, nSpecies))
+if iInstrumentSelector == 3:
+    ccdFinal = np.zeros((19, nSpecies))
+
 cso2tenishev = np.array([-1, -1, 1])
 
 kkk = 0
@@ -329,57 +338,73 @@ for i in range(nPixelsX):
             elif iDim == 3:
                 pass
 
-            if iDim == 1:
-                DensityRay = np.interp(xTravel, x, n)
-            elif iDim == 2:
-                DensityRay = Interpolator.__call__(xTravel[:, 0], xTravel[:, 1])        # interpolated local number density
-            elif iDim == 3:
-                pass
-            ColumnDensity = np.trapz(DensityRay, dTravel)
-            if iMpiRank != 0:
-                data = np.array([ColumnDensity, i, j])
-                comm.send([ColumnDensity, i, j], dest=0, tag=13)
-            else:
-                ccd[i][j] = ColumnDensity
-                for jjj in range(1, nMpiSize):
-                    ColumnDensity, ii, jj = comm.recv(source=jjj, tag=13)
-                    ccd[ii][jj] = ColumnDensity
+            # loop over species
+            for spIndex in range(nSpecies):
+                if iDim == 1:
+                    DensityRay = np.interp(xTravel, x, numberDensities[:, spIndex])
+                elif iDim == 2:
+                    DensityRay = Interpolator[spIndex].__call__(xTravel[:, 0], xTravel[:, 1])        # interpolated local number density
+                elif iDim == 3:
+                    DensityRay = None
+
+                ColumnDensity = np.trapz(DensityRay, dTravel)
+                if iMpiRank != 0:
+                    data = np.array([ColumnDensity, i, j, spIndex])
+                    comm.send([ColumnDensity, i, j, spIndex], dest=0, tag=13)
+                else:
+                    ccd[i][j][spIndex] = ColumnDensity
+                    for jjj in range(1, nMpiSize):
+                        ColumnDensity, ii, jj, spIndex = comm.recv(source=jjj, tag=13)
+                        ccd[ii][jj][spIndex] = ColumnDensity
             nnn += 1
         kkk += 1
 
     if iMpiRank == 0:
         print i
 
+
 if iMpiRank == 0:
     print 'pixel loop done'
+    for spIndex in range(nSpecies):
+        if iInstrumentSelector == 3:
+            ccdFinal[:, spIndex] = alice.calculateBrightness(nOversampleX, nOversampleY, ccd[:, :, spIndex], gFactor)
+        else:
+            ccdFinal[:, :, spIndex] = ccd[:, :, spIndex]
 
-    ccd = np.array(ccd)
+        ######################################################
+        # write results to file
+        ######################################################
+        pltTitle = build_plot_title(args, 'LOS')
+        filename = '/result_%i.txt' % (spIndex)
+        with open(StringOutputDir + filename, 'w') as f:
+            f.write(pltTitle)
+            f.write('\n')
+            f.write("Each datapoint is the column number density in 1/m2 for an instrument  pixel.\n")
+            f.write("Rows correspond to pixels in instruments X axis, starting with the most negative value.\n")
+            f.write("Columns correspond to pixels in instrument Y axis, starting with the most negative value.\n")
+            f.write("/begin data\n")
+            if iInstrumentSelector == 3:
+                for value in ccdFinal[:, spIndex]:
+                    f.write('%e\n' % value)
+            else:
+                for row in ccdFinal[:, :, spIndex]:
+                    for value in row:
+                        f.write('%e,' % value)
+                    f.write('\n')
 
-    if iInstrumentSelector == 3:
-        ccdFinal = alice.calculateBrightness(nOversampleX, nOversampleY, ccd, gFactor)
-    else:
-        ccdFinal = ccd
+        ######################################################
+        # plot results
+        #######################################################
+        if args.StringPlotting.lower() == 'matplotlib':
+            plotName = 'result_%i.png' % (spIndex)
+        elif args.StringPlotting.lower() == 'bokeh':
+            plotName = 'result_%i.html' % (spIndex)
 
+        if iInstrumentSelector == 3:
+            plot_result_LOS(ccdFinal[:, spIndex], StringOutputDir, plotName, iInstrumentSelector, args, DoShowPlot=True)
+        else:
+            plot_result_LOS(ccdFinal[:, :, spIndex], StringOutputDir, plotName, iInstrumentSelector, args, DoShowPlot=True)
+if iMpiRank == 0:
     print '**' * 20
     print 'Time elapsed: %.2f seconds' % (time.time() - startTime)
     print '**' * 20
-    ######################################################
-    # write results to file
-    ######################################################
-    pltTitle = build_plot_title(args, 'LOS')
-    with open(StringOutputDir + '/result.txt', 'w') as f:
-        f.write(pltTitle)
-        f.write('\n')
-        f.write("Each datapoint is the column number density in 1/m2 for an instrument  pixel.\n")
-        f.write("Rows correspond to pixels in instruments X axis, starting with the most negative value.\n")
-        f.write("Columns correspond to pixels in instrument Y axis, starting with the most negative value.\n")
-        f.write("/begin data\n")
-        for row in ccd:
-            for value in row:
-                f.write('%e,' % value)
-            f.write('\n')
-
-    ######################################################
-    # plot results
-    #######################################################
-    plot_result_LOS(ccdFinal, StringOutputDir, 'result.png', iInstrumentSelector, args, DoShowPlot=True)

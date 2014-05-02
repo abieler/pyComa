@@ -59,7 +59,7 @@ def create_plot_insitu_bokeh(args, all_n_SC, all_species, dates_SC, r_SC, nLines
     if args.DoShowPlots:
         bplt.show()
     else:
-        print 'not showing results on screen'
+        print 'not showing plots on screen'
 
 
 def create_plot_insitu_matplotlib(args, all_n_SC, all_species, dates_SC, r_SC, nLinesPerFig, pltTitle):
@@ -90,7 +90,7 @@ def create_plot_insitu_matplotlib(args, all_n_SC, all_species, dates_SC, r_SC, n
     if args.DoShowPlots:
         plt.show()
     else:
-        print 'not showing results on screen'
+        print 'not showing plots on screen'
 
 
 def plot_result_LOS(ccd, StringOutputDir, StringOutFileName, iInstrumentSelector, args, DoShowPlot=False):
@@ -99,22 +99,34 @@ def plot_result_LOS(ccd, StringOutputDir, StringOutFileName, iInstrumentSelector
 
     if args.StringPlotting == 'matplotlib':
         if args.iInstrumentSelector in [1, 2, 5]:
-            create_plot_LOS_2d(args, ccd, pltTitle)
+            create_plot_LOS_2d_matplotlib(args, ccd, pltTitle, StringOutFileName)
         elif args.iInstrumentSelector in [3, 6]:
-            create_plot_LOS_1d(args, ccd, pltTitle)
+            create_plot_LOS_1d_matplotlib(args, ccd, pltTitle, StringOutFileName)
         elif args.iInstrumentSelector == 4:
             print 'not generating plot for MIRO'
             print 'Column Density: %.3e [#/m2]' % (ccd[0])
 
     elif args.StringPlotting == 'bokeh':
-        print 'bokeh plotting not supported yet for LOS cases'
-        create_plot_LOS_2d_bokeh(args, ccd, pltTitle)
+        if args.iInstrumentSelector in [1, 2, 5]:
+            create_plot_LOS_2d_bokeh(args, ccd, pltTitle, StringOutFileName)
+        elif args.iInstrumentSelector in [3, 6]:
+            create_plot_LOS_1d_bokeh(args, ccd, pltTitle, StringOutFileName)
 
 
-def create_plot_LOS_2d_bokeh(args, ccd, pltTitle):
+def create_plot_LOS_1d_bokeh(args, ccd, pltTitle, StringOutFileName):
+    bplt.output_file(args.StringOutputDir + '/' + StringOutFileName)
+    bplt.line(range(0, len(ccd)), ccd, line_width=2, line_color='black')
+
+    if args.DoShowPlots:
+        bplt.show()
+    else:
+        print 'not showing plots on screen'
+
+
+def create_plot_LOS_2d_bokeh(args, ccd, pltTitle, StringOutFileName):
 
     nPixels = len(ccd[:, 0])
-    bplt.output_file(args.StringOutputDir + '/' + 'result.html')
+    bplt.output_file(args.StringOutputDir + '/' + StringOutFileName)
     bplt.image(image=[np.log10(ccd)], x=[0], y=[0], dw=[nPixels], dh=[nPixels], palette=["Spectral-11"],
                x_range=Range1d(start=0, end=nPixels), y_range=Range1d(start=0, end=nPixels))
     print pltTitle
@@ -124,7 +136,7 @@ def create_plot_LOS_2d_bokeh(args, ccd, pltTitle):
     if args.DoShowPlots:
         bplt.show()
     else:
-        print 'not showing results on screen'
+        print 'not showing plots on screen'
 
 
 def build_plot_title(args, measurement='LOS'):
@@ -188,7 +200,7 @@ def build_plot_title(args, measurement='LOS'):
     return pltTitle
 
 
-def create_plot_LOS_1d(args, ccd, pltTitle):
+def create_plot_LOS_1d_matplotlib(args, ccd, pltTitle, figName):
 
     plt.figure()
     if args.iInstrumentSelector == 3:           # alice
@@ -200,14 +212,14 @@ def create_plot_LOS_1d(args, ccd, pltTitle):
         plt.xlim((5, 23))
 
     plt.title(pltTitle)
-
+    plt.savefig(args.StringOutputDir + '/' + figName)
     if args.DoShowPlots:
         plt.show()
 
 
-def create_plot_LOS_2d(args, ccd, pltTitle):
+def create_plot_LOS_2d_matplotlib(args, ccd, pltTitle, figName):
 
-    plt.figure(figsize=(14,12))
+    plt.figure(figsize=(14, 12))
     if args.iInstrumentSelector == 1:
         N = 8
         phi = 12
@@ -231,8 +243,8 @@ def create_plot_LOS_2d(args, ccd, pltTitle):
     plt.yticks(np.arange(N+1)/N*(len(ccd[0])-1), np.round(yyticks,2))
 
     plt.title(pltTitle)
-    plt.savefig(args.StringOutputDir + '/' + 'result_0.png')
-    print 'saved result as', args.StringOutputDir +'/' + 'result_0.png'
+    plt.savefig(args.StringOutputDir + '/' + figName)
+    print 'saved result as', args.StringOutputDir +'/' + figName
     if args.DoShowPlots:
         plt.show()
 
