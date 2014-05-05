@@ -186,7 +186,7 @@ def create_plot_LOS_2d_matplotlib(args, ccd, pltTitle, figName, ccd_limits):
 
     plt.title(pltTitle)
     plt.savefig(args.StringOutputDir + '/' + figName)
-    print 'saved result as', args.StringOutputDir +'/' + figName
+    print 'saved result as', args.StringOutputDir + '/' + figName
     if args.DoShowPlots:
         plt.show()
 
