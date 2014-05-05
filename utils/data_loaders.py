@@ -265,7 +265,7 @@ def load_user_data(DataFile, iDim, Delimiter, nHeaderRows):
     return x, y, n
 
 
-def load_dust_data_miro(allSizeIntervals, numberDensityIndices, iDim, dataFile, args):
+def load_dust_data_full(allSizeIntervals, numberDensityIndices, iDim, dataFile, args):
 
     if iDim == 1:
         allIndices = [0]
@@ -273,8 +273,8 @@ def load_dust_data_miro(allSizeIntervals, numberDensityIndices, iDim, dataFile, 
         allIndices = [0, 1]
 
     for i in numberDensityIndices[iDim:]:
-        allIndices.append(i)
-        allIndices.append(i+1)
+        allIndices.append(i)        # index of number density
+        allIndices.append(i+1)      # index of mean radius
 
     data = np.genfromtxt(dataFile, dtype=float, skip_header=3,
                                     skip_footer=155236, usecols=allIndices)
@@ -286,13 +286,11 @@ def load_dust_data_miro(allSizeIntervals, numberDensityIndices, iDim, dataFile, 
         x = data[:, 0]
         y = data[:, 1]
 
-    ndIndices = np.arange(iDim,len(data[0,:]),2)
-    mdIndices = ndIndices + 1
-
     numberDensities = data[:, iDim::2]
     massDensities = data[:, iDim+1::2]
 
     return x, y, numberDensities, massDensities
+
 
 def load_dust_data(allSizeIntervals, numberDensityIndices, dim, dataFile, args):
 
