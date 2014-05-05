@@ -1,0 +1,105 @@
+------------------------------------------------------------------------------------------
+
+radio science
+**************
+
+python runHybrid2.py  	--StringMeasurement = 'LOS'
+						--StringKernelMetaFile
+						--StringUtcStartTime
+						--StringOutputDir
+						--StringHybridCase
+						
+------------------------------------------------------------------------------------------
+
+in-situ hybrid2
+***************
+
+python runHybrid2.py	--StringMeasurement='insitu'
+						--StringKernelMetaFile
+						--StringUtcStartTime
+						--StringUtcStopTime
+						--nDeltaT
+						--StringHybridCase
+						
+------------------------------------------------------------------------------------------						
+
+in-situ
+********
+
+python in_situ_tool.py		
+						--StringOutputDir
+						--iModelCase
+							if iModelCase == 0:
+								--StringDataFileDSMC
+								--IsDust
+									if IsDust:
+										--DustSizeMin
+										--DustSizeMax
+							if iModelCase == 1:
+								--QHaser
+								--vHaser
+								--tpHaser
+								--tdHaser
+							if iModelCase == 2:
+								--StringUserDataFile
+								--*DelimiterData
+								--*nHeaderRowsData
+								--iUserDim
+						
+						--iPointingCase 			
+							if iPointingCase == 0:
+								--StringKernelMetaFile
+								--StringUtcStartTime
+								--StringUtcStopTime
+								--nDeltaT
+							if iPointingCase == 2:
+								--StringUserTrajectoryFile
+								--nHeaderRowsTraj
+								--DelimiterTraj
+
+------------------------------------------------------------------------------------------
+
+line of sight
+*************
+
+mpirun -np N pyLOS_vectorized.py
+									--StringOutputDir
+									
+									--iModelCase
+									if iModelCase == 0
+										--StringDataFileDSMC
+										--IsDust
+										if IsDust:
+											--DustSizeMin
+											--DustSizeMax
+									if iModelCase == 1:
+										--QHaser
+										--vHaser
+										--tpHaser
+										--tdHaser
+									if iModelCase == 2:
+										--StringUserDataFile
+										--*DelimiterData
+										--*nHeaderRowsData
+										--iUserDim
+										
+									--iPointingCase
+									if iPointingCase == 0:
+										--StringKernelMetaFile
+										--StringUtcStartTime
+									if iPointingCase == 1:
+										--UserR
+										--UserPhaseAngle
+										--UserLatitude
+										--UserAlpha
+										--UserBeta
+										--UserGamma
+										
+									--iInstrumentSelector
+									
+------------------------------------------------------------------------------------------
+						
+						
+						
+				
+				
