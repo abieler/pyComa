@@ -40,12 +40,12 @@ try:
     import argparse
 
     # import own modules
-    from data_loaders import *
-    from haser import haserModel
-    from data_plotting import plot_result_LOS, build_plot_title
-    import rotations
-    import alice
-    import createRay
+    from utils.data_loaders import *
+    from utils.haser import haserModel
+    from utils.data_plotting import plot_result_LOS, build_plot_title
+    import utils.rotations as rotations
+    import utils.alice as alice
+    import utils.createRay as createRay
     from cmdline_args import cmdline_args
 
 except Exception, e:
