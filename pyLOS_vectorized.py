@@ -172,7 +172,7 @@ if iModelCase == 0:
         if iMpiRank == 0:
             print 'dust case'
         NumberDensityIndices, allSizeIntervals = getAllDustIntervalIndices(StringDataFileDSMC, iDim)
-        x, y, numberDensities, massDensities = load_dust_data_miro(allSizeIntervals, NumberDensityIndices, iDim, StringDataFileDSMC, args)
+        x, y, numberDensities, massDensities = load_dust_data_full(allSizeIntervals, NumberDensityIndices, iDim, StringDataFileDSMC, args)
     else:
         x, y, numberDensities = loadGasData(StringDataFileDSMC, iDim)
 
