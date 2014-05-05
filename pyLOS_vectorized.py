@@ -46,7 +46,7 @@ try:
     import utils.rotations as rotations
     import utils.alice as alice
     import utils.createRay as createRay
-    from cmdline_args import cmdline_args
+    from utils.cmdline_args import cmdline_args
 
 except Exception, e:
     print '--' * 20
