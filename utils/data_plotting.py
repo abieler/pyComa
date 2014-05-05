@@ -195,17 +195,17 @@ def build_plot_title(args, measurement='LOS'):
 
     if measurement == 'LOS':
         if args.iInstrumentSelector == 1:
-            pltInstrument = 'OSIRIS WAC'
+            pltInstrument = 'OSIRIS WAC '
         elif args.iInstrumentSelector == 2:
-            pltInstrument = 'OSIRIS NAC'
+            pltInstrument = 'OSIRIS NAC '
         elif args.iInstrumentSelector == 3:
-            pltInstrument = 'ALICE'
+            pltInstrument = 'ALICE '
         elif args.iInstrumentSelector == 4:
-            pltInstrument = 'MIRO'
+            pltInstrument = 'MIRO '
         elif args.iInstrumentSelector == 5:
-            pltInstrument = 'VIRTIS M'
+            pltInstrument = 'VIRTIS M '
         elif args.iInstrumentSelector == 6:
-            pltInstrument = 'VIRTIS H'
+            pltInstrument = 'VIRTIS H '
 
         pltTitle = 'ICES line of sight tool\n'
         pltTitle += pltInstrument
