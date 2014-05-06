@@ -223,7 +223,7 @@ def build_plot_title(args, measurement='LOS'):
 
         if args.iPointingCase == 0:
             pltTitle += 'Pointing: SPICE (%s, %s)\n' % (os.path.split(args.StringKernelMetaFile)[1],
-                                      pltUtcStartTime)
+                                                        args.StringUtcStartTime)
         else:
             pltTitle += 'Pointing: user defined (R: %i km, PA: %i, LAT: %i, a: %i, b: %i, c: %i)\n' %\
                         (args.UserR / 1000, args.UserPhaseAngle,
