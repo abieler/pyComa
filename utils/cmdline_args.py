@@ -13,8 +13,8 @@ def cmdline_args(parser):
     parser.add_argument("--StringDSMCdir", type=str)
     parser.add_argument("--StringDataFileDSMC", type=str)
     parser.add_argument("--IsDust", type=int, choices=[0, 1], help='1 for dust case, 0 for gas case')
-    parser.add_argument("--DustSizeMin", type=float)
-    parser.add_argument('--DustSizeMax', type=float)
+    parser.add_argument("--DustSizeMin", type=float, default=0.0)
+    parser.add_argument('--DustSizeMax', type=float, default=2e-7)
 
     parser.add_argument("--QHaser", type=float, default=1e27)
     parser.add_argument("--vHaser", type=float, default=500.0)
@@ -34,7 +34,7 @@ def cmdline_args(parser):
     parser.add_argument("--StringUtcStopTime", type=str)
     parser.add_argument("--nDeltaT", type=int)
 
-    parser.add_argument("--UserR", type=float, default=1e5)                               # Distance in km from nucleus center
+    parser.add_argument("--UserR", type=float, default=1e2)                               # Distance in km from nucleus center
     parser.add_argument("--UserPhaseAngle", type=float, default=0.0)
     parser.add_argument("--UserLatitude", type=float, default=0.0)
     parser.add_argument("--UserAlpha", type=float, default=0.0)
