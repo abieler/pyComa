@@ -69,14 +69,13 @@ def getAllDustIntervalIndices(filename, dim):
                     if '"X"' in element or '"Y"' in element:
                         pass
                     else:
-                        allSizeIntervals.append(
-                                    np.float(element.split('=')[1][0:-2]))
+                        allSizeIntervals.append(np.float(element.split('=')[1][0:-2]))
                     allIndices.append(j)
             break
     f.close()
-    print len(allSizeIntervals), "dust size intervals found."
-    for size, index in zip(allSizeIntervals, allIndices):
-        print 'size: %.2e m, index: %i' % (size, index)
+    #print len(allSizeIntervals), "dust size intervals found."
+    #for size, index in zip(allSizeIntervals, allIndices):
+    #    print 'size: %.2e m, index: %i' % (size, index)
     return allIndices, allSizeIntervals
 
 
@@ -232,7 +231,7 @@ def load_user_trajectory(args):
 
     print 'trajectory file delimiter:"%s"' % args.DelimiterTraj
     x,y,z = np.genfromtxt(args.StringUserTrajectoryFile, dtype=float, skip_header=args.nHeaderRowsData,
-                            delimiter=args.DelimiterTraj, unpack=True)
+                          delimiter=args.DelimiterTraj, unpack=True)
     return x, y, z
 
 
@@ -272,12 +271,18 @@ def load_dust_data_full(allSizeIntervals, numberDensityIndices, iDim, dataFile, 
     elif iDim == 2:
         allIndices = [0, 1]
 
-    for i in numberDensityIndices[iDim:]:
+    UserIndices = [i for i, size in zip(numberDensityIndices[iDim:], allSizeIntervals)
+                   if (args.DustSizeMin <= size <= args.DustSizeMax)]
+
+    for i in UserIndices:
         allIndices.append(i)        # index of number density
         allIndices.append(i+1)      # index of mass density
 
     data = np.genfromtxt(dataFile, dtype=float, skip_header=3,
                          skip_footer=155236, usecols=allIndices)
+
+    #print 'user indices', UserIndices
+    #print 'all indices', allIndices
 
     if iDim == 1:
         x = data[:, 0]
