@@ -249,9 +249,9 @@ def load_user_data(DataFile, iDim, Delimiter, nHeaderRows):
         Delimiter = ' '
 
     data = np.genfromtxt(DataFile, dtype=float,
-                     skip_header=nHeaderRows,
-                     delimiter=Delimiter,
-                     usecols=DataIndices)
+                         skip_header=nHeaderRows,
+                         delimiter=Delimiter,
+                         usecols=DataIndices)
 
     if iDim == 1:
         x = data[:, 0]
@@ -274,10 +274,10 @@ def load_dust_data_full(allSizeIntervals, numberDensityIndices, iDim, dataFile, 
 
     for i in numberDensityIndices[iDim:]:
         allIndices.append(i)        # index of number density
-        allIndices.append(i+1)      # index of mean radius
+        allIndices.append(i+1)      # index of mass density
 
     data = np.genfromtxt(dataFile, dtype=float, skip_header=3,
-                                    skip_footer=155236, usecols=allIndices)
+                         skip_footer=155236, usecols=allIndices)
 
     if iDim == 1:
         x = data[:, 0]
