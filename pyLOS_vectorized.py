@@ -154,7 +154,7 @@ if iPointingCase == 0:
         print 'Distance from comet: %.2e' % (np.sqrt(np.sum(rRosetta ** 2)))
 
 elif iPointingCase == 1:
-    x0 = np.array([-UserR, 0, 0])           # -R --> start at subsolar point
+    x0 = np.array([-UserR*1000, 0, 0])           # -UserR --> start at subsolar point, in meters
     rRosetta = rotations.rotateVector(x0, UserPhaseAngle, UserLatitude)
     ei, ej, ek = rotations.rotateCoordinateSystem2(UserPhaseAngle, UserLatitude, UserAlpha, UserBeta, UserGamma)
 
@@ -189,10 +189,8 @@ if numberDensities.ndim == 1:
     numberDensities = np.array([[n] for n in numberDensities])
 
 nSpecies = numberDensities.shape[1]
-nSpecies = 4
-print '+++++++++++++++++++++++++++++'
-print numberDensities[:, 0]
-print '+++++++++++++++++++++++++++++'
+if iMpiRank == 0:
+    print 'Nr of species:', nSpecies
 
 ##############################################################
 # triangulation and interpolation for 2d case
@@ -241,7 +239,6 @@ elif iInstrumentSelector == 3:               # alice
 
     iFOV = (PhiX * 2 / 180 * np.pi / (19 * nOversampleX)) * (PhiY * 2 / 180 * np.pi / (nOversampleY))
 
-    print iFOV
     PixelSize = 1
 
     #v_sun = alice.get_v_sun(StringKernelMetaFile, StringUtcStartTime)
