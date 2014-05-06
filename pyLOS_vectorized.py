@@ -305,10 +305,6 @@ elif args.iPointingCase == 1:
     p_hat = p / np.sqrt(p[0]**2 + p[1]**2 + p[2]**2)
 
 ccd = np.zeros((nPixelsX, nPixelsY, nSpecies))
-ccdFinal = np.zeros((nPixelsX, nPixelsY, nSpecies))
-if iInstrumentSelector == 3:
-    ccdFinal = np.zeros((19, nSpecies))
-
 cso2tenishev = np.array([-1, -1, 1])
 
 kkk = 0
@@ -367,9 +363,9 @@ if iMpiRank == 0:
 
     for spIndex in range(nSpecies):
         if iInstrumentSelector == 3:
-            ccdFinal[:, spIndex] = alice.calculateBrightness(nOversampleX, nOversampleY, ccd[:, :, spIndex], gFactor)
+            ccdFinal = alice.calculateBrightness(nOversampleX, nOversampleY, ccd[:, :, spIndex], gFactor)
         else:
-            ccdFinal[:, :, spIndex] = ccd[:, :, spIndex]
+            ccdFinal = ccd[:, :, spIndex]
 
         ######################################################
         # write results to file
@@ -384,10 +380,10 @@ if iMpiRank == 0:
             f.write("Columns correspond to pixels in instrument Y axis, starting with the most negative value.\n")
             f.write("/begin data\n")
             if iInstrumentSelector == 3:
-                for value in ccdFinal[:, spIndex]:
+                for value in ccdFinal:
                     f.write('%e\n' % value)
             else:
-                for row in ccdFinal[:, :, spIndex]:
+                for row in ccdFinal:
                     for value in row:
                         f.write('%e,' % value)
                     f.write('\n')
@@ -401,9 +397,9 @@ if iMpiRank == 0:
             plotName = 'result_%i.html' % (spIndex)
 
         if iInstrumentSelector == 3:
-            plot_result_LOS(ccdFinal[:, spIndex], plotName, args, ccd_limits)
+            plot_result_LOS(ccdFinal, plotName, args, ccd_limits)
         else:
-            plot_result_LOS(ccdFinal[:, :, spIndex], plotName, args, ccd_limits)
+            plot_result_LOS(ccdFinal, plotName, args, ccd_limits)
 if iMpiRank == 0:
     print '**' * 20
     print 'Time elapsed: %.2f seconds' % (time.time() - startTime)
