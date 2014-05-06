@@ -22,23 +22,21 @@ pixelFOV = np.array([9.39,
                     9.39,
                     9.39,
                     9.39,
-                    9.39
-                    ]) * 1e-6
+                    9.39]) * 1e-6
 
 
 def calculateBrightness(N_oversampleX, N_oversampleY, ccd, gFactor):
 
-
     print 'ccd mean:', np.mean(ccd)
     print 'ccd min :', np.min(ccd)
     print 'ccd max :', np.max(ccd)
-    
+
     ccdFinal = np.zeros(19)
-    
+
     ll = 0
     for k in range(7):              # loop over first 7 pixels
         ccdFinal[k] = np.mean(ccd[k * N_oversampleX:(k + 1) * N_oversampleX, :])
-        
+
     for k in range(14, 19):          # loop over last 5 pixels
         ccdFinal[k] = np.mean(ccd[k * N_oversampleX:(k + 1) * N_oversampleX, :])
 
@@ -102,9 +100,10 @@ def get_v_sun(kernelMetaFile, utcStartTime):
 
     return v_sun
 
+
 def get_gfactor_from_db(v_sun=8.8, gasTemp=100, species='CO'):
 
-    db = sqlite3.connect('test.sqlite')
+    db = sqlite3.connect('alice.sqlite')
     cur = db.cursor()
 
     DBqueryLowerV = 'SELECT v_sun, gFactor from gFactors WHERE name\
