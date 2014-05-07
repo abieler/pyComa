@@ -23,7 +23,7 @@ from utils.cmdline_args import cmdline_args
 
 t0 = time.time()
 parser = argparse.ArgumentParser()
-args = utils.cmdline_args(parser)
+args = cmdline_args(parser)
 
 print '--' * 20
 print "mkFile:", args.StringKernelMetaFile
