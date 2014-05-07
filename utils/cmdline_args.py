@@ -48,6 +48,9 @@ def cmdline_args(parser):
     parser.add_argument('--StringPlotting', type=str, default='matplotlib')
     parser.add_argument('--DoShowPlots', type=str)
 
+    parser.add_argument('--v_sun', type=float, default=0)
+    parser.add_argument('--gFactor', type=float, default=1e-7)
+
     args = parser.parse_args()
 
     return args
