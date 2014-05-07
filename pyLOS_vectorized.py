@@ -241,7 +241,11 @@ elif iInstrumentSelector == 3:               # alice
 
     PixelSize = 1
 
-    #v_sun = alice.get_v_sun(StringKernelMetaFile, StringUtcStartTime)
+    if iPointingCase == 0:
+        v_sun = alice.get_v_sun(StringKernelMetaFile, StringUtcStartTime)
+    else:
+        v_sun = None       # v_sun is not needed if not spice pointing
+
     #gFactor = alice.get_gfactor_from_db()
 
     v_sun = 12
@@ -363,7 +367,7 @@ if iMpiRank == 0:
 
     for spIndex in range(nSpecies):
         if iInstrumentSelector == 3:
-            ccdFinal = alice.calculateBrightness(nOversampleX, nOversampleY, ccd[:, :, spIndex], gFactor)
+            ccdFinal = alice.calculateBrightness(nOversampleX, nOversampleY, ccd[:, :, spIndex], args.gFactor)
         else:
             ccdFinal = ccd[:, :, spIndex]
 
@@ -380,8 +384,10 @@ if iMpiRank == 0:
             f.write("Columns correspond to pixels in instrument Y axis, starting with the most negative value.\n")
             f.write("/begin data\n")
             if iInstrumentSelector == 3:
-                for value in ccdFinal:
-                    f.write('%e\n' % value)
+                for row in ccdFinal:
+                    for value in row:
+                        f.write('%e,' % value)
+                    f.write('\n')
             else:
                 for row in ccdFinal:
                     for value in row:
