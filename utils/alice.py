@@ -31,7 +31,13 @@ def calculateBrightness(N_oversampleX, N_oversampleY, ccd, gFactor):
     print 'ccd min :', np.min(ccd)
     print 'ccd max :', np.max(ccd)
 
+    if gFactor is None:
+        gFactors = get_gfactor_from_db()
+    else:
+        gFactors = [gFactor]
+
     ccdFinal = np.zeros(19)
+    result = []
 
     ll = 0
     for k in range(7):              # loop over first 7 pixels
@@ -52,9 +58,13 @@ def calculateBrightness(N_oversampleX, N_oversampleY, ccd, gFactor):
     for k in range(8, 13):
         ccdFinal[k] = np.mean(ccd[k * N_oversampleX:(k + 1) * N_oversampleX, ll:-ll])
 
-    ccdFinal = ccdFinal * gFactor / (4 * np.pi) * pixelFOV
+    for gFactor in gFactors:
+        print gFactor
+        #ccdF = ccdFinal * gFactor / (4 * np.pi) * pixelFOV
+        ccdF = ccdFinal
+        result.append(list(ccdF))
 
-    return ccdFinal
+    return result
 
 
 def calculate_column(nRay, dTravel, pixelSize=10**-6,
@@ -101,30 +111,36 @@ def get_v_sun(kernelMetaFile, utcStartTime):
     return v_sun
 
 
-def get_gfactor_from_db(v_sun=8.8, gasTemp=100, species='CO'):
+def get_gfactor_from_db(v_sun=0.1, gasTemp=100, species='CO_'):
 
-    db = sqlite3.connect('alice.sqlite')
+    vLow = np.floor(v_sun)
+    vHigh = np.ceil(v_sun)
+
+    db = sqlite3.connect('utils/alice.sqlite')
     cur = db.cursor()
 
-    DBqueryLowerV = 'SELECT v_sun, gFactor from gFactors WHERE name\
-                    = "%s" AND gasTemp = %i AND v_sun < %f \
-                    ORDER BY v_sun DESC' % (species, gasTemp, v_sun)
-    DBqueryHigherV = 'SELECT v_sun, gFactor from gFactors WHERE name\
-                     = "%s" AND gasTemp = %i AND v_sun > %f \
-                     ORDER BY v_sun ASC' % (species, gasTemp, v_sun)
+    DBqueryHigh = ('SELECT gFactor from gFactors WHERE (name'
+                   '= "%s" AND gasTemp = %i) AND (v_sun = %f)'
+                   'ORDER BY v_sun DESC'
+                   % (species, gasTemp, vHigh))
+    print DBqueryHigh
+    cur.execute(DBqueryHigh)
+    dataHigh = cur.fetchall()
 
-    cur.execute(DBqueryHigherV)
-    v_high, gFactorHigh = cur.fetchall()[0]
-
-    cur.execute(DBqueryLowerV)
-    v_low, gFactorLow = cur.fetchall()[0]
+    DBqueryLow = ('SELECT gFactor from gFactors WHERE (name'
+                  '= "%s" AND gasTemp = %i) AND (v_sun = %f)'
+                  'ORDER BY v_sun DESC'
+                  % (species, gasTemp, vLow))
+    print DBqueryLow
+    cur.execute(DBqueryLow)
+    dataLow = cur.fetchall()
     db.close()
 
-    gFactorInterpolated = np.interp([v_sun], [v_low, v_high],
-                                    [gFactorLow, gFactorHigh*2])
-    gFactor = gFactorInterpolated
-    print 'high :', v_high, gFactorHigh*2
-    print 'low  :', v_low, gFactorLow
-    print 'sun:', v_sun, gFactorInterpolated
+    gFactorInterpolated = []
+    for gLow, gHigh in zip(dataLow, dataHigh):
+        gInterp = np.interp(v_sun, [vLow, vHigh], [gLow[0], gHigh[0]])
+        gFactorInterpolated.append(gInterp)
 
+    gFactor = np.array(gFactorInterpolated)
+    print 'returning  %i gFactors from db.' % len(gFactorInterpolated)
     return gFactor
