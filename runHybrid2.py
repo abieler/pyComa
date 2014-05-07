@@ -12,14 +12,14 @@ import matplotlib.pyplot as plt
 import time
 
 import spice
-from cmdline_args import cmdline_args
-from createRay import createRay
-from data_loaders import load_hybrid2_data
-import spice_functions
-from data_plotting import plot_result_insitu
+from utils.cmdline_args import cmdline_args
+from utils.createRay import createRay
+from utils.data_loaders import load_hybrid2_data
+import utils.spice_functions as spice_functions
+from utils.data_plotting import plot_result_insitu
 
 parser = argparse.ArgumentParser()
-args = cmdline_args(parser)
+args = utils.cmdline_args(parser)
 
 pathToExecutable = '/Users/ices/www-dev/htdocs/ICES/Models/LoS/pyComa'
 
