@@ -19,7 +19,7 @@ import utils.spice_functions as spice_functions
 from utils.data_plotting import plot_result_insitu
 
 parser = argparse.ArgumentParser()
-args = utils.cmdline_args(parser)
+args = cmdline_args(parser)
 
 pathToExecutable = '/Users/ices/www-dev/htdocs/ICES/Models/LoS/pyComa'
 
