@@ -15,11 +15,11 @@ except:
 import matplotlib
 
 import spice
-from data_loaders import *
-import spice_functions
-from data_plotting import plot_result_insitu
-from haser import haserModel
-from cmdline_args import cmdline_args
+from utils.data_loaders import *
+import utils.spice_functions as spice_functions
+from utils.data_plotting import plot_result_insitu
+from utils.haser import haserModel
+from utils.cmdline_args import cmdline_args
 
 t0 = time.time()
 parser = argparse.ArgumentParser()
