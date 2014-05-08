@@ -26,7 +26,17 @@ pixelFOV = np.array([9.39,
 
 
 def save_results(f, ccdFinal, wavelengths):
-    
+
+    nPixels = 19
+    nSpecies = ccdFinal.shape[0] - 1
+    for w in wavelengths:
+        f.write('%i [nm],' % w)
+    f.write('column density [#/m2]\n')
+    for i in range(nPixels):
+        for value in ccdFinal[:, i]:
+            f.write('%e,' % value)
+        f.write('\n')
+
 
 def calculateBrightness(N_oversampleX, N_oversampleY, ccd, gFactor):
 
