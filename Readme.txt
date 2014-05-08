@@ -58,5 +58,9 @@ the pyComa/utils directory.
 4c) create the following symlink:
 sudo ln -s /YourPathTo/anaconda/bin /opt/local/anaconda/bin
 
-4d) on OSX mpi4py might be broken. to fix this create the following symlink:
+
+Workarounds
+***********
+
+On OSX mpi4py might be broken. to fix this, create the following symlink:
 sudo ln -s /yourPathTo/anaconda /opt/anaconda1anaconda2anaconda3
