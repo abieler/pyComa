@@ -79,7 +79,8 @@ def getAllDustIntervalIndices(filename, dim):
     return allIndices, allSizeIntervals
 
 
-def load_gas_data(dataFile, dim, userData=False, userDelimiter=',', userNrOfHeaderRows=0):
+def load_gas_data(dataFile, dim, userData=False, userDelimiter=',',
+                  userNrOfHeaderRows=0):
 
     if not userData:
         '''
@@ -230,8 +231,9 @@ def load_user_trajectory(args):
         args.DelimiterTraj = " "
 
     print 'trajectory file delimiter:"%s"' % args.DelimiterTraj
-    x,y,z = np.genfromtxt(args.StringUserTrajectoryFile, dtype=float, skip_header=args.nHeaderRowsData,
-                          delimiter=args.DelimiterTraj, unpack=True)
+    x, y, z = np.genfromtxt(args.StringUserTrajectoryFile, dtype=float,
+                            skip_header=args.nHeaderRowsData,
+                            delimiter=args.DelimiterTraj, unpack=True)
     return x, y, z
 
 

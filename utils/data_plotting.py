@@ -44,7 +44,9 @@ def create_plot_insitu_bokeh(args, all_n_SC, all_species, dates_SC, r_SC, nLines
             bplt.output_file(args.StringOutputDir + '/' + 'result_%i.html' % (i // nLinesPerFig))
             bplt.figure(x_axis_type='datetime')
             bplt.hold()
-        bplt.line(dates_SC, np.log10(all_n_SC[i]), legend=all_species[i], line_width=2, line_color=pltColors[i % nLinesPerFig])
+        bplt.line(dates_SC, np.log10(all_n_SC[i]), legend=all_species[i], line_width=2,
+                  line_color=pltColors[i % nLinesPerFig])
+
         bplt.xaxis().axis_label = 'Time'
         bplt.yaxis().axis_label = 'log10(n) [#/m3]'
         if (i % nLinesPerFig == (nLinesPerFig - 1)) or (i == len(all_species) - 1):
@@ -239,7 +241,9 @@ def build_plot_title(args, measurement='LOS'):
             pltTitle += '(%s)\n' % (os.path.split(args.StringDataFileDSMC)[0].split('/')[-1])
         elif args.iModelCase == 1:
             pltTitle += 'Coma model: HASER '
-            pltTitle += 'Q = %.2e [#/s], v = %.0f [m/s], tp = %.2e [s]\n' % (args.QHaser, args.vHaser, args.tpHaser)
+            pltTitle += 'Q = %.2e [#/s], v = %.0f [m/s], tp = %.2e [s]\n' % (args.QHaser,
+                                                                             args.vHaser,
+                                                                             args.tpHaser)
         elif args.iModelCase == 2:
             pltTitle += 'Coma model: user defined (%s)\n' % (os.path.split(args.StringUserDataFile)[1])
 
