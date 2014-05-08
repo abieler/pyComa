@@ -386,11 +386,7 @@ if iMpiRank == 0:
             f.write("Columns correspond to pixels in instrument Y axis, starting with the most negative value.\n")
             f.write("/begin data\n")
             if iInstrumentSelector == 3:
-                nSpecies = ccdFinal.shape[0]
-                for i in range(19):
-                    for value in ccdFinal[:, i]:
-                        f.write('%e,' % value)
-                    f.write('\n')
+                alice.save_results(f, ccdFinal, wavelengths)
             else:
                 for row in ccdFinal:
                     for value in row:
