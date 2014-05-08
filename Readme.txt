@@ -19,14 +19,28 @@ Config Anaconda:
 
 1g) modify your PATH variable such that python is called
 from /YourPathTo/anaconda/bin/python
+(newer anaconda distros can do this automatically for you
+during the install process)
 
 
-Install SPICE
-***************
-2a) download and install cspice from: http://naif.jpl.nasa.gov/naif/toolkit_C.html.
+Install SPICE/ pySPICE
+***********************
 
-2b) download pySpice from https://github.com/rca/PySPICE and follow the installation
-instructions.
+pySPICE in an unofficial wrapper for the NAIF cspice toolkit
+
+2a) download cspice toolkit from:
+http://naif.jpl.nasa.gov/naif/toolkit_C.html.
+
+2b) download pySpice from
+https://github.com/rca/PySPICE.
+
+2c) extract both downloaded packages and move the extracted cspice
+folder into the PySPICE-master directory.
+
+2d) from inside PySPICE-master execute the following two commands from
+the shell:
+python setup.py build_ext
+python setup.py install
 
 
 Install Git
