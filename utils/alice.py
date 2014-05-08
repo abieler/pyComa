@@ -25,16 +25,16 @@ pixelFOV = np.array([9.39,
                     9.39]) * 1e-6
 
 
+def save_results(f, ccdFinal, wavelengths):
+    
+
 def calculateBrightness(N_oversampleX, N_oversampleY, ccd, gFactor):
 
-    print 'ccd mean:', np.mean(ccd)
-    print 'ccd min :', np.min(ccd)
-    print 'ccd max :', np.max(ccd)
-
     if gFactor is None:
-        gFactors = get_gfactor_from_db()
+        gFactors, wavelengths = get_gfactor_from_db()
     else:
         gFactors = [gFactor]
+        wavelengths = [0]
 
     ccdFinal = np.zeros(19)
     result = []
@@ -59,16 +59,16 @@ def calculateBrightness(N_oversampleX, N_oversampleY, ccd, gFactor):
         ccdFinal[k] = np.mean(ccd[k * N_oversampleX:(k + 1) * N_oversampleX, ll:-ll])
 
     for gFactor in gFactors:
-        print gFactor
-        #ccdF = ccdFinal * gFactor / (4 * np.pi) * pixelFOV
-        ccdF = ccdFinal
-        result.append(list(ccdF))
+        ccdF = ccdFinal * gFactor / (4 * np.pi) * pixelFOV
+        result.append(ccdF)
 
-    return result
+    result.append(ccdFinal)
+
+    return np.array(result), wavelengths
 
 
 def calculate_column(nRay, dTravel, pixelSize=10**-6,
-                    iFOV=9.39*10**-6, gFactor=2*10**-7):
+                     iFOV=9.39*10**-6, gFactor=2*10**-7):
 
     #N = np.trapz(iFOV * np.array(dTravel)**2 * nRay, dTravel)
     N = np.trapz(nRay, dTravel)
@@ -121,7 +121,7 @@ def get_gfactor_from_db(v_sun=0.1, gasTemp=100, species='CO_'):
 
     DBqueryHigh = ('SELECT gFactor from gFactors WHERE (name'
                    '= "%s" AND gasTemp = %i) AND (v_sun = %f)'
-                   'ORDER BY v_sun DESC'
+                   ' ORDER BY v_sun DESC'
                    % (species, gasTemp, vHigh))
     print DBqueryHigh
     cur.execute(DBqueryHigh)
@@ -129,11 +129,24 @@ def get_gfactor_from_db(v_sun=0.1, gasTemp=100, species='CO_'):
 
     DBqueryLow = ('SELECT gFactor from gFactors WHERE (name'
                   '= "%s" AND gasTemp = %i) AND (v_sun = %f)'
-                  'ORDER BY v_sun DESC'
+                  ' ORDER BY v_sun DESC'
                   % (species, gasTemp, vLow))
     print DBqueryLow
     cur.execute(DBqueryLow)
     dataLow = cur.fetchall()
+
+    DBqueryWavelengths = ('SELECT wavelength from gFactors WHERE (name'
+                          '= "%s" AND gasTemp = %i) AND (v_sun = %f)'
+                          ' ORDER BY v_sun DESC'
+                          % (species, gasTemp, vLow))
+    print DBqueryWavelengths
+    cur.execute(DBqueryWavelengths)
+    dataWavelengths = cur.fetchall()
+
+    wavelengths = []
+    for value in dataWavelengths:
+        wavelengths.append(value[0])
+
     db.close()
 
     gFactorInterpolated = []
@@ -141,6 +154,6 @@ def get_gfactor_from_db(v_sun=0.1, gasTemp=100, species='CO_'):
         gInterp = np.interp(v_sun, [vLow, vHigh], [gLow[0], gHigh[0]])
         gFactorInterpolated.append(gInterp)
 
-    gFactor = np.array(gFactorInterpolated)
+    gFactors = np.array(gFactorInterpolated)
     print 'returning  %i gFactors from db.' % len(gFactorInterpolated)
-    return gFactor
+    return gFactors, wavelengths
