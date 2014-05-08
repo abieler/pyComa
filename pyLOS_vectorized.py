@@ -214,8 +214,8 @@ if iMpiRank == 0:
 #############################################################
 
 if iInstrumentSelector == 1:                 # osiris wac
-    nPixelsX = 256                          # nr of pixels along x axis
-    nPixelsY = 256                          # nr of pixels along y axis
+    nPixelsX = 512                          # nr of pixels along x axis
+    nPixelsY = 512                          # nr of pixels along y axis
     PhiX = 12 / 2                            # instrument FOV in x (half opening angle) in degrees
     PhiY = 12 / 2                            # instrument FOV in y (half opening angle) in degrees
     iFOV = 0.000993                         # pixel FOV in rad
@@ -401,10 +401,8 @@ if iMpiRank == 0:
         elif args.StringPlotting.lower() == 'bokeh':
             plotName = 'result_%i.html' % (spIndex)
 
-        if iInstrumentSelector == 3:
-            plot_result_LOS(ccdFinal, plotName, args, ccd_limits)
-        else:
-            plot_result_LOS(ccdFinal, plotName, args, ccd_limits)
+        plot_result_LOS(ccdFinal, plotName, args, ccd_limits)
+
 if iMpiRank == 0:
     print '**' * 20
     print 'Time elapsed: %.2f seconds' % (time.time() - startTime)
