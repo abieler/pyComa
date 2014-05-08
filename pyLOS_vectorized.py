@@ -172,7 +172,8 @@ if iModelCase == 0:
         if iMpiRank == 0:
             print 'dust case'
         NumberDensityIndices, allSizeIntervals = getAllDustIntervalIndices(StringDataFileDSMC, iDim)
-        x, y, numberDensities, massDensities = load_dust_data_full(allSizeIntervals, NumberDensityIndices, iDim, StringDataFileDSMC, args)
+        x, y, numberDensities, massDensities = load_dust_data_full(allSizeIntervals, NumberDensityIndices,
+                                                                   iDim, StringDataFileDSMC, args)
     else:
         x, y, numberDensities = loadGasData(StringDataFileDSMC, iDim)
 
@@ -367,7 +368,8 @@ if iMpiRank == 0:
 
     for spIndex in range(nSpecies):
         if iInstrumentSelector == 3:
-            ccdFinal = alice.calculateBrightness(nOversampleX, nOversampleY, ccd[:, :, spIndex], args.gFactor)
+            ccdFinal, wavelengths = alice.calculateBrightness(nOversampleX, nOversampleY, ccd[:, :, spIndex],
+                                                              args.gFactor)
         else:
             ccdFinal = ccd[:, :, spIndex]
 
@@ -384,8 +386,9 @@ if iMpiRank == 0:
             f.write("Columns correspond to pixels in instrument Y axis, starting with the most negative value.\n")
             f.write("/begin data\n")
             if iInstrumentSelector == 3:
-                for row in ccdFinal:
-                    for value in row:
+                nSpecies = ccdFinal.shape[0]
+                for i in range(19):
+                    for value in ccdFinal[:, i]:
                         f.write('%e,' % value)
                     f.write('\n')
             else:
