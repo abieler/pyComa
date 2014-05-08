@@ -12,6 +12,11 @@ from bokeh.objects import Range1d
 from data_loaders import load_in_situ_output
 
 rcParams.update({'figure.autolayout': True})
+font = {'family':'normal',
+        'weight':'bold',
+        'size':16}
+
+matplotlib.rc('font', **font)
 
 
 def plot_result_insitu(args):
@@ -117,7 +122,7 @@ def plot_result_LOS(ccd, StringOutFileName, args, ccd_limits):
 
 def create_plot_LOS_1d_bokeh(args, ccd, pltTitle, StringOutFileName):
     bplt.output_file(args.StringOutputDir + '/' + StringOutFileName)
-    bplt.line(range(0, len(ccd)), ccd, line_width=2, line_color='black')
+    bplt.line(range(0, len(ccd[0, :])), ccd[0, :], line_width=2, line_color='black')
 
     if args.DoShowPlots:
         bplt.show()
@@ -143,14 +148,15 @@ def create_plot_LOS_2d_bokeh(args, ccd, pltTitle, StringOutFileName):
 
 def create_plot_LOS_1d_matplotlib(args, ccd, pltTitle, figName):
 
-    plt.figure()
+    plt.figure(figsize=(15, 12))
     if args.iInstrumentSelector == 3:           # alice
-        plt.plot(range(5, 24), ccd, '-ok', linewidth=2)
+        plt.plot(range(5, 24), ccd[0, :], '-ok', linewidth=2)
         plt.grid(True)
         plt.xlabel('Pixel Number')
         plt.ylabel('Flux [photons / m2 / s]')
         plt.xticks(range(5, 24))
         plt.xlim((5, 23))
+        plt.ticklabel_format(style='sci', axis='y', scilimits=(0, 0))
 
     plt.title(pltTitle)
     plt.savefig(args.StringOutputDir + '/' + figName)
@@ -178,7 +184,7 @@ def create_plot_LOS_2d_matplotlib(args, ccd, pltTitle, figName, ccd_limits):
 
     nLevels = 20
     dLevels = (np.log10(ccd_limits[1]) - np.log10(ccd_limits[0])) / nLevels
-    pltLevels = np.arange(np.log10(ccd_limits[0]), np.log10(ccd_limits[1] + dLevels), dLevels)
+    pltLevels = np.arange(np.log10(ccd_limits[0]), np.log10(ccd_limits[1])+dLevels, dLevels)
     plt.contourf(np.log10(ccd+0.1), levels=pltLevels)
     plt.colorbar(label='log10 column density [#/m2]')
     plt.xlabel("Instrument y axis [deg]")
