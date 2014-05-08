@@ -25,7 +25,6 @@ during the install process)
 
 Install SPICE/ pySPICE
 ***********************
-
 pySPICE in an unofficial wrapper for the NAIF cspice toolkit
 
 2a) download cspice toolkit from:
@@ -61,6 +60,6 @@ sudo ln -s /YourPathTo/anaconda/bin /opt/local/anaconda/bin
 
 Workarounds
 ***********
-
 On OSX mpi4py might be broken. to fix this, create the following symlink:
+
 sudo ln -s /yourPathTo/anaconda /opt/anaconda1anaconda2anaconda3
