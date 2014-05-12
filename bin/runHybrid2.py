@@ -51,9 +51,14 @@ if args.StringMeasurement == 'LOS':
 
 elif args.StringMeasurement == 'insitu':
 
-    x, y, z, r, dates = spice_functions.get_coordinates(args.StringUtcStartTime, args.StringKernelMetaFile,
-                                                             'ROSETTA', '67P/C-G_CSO', "None", "CHURYUMOV-GERASIMENKO",
-                                                             args.StringUtcStopTime, args.nDeltaT)
+    x, y, z, r, dates = spice_functions.get_coordinates(args.StringUtcStartTime,
+                                                        args.StringKernelMetaFile,
+                                                        'ROSETTA',
+                                                        '67P/C-G_CSO',
+                                                        "None",
+                                                        "CHURYUMOV-GERASIMENKO",
+                                                        args.StringUtcStopTime,
+                                                        args.nDeltaT)
 
 #############################################################################
 # write coordinates to traj.dat file and execute aikef.py
@@ -81,7 +86,8 @@ if args.StringMeasurement == 'LOS':
     columnDensity = np.trapz(density, dTravelRay)
 
     with open(args.StringOutputDir + '/result.txt', 'w') as f:
-        f.write('Electron column density between s/c and Earth in [#/m3] as calculated from the Hybrid2 model.\n')
+        f.write(('Electron column density between s/c and Earth in [#/m3] as'
+                 ' calculated from the Hybrid2 model.\n')
         f.write('Case : %s\n' % (args.StringHybridCase))
         f.write('Spice: %s\n' % (args.StringKernelMetaFile))
         f.write('Date : %s\n' % (args.StringUtcStartTime))
@@ -90,7 +96,8 @@ if args.StringMeasurement == 'LOS':
 
 elif args.StringMeasurement == 'insitu':
     with open(args.StringOutputDir + '/' + 'electrons' + '.out', 'w') as f:
-        f.write('Local number densities for the rosetta spacecraft at selected dates. Comet is at (0,0,0) with the sun on the positive x axis.(inf,0,0)\n')
+        f.write(('Local number densities for the rosetta spacecraft at selected dates.'
+                ' Comet is at (0,0,0) with the sun on the positive x axis.(inf,0,0)\n'))
         f.write('DSMC case: %s\n' % (os.path.split(args.StringDataFileDSMC)[0].split('/')[-1]))
         f.write('spice kernel: %s\n' % (args.StringKernelMetaFile.split('/')[-1]))
         f.write('date,x[m],y[m],z[m],distance_from_center[m],numberDensity [1/m3]\n')

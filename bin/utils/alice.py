@@ -41,7 +41,7 @@ def save_results(f, ccdFinal, wavelengths):
 def calculateBrightness(N_oversampleX, N_oversampleY, ccd, gFactor):
 
     if gFactor is None:
-        gFactors, wavelengths = get_gfactor_from_db()
+        gFactors, wavelengths = get_gfactor_from_db(args)
     else:
         gFactors = [gFactor]
         wavelengths = [0]
@@ -121,7 +121,7 @@ def get_v_sun(kernelMetaFile, utcStartTime):
     return v_sun
 
 
-def get_gfactor_from_db(v_sun=0.1, gasTemp=100, species='CO_'):
+def get_gfactor_from_db(args):
 
     vLow = np.floor(v_sun)
     vHigh = np.ceil(v_sun)
