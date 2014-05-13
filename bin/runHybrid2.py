@@ -75,7 +75,7 @@ print 'done running script'
 # load output from aikef.py (hybrid2) and perform LOS calculation
 ##################################################################
 time.sleep(3)
-xTravelRay, density = load_hybrid2_data('orbit-output.txt')
+xTravelRay, B, density = load_hybrid2_data('orbit-output.txt')
 
 if args.StringMeasurement == 'LOS':
 
@@ -100,8 +100,8 @@ elif args.StringMeasurement == 'insitu':
                 ' Comet is at (0,0,0) with the sun on the positive x axis.(inf,0,0)\n'))
         f.write('DSMC case: %s\n' % (os.path.split(args.StringDataFileDSMC)[0].split('/')[-1]))
         f.write('spice kernel: %s\n' % (args.StringKernelMetaFile.split('/')[-1]))
-        f.write('date,x[m],y[m],z[m],distance_from_center[m],numberDensity [1/m3]\n')
-        for dd, xx, yy, zz, rr, nn in zip(dates, x, y, z, r, density):
-            f.write("%s,%e,%e,%e,%e,%e\n" % (dd, xx, yy, zz, rr, nn))
+        f.write('date x[m],y[m],z[m],distance_from_center[m],numberDensity [1/m3],B_total [nT]\n')
+        for dd, xx, yy, zz, rr, nn, bb in zip(dates, x, y, z, r, density, B):
+            f.write("%s,%e,%e,%e,%e,%e,%e\n" % (dd, xx, yy, zz, rr, nn, bb))
 
     plot_result_insitu(args)
