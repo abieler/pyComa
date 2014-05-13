@@ -21,7 +21,7 @@ from utils.data_plotting import plot_result_insitu
 parser = argparse.ArgumentParser()
 args = cmdline_args(parser)
 
-pathToExecutable = '/Users/ices/www-dev/htdocs/ICES/Models/LoS/pyComa'
+pathToExecutable = '/Users/abieler/pyComa/bin'
 
 if args.StringMeasurement == 'LOS':
     #####################################################################
@@ -68,7 +68,7 @@ with open('traj.dat', 'w') as file:
     for xx, yy, zz in zip(x, y, z):
         file.write('%e %e %e\n' % (xx, yy, zz))
 print 'running aikef script now'
-os.system(pathToExecutable + '/aikef_andre.py %s run . traj.dat' % (args.StringHybridCase))
+os.system(pathToExecutable + '/aikef_for_pyComa.py %s run . traj.dat' % (args.StringHybridCase))
 print 'done running script'
 
 ##################################################################
@@ -86,8 +86,8 @@ if args.StringMeasurement == 'LOS':
     columnDensity = np.trapz(density, dTravelRay)
 
     with open(args.StringOutputDir + '/result.txt', 'w') as f:
-        f.write(('Electron column density between s/c and Earth in [#/m3] as'
-                 ' calculated from the Hybrid2 model.\n')
+        f.write(('Electron column density between s/c and Earth in [#/m3] as' +
+                 ' calculated from the Hybrid2 model.\n'))
         f.write('Case : %s\n' % (args.StringHybridCase))
         f.write('Spice: %s\n' % (args.StringKernelMetaFile))
         f.write('Date : %s\n' % (args.StringUtcStartTime))
