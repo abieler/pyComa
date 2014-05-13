@@ -8,7 +8,7 @@ from pandas import read_csv
 
 
 def load_hybrid2_data(filename):
-    x, y, z, n = np.genfromtxt(filename, usecols=(0, 1, 2, 13), unpack=True)
+    x, y, z, B, n, = np.genfromtxt(filename, usecols=(0, 1, 2, 8, 13), unpack=True)
     return np.array([x, y, z]), n
 
 
