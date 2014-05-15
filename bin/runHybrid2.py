@@ -75,7 +75,21 @@ print 'done running script'
 # load output from aikef.py (hybrid2) and perform LOS calculation
 ##################################################################
 time.sleep(3)
-xTravelRay, B, density = load_hybrid2_data('orbit-output.txt')
+xTravelRay, B_total, B, U_e, density = load_hybrid2_data('orbit-output.txt')
+
+B_hat = [B/np.sqrt((B**2).sum())]  # B normalized
+v_perp_B = np.array([np.cross(b_hat, cross(b_hat, v)) for b_hat, v in zip(B_hat, U_e)])  # v component perpendicular to B
+v_perp_B_abs = np.array([v/np.sqrt((v**2).sum())])  # length of v component perpendicular to B
+
+
+Q_ELECTRON = 1.602176 * 10**-19
+M_ELECTRON = 9.109383 * 10**-31
+EPSILON_0 = 8.8541878 * 10**-12
+
+rg_electron = M_ELECTRON * v_perp_B_abs / Q_ELECTRON / B_total
+wg_electron = Q_ELECTRON * B / M_ELECTRON
+wp_electron = np.sqrt(density * Q_ELECTRON**2 / (M_ELECTRON * EPSILON_0))
+
 
 if args.StringMeasurement == 'LOS':
 
@@ -100,8 +114,8 @@ elif args.StringMeasurement == 'insitu':
                 ' Comet is at (0,0,0) with the sun on the positive x axis.(inf,0,0)\n'))
         f.write('DSMC case: %s\n' % (os.path.split(args.StringDataFileDSMC)[0].split('/')[-1]))
         f.write('spice kernel: %s\n' % (args.StringKernelMetaFile.split('/')[-1]))
-        f.write('date x[m],y[m],z[m],distance_from_center[m],numberDensity [1/m3],B_total [nT]\n')
-        for dd, xx, yy, zz, rr, nn, bb in zip(dates, x, y, z, r, density, B):
-            f.write("%s,%e,%e,%e,%e,%e,%e\n" % (dd, xx, yy, zz, rr, nn, bb))
+        f.write('date x[m],y[m],z[m],distance_from_center[m],numberDensity [1/m3],B_total [nT], wg_electron\n')
+        for dd, xx, yy, zz, rr, nn, bb, wge in zip(dates, x, y, z, r, density, B, wg_electron):
+            f.write("%s,%e,%e,%e,%e,%e,%e,%e\n" % (dd, xx, yy, zz, rr, nn, bb, wge))
 
     plot_result_insitu(args)
