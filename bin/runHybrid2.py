@@ -21,9 +21,11 @@ from utils.data_plotting import plot_result_insitu
 parser = argparse.ArgumentParser()
 args = cmdline_args(parser)
 
-pathToExecutable = '/Users/abieler/pyComa/bin'
+pathToExecutable = '/Users/ices/www-dev/htdocs/ICES/Models/LoS/pyComa/bin'
+#pathToExecutable = '/Users/abieler/pyComa/bin'
 
 if args.StringMeasurement == 'LOS':
+    print 'LOS hybrid case...'
     #####################################################################
     # get position of s/c and pointing towards Earth from SPICE
     #####################################################################
@@ -50,6 +52,7 @@ if args.StringMeasurement == 'LOS':
     z = xTravel[:, 2]
 
 elif args.StringMeasurement == 'insitu':
+    print 'in-situ case hybrid...'
 
     x, y, z, r, dates = spice_functions.get_coordinates(args.StringUtcStartTime,
                                                         args.StringKernelMetaFile,
