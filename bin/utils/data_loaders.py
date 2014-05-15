@@ -8,8 +8,13 @@ from pandas import read_csv
 
 
 def load_hybrid2_data(filename):
-    x, y, z, B, n, = np.genfromtxt(filename, usecols=(0, 1, 2, 8, 13), unpack=True)
-    return np.array([x, y, z]), n
+    x, y, z, Bx, By, Bz, B_total, ux_e, uy_e, uz_e, n, = np.genfromtxt(filename, usecols=(0, 1, 2, 5, 6, 7, 8, 9, 10, 11, 13),
+                                                                 unpack=True)
+    B = [np.array([bx, by, bz]) for bx, by, bz in zip(Bx, By, Bz)]
+    U_e = [np.array([ux, uy, uz]) for ux, uy, uz in zip(ux_e, uy_e, uz_e)]
+    xTravel = np.array([x, y, z])
+
+    return xTravel, B_total, B, U_e
 
 
 def get_iDim(args):
@@ -73,9 +78,6 @@ def getAllDustIntervalIndices(filename, dim):
                     allIndices.append(j)
             break
     f.close()
-    #print len(allSizeIntervals), "dust size intervals found."
-    #for size, index in zip(allSizeIntervals, allIndices):
-    #    print 'size: %.2e m, index: %i' % (size, index)
     return allIndices, allSizeIntervals
 
 
