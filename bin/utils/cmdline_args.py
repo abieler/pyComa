@@ -9,7 +9,7 @@ def cmdline_args(parser):
                         default=1, help='0: dsmc model, 1: haser model, 2: user model')
     parser.add_argument("--iPointingCase", type=int, choices=[0, 1, 2],
                         default=1, help='0: spice pointing, 1: user pointing, 2: user trajectory')
-    parser.add_argument("--iInstrumentSelector", type=int, choices=[1, 2, 3, 4, 5, 6], default=1)
+    parser.add_argument("--iInstrumentSelector", type=int, choices=[1, 2, 3, 4, 5, 6], default=3)
     parser.add_argument("--StringOutputDir", type=str, default='results')
 
     parser.add_argument("--StringDSMCdir", type=str)
