@@ -242,6 +242,7 @@ elif iInstrumentSelector == 3:               # alice
 
     PixelSize = 1
 
+    '''
     if iPointingCase == 0:
         v_sun = alice.get_v_sun(StringKernelMetaFile, StringUtcStartTime)
     else:
@@ -251,6 +252,7 @@ elif iInstrumentSelector == 3:               # alice
 
     v_sun = 12
     gFactor = 2.09e-7
+    '''
 
 elif iInstrumentSelector == 4:               # miro
     nPixelsX = 1
@@ -369,7 +371,7 @@ if iMpiRank == 0:
     for spIndex in range(nSpecies):
         if iInstrumentSelector == 3:
             ccdFinal, wavelengths = alice.calculateBrightness(nOversampleX, nOversampleY, ccd[:, :, spIndex],
-                                                              args.gFactor)
+                                                              args)
         else:
             ccdFinal = ccd[:, :, spIndex]
 
