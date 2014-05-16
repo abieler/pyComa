@@ -38,13 +38,9 @@ def save_results(f, ccdFinal, wavelengths):
         f.write('\n')
 
 
-def calculateBrightness(N_oversampleX, N_oversampleY, ccd, gFactor):
+def calculateBrightness(N_oversampleX, N_oversampleY, ccd, args):
 
-    if gFactor is None:
-        gFactors, wavelengths = get_gfactor_from_db(args)
-    else:
-        gFactors = [gFactor]
-        wavelengths = [0]
+    gFactors, wavelengths = get_gfactor_from_db(args)
 
     ccdFinal = np.zeros(19)
     result = []
@@ -123,10 +119,24 @@ def get_v_sun(kernelMetaFile, utcStartTime):
 
 def get_gfactor_from_db(args):
 
+    # get v_sun, species and gasTemp
+    if args.iPointingCase == 0:
+        v_sun = get_v_sun(args.StringKernelMetaFile, args.StringUtcStartTime)
+    else:
+        kernelMetaFile = '/Users/ices/www-v4.1/htdocs/ICES/Models/LoS/cspice/kernels/metafiles/full_prelanding.tm'
+        v_sun = get_v_sun(kernelMetaFile, args.aliceDate)
+
+    if args.iModelCase == 0:
+        species = args.StringDataFileDSMC.split('.')[-1]
+    else:
+        species = args.species
+
+    gasTemp = args.gasTemp
+    
     vLow = np.floor(v_sun)
     vHigh = np.ceil(v_sun)
 
-    db = sqlite3.connect('utils/alice.sqlite')
+    db = sqlite3.connect('/Users/abieler/pyComa/bin/utils/alice.sqlite')
     cur = db.cursor()
 
     DBqueryHigh = ('SELECT gFactor from gFactors WHERE (name'
