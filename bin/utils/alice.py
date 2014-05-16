@@ -136,7 +136,7 @@ def get_gfactor_from_db(args):
     vLow = np.floor(v_sun)
     vHigh = np.ceil(v_sun)
 
-    db = sqlite3.connect('/Users/abieler/pyComa/bin/utils/alice.sqlite')
+    db = sqlite3.connect('../../../Models/LoS/pyComa/bin/utils/alice.sqlite')
     cur = db.cursor()
 
     DBqueryHigh = ('SELECT gFactor from gFactors WHERE (name'
