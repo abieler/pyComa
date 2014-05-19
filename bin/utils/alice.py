@@ -25,7 +25,7 @@ pixelFOV = np.array([9.39,
                     9.39]) * 1e-6
 
 
-def save_results(f, ccdFinal, wavelengths):
+def save_results(f, ccdFinal, wavelengths, filename):
 
     nPixels = 19
     nSpecies = ccdFinal.shape[0] - 1
