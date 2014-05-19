@@ -64,11 +64,13 @@ def calculateBrightness(N_oversampleX, N_oversampleY, ccd, args):
     for k in range(8, 13):
         ccdFinal[k] = np.mean(ccd[k * N_oversampleX:(k + 1) * N_oversampleX, ll:-ll])
 
-    for gFactor in gFactors:
-        ccdF = ccdFinal * gFactor / (4 * np.pi) * pixelFOV
-        result.append(ccdF)
+    # calculate brightness if alice_spectra was selected
+    if args.iInstrumentSelector == 7:
+        for gFactor in gFactors:
+            ccdF = ccdFinal * gFactor / (4 * np.pi) * pixelFOV
+            result.append(ccdF)
 
-    result.append(ccdFinal)
+        result.append(ccdFinal)
 
     return np.array(result), wavelengths
 
