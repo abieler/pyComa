@@ -229,7 +229,7 @@ elif iInstrumentSelector == 2:               # osiris nac
     iFOV = 0.0000188
     PixelSize = 1
 
-elif iInstrumentSelector == 3:               # alice
+elif iInstrumentSelector in [3, 7]:               # alice
     nOversampleX = 24
     nOversampleY = 20
 
@@ -241,18 +241,6 @@ elif iInstrumentSelector == 3:               # alice
     iFOV = (PhiX * 2 / 180 * np.pi / (19 * nOversampleX)) * (PhiY * 2 / 180 * np.pi / (nOversampleY))
 
     PixelSize = 1
-
-    '''
-    if iPointingCase == 0:
-        v_sun = alice.get_v_sun(StringKernelMetaFile, StringUtcStartTime)
-    else:
-        v_sun = None       # v_sun is not needed if not spice pointing
-
-    #gFactor = alice.get_gfactor_from_db()
-
-    v_sun = 12
-    gFactor = 2.09e-7
-    '''
 
 elif iInstrumentSelector == 4:               # miro
     nPixelsX = 1
