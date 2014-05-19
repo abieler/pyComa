@@ -387,8 +387,8 @@ if iMpiRank == 0:
             f.write("Rows correspond to pixels in instruments X axis, starting with the most negative value.\n")
             f.write("Columns correspond to pixels in instrument Y axis, starting with the most negative value.\n")
             f.write("/begin data\n")
-            if iInstrumentSelector == 3:
-                alice.save_results(f, ccdFinal, wavelengths)
+            if iInstrumentSelector in [3,7]:
+                alice.save_results(f, ccdFinal, wavelengths, filename)
             else:
                 for row in ccdFinal:
                     for value in row:
