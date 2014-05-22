@@ -10,6 +10,7 @@ def cmdline_args(parser):
     parser.add_argument("--iPointingCase", type=int, choices=[0, 1, 2],
                         default=1, help='0: spice pointing, 1: user pointing, 2: user trajectory')
     parser.add_argument("--iInstrumentSelector", type=int, choices=[1, 2, 3, 4, 5, 6], default=1)
+    parser.add_argument("--iProductSelector", type=int, choices=[1, 2, 3], default=1, help='1: Column Density, 2: Product 1, 3: Product 2')
     parser.add_argument("--StringOutputDir", type=str, default='results')
 
     parser.add_argument("--StringDSMCdir", type=str)
@@ -17,6 +18,9 @@ def cmdline_args(parser):
     parser.add_argument("--IsDust", type=int, choices=[0, 1], help='1 for dust case, 0 for gas case')
     parser.add_argument("--DustSizeMin", type=float, default=0.0)   # dust particle radius in meters
     parser.add_argument('--DustSizeMax', type=float, default=2e-7)  # dust particle radius in meters
+
+    parser.add_argument("--QDust", type=float, default=1e5)      #dust production rate grams/second, used for an analytic model
+    parser.add_argument("--vDust", type=float, default=1e3)      #dust velocity meters/second, used for an analytic model
 
     parser.add_argument("--QHaser", type=float, default=1e27)    # production rate in molecules per second
     parser.add_argument("--vHaser", type=float, default=500.0)   # outflow velocity in m/s

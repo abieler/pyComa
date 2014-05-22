@@ -48,13 +48,15 @@ try:
     import utils.createRay as createRay
     from utils.cmdline_args import cmdline_args
 
+    # import defined constants
+    from utils.rosettaDefs import *
+
 except Exception, e:
     print '--' * 20
     print "Error with import of python module:"
     print e
     print '--' * 20
     sys.exit()
-
 
 startTime = time.time()
 
@@ -68,6 +70,7 @@ args = cmdline_args(parser)
 iModelCase = args.iModelCase
 iPointingCase = args.iPointingCase
 iInstrumentSelector = args.iInstrumentSelector
+iProductSelector = args.iProductSelector
 StringOutputDir = args.StringOutputDir
 
 StringDataFileDSMC = args.StringDataFileDSMC
@@ -112,7 +115,7 @@ if iMpiRank == 0:
     print '##########################################'
 
 
-if iModelCase == 0:
+if iModelCase == dsmc_:
     ############################################
     # check if 1d or 2d case
     ############################################
@@ -129,13 +132,13 @@ if iModelCase == 0:
         iDim = 1
     else:
         iDim = 0
-        if iModelCase == 0:
+        if iModelCase == dsmc_:
             print 'Could not detect number of iDimensions of dsmc case. Exiting now.'
         sys.exit()
 
-elif iModelCase == 1:
+elif iModelCase == haser_:
     iDim = 1
-elif iModelCase == 2:
+elif iModelCase == userModel_:
     iDim = iDimUser
 
 if iMpiRank == 1:
@@ -167,7 +170,7 @@ if iMpiRank == 0:
 ########################################################
 # load data
 ########################################################
-if iModelCase == 0:
+if iModelCase == dsmc_:
     if IsDust:
         if iMpiRank == 0:
             print 'dust case'
@@ -177,11 +180,11 @@ if iModelCase == 0:
     else:
         x, y, numberDensities = loadGasData(StringDataFileDSMC, iDim)
 
-elif iModelCase == 1:
+elif iModelCase == haser_:
     x, numberDensities = haserModel(QHaser, vHaser, tpHaser, tdHaser)
     y = None
 
-elif iModelCase == 2:
+elif iModelCase == userModel_:
     #x, y, n = loadGasData(StringUserDataFile, iDim, True, DelimiterData, nHeaderRowsData)
     x, y, numberDensities = load_user_data(StringUserDataFile, iDim, DelimiterData, nHeaderRowsData)
 
@@ -192,6 +195,9 @@ if numberDensities.ndim == 1:
 nSpecies = numberDensities.shape[1]
 if iMpiRank == 0:
     print 'Nr of species:', nSpecies
+    print numberDensities.shape
+    print allSizeIntervals.shape
+    print NumberDensityIndicies.shape
 
 ##############################################################
 # triangulation and interpolation for 2d case
@@ -213,15 +219,15 @@ if iMpiRank == 0:
 # instrument specific definitions
 #############################################################
 
-if iInstrumentSelector == 1:                 # osiris wac
-    nPixelsX = 512                          # nr of pixels along x axis
-    nPixelsY = 512                          # nr of pixels along y axis
-    PhiX = 12 / 2                            # instrument FOV in x (half opening angle) in degrees
-    PhiY = 12 / 2                            # instrument FOV in y (half opening angle) in degrees
-    iFOV = 0.000993                         # pixel FOV in rad
-    PixelSize = 1                           # area of one pixel
+if iInstrumentSelector == osirisw_:       # osiris wac
+    nPixelsX = 512                        # nr of pixels along x axis
+    nPixelsY = 512                        # nr of pixels along y axis
+    PhiX = 12 / 2                         # instrument FOV in x (half opening angle) in degrees
+    PhiY = 12 / 2                         # instrument FOV in y (half opening angle) in degrees
+    iFOV = 0.000993                       # pixel FOV in rad
+    PixelSize = 1                         # area of one pixel
 
-elif iInstrumentSelector == 2:               # osiris nac
+elif iInstrumentSelector == osirisn_:     # osiris nac
     nPixelsX = 512
     nPixelsY = 512
     PhiX = 3 / 2
@@ -229,7 +235,7 @@ elif iInstrumentSelector == 2:               # osiris nac
     iFOV = 0.0000188
     PixelSize = 1
 
-elif iInstrumentSelector == 3:               # alice
+elif iInstrumentSelector == alice_:         # alice
     nOversampleX = 24
     nOversampleY = 20
 
@@ -252,7 +258,7 @@ elif iInstrumentSelector == 3:               # alice
     v_sun = 12
     gFactor = 2.09e-7
 
-elif iInstrumentSelector == 4:               # miro
+elif iInstrumentSelector == miro_:          # miro
     nPixelsX = 1
     nPixelsY = 1
     PhiX = 0.33336 / 2
@@ -260,7 +266,7 @@ elif iInstrumentSelector == 4:               # miro
     iFOV = 0.36666
     PixelSize = 1
 
-elif iInstrumentSelector == 5:               # virtis m
+elif iInstrumentSelector == virtism_:       # virtis m
     nPixelsX = 256
     nPixelsY = 256
     PhiX = 3.6669 / 2
@@ -268,7 +274,7 @@ elif iInstrumentSelector == 5:               # virtis m
     iFOV = 0.00025
     PixelSize = 1
 
-elif iInstrumentSelector == 6:               # virtis h
+elif iInstrumentSelector == virtish_:       # virtis h
     nPixelsX = 1
     nPixelsY = 3
     PhiX = 0.0334
@@ -315,8 +321,11 @@ cso2tenishev = np.array([-1, -1, 1])
 kkk = 0
 nnn = 0
 
+percentProgressLast = 0
+
 if iMpiRank == 0:
-    print 'entering pixel loop'
+    print ''
+    print 'Entering pixel loop.  Progress ...'
 for i in range(nPixelsX):
     for j in range(nPixelsY):
         if (kkk == (iMpiRank + nnn * nMpiSize)):
@@ -341,7 +350,7 @@ for i in range(nPixelsX):
                 if iDim == 1:
                     DensityRay = np.interp(xTravel, x, numberDensities[:, spIndex])
                 elif iDim == 2:
-                    DensityRay = Interpolator[spIndex].__call__(xTravel[:, 0], xTravel[:, 1])        # interpolated local number density
+                    DensityRay = Interpolator[spIndex].__call__(xTravel[:, 0], xTravel[:, 1])                           # interpolated local number density
                 elif iDim == 3:
                     DensityRay = None
 
@@ -358,7 +367,10 @@ for i in range(nPixelsX):
         kkk += 1
 
     if iMpiRank == 0:
-        print i
+        percentProgress = np.floor(i / nPixelsX * 10) * 10
+        if percentProgress > percentProgressLast:
+             percentProgressLast = percentProgress
+             print int(percentProgress),'%'
 
 if iMpiRank == 0:
     print 'pixel loop done'
@@ -367,7 +379,7 @@ if iMpiRank == 0:
     print 'min ccd:', ccd_limits[0]
 
     for spIndex in range(nSpecies):
-        if iInstrumentSelector == 3:
+        if iInstrumentSelector == alice_:
             ccdFinal, wavelengths = alice.calculateBrightness(nOversampleX, nOversampleY, ccd[:, :, spIndex],
                                                               args.gFactor)
         else:
@@ -385,7 +397,7 @@ if iMpiRank == 0:
             f.write("Rows correspond to pixels in instruments X axis, starting with the most negative value.\n")
             f.write("Columns correspond to pixels in instrument Y axis, starting with the most negative value.\n")
             f.write("/begin data\n")
-            if iInstrumentSelector == 3:
+            if iInstrumentSelector == alice_:
                 alice.save_results(f, ccdFinal, wavelengths)
             else:
                 for row in ccdFinal:
