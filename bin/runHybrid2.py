@@ -81,7 +81,7 @@ time.sleep(3)
 xTravelRay, B_total, B, U_e, density = load_hybrid2_data('orbit-output.txt')
 
 B_hat = [B/np.sqrt((B**2).sum())]  # B normalized
-v_perp_B = np.array([np.cross(b_hat, cross(b_hat, v)) for b_hat, v in zip(B_hat, U_e)])  # v component perpendicular to B
+v_perp_B = np.array([np.cross(b_hat, np.cross(b_hat, v)) for b_hat, v in zip(B_hat, U_e)])  # v component perpendicular to B
 v_perp_B_abs = np.array([v/np.sqrt((v**2).sum())])  # length of v component perpendicular to B
 
 

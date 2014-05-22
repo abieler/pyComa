@@ -235,7 +235,11 @@ elif iInstrumentSelector == osirisn_:     # osiris nac
     iFOV = 0.0000188
     PixelSize = 1
 
+<<<<<<< HEAD
 elif iInstrumentSelector == alice_:         # alice
+=======
+elif iInstrumentSelector in [3, 7]:               # alice
+>>>>>>> origin/master
     nOversampleX = 24
     nOversampleY = 20
 
@@ -248,6 +252,7 @@ elif iInstrumentSelector == alice_:         # alice
 
     PixelSize = 1
 
+<<<<<<< HEAD
     if iPointingCase == 0:
         v_sun = alice.get_v_sun(StringKernelMetaFile, StringUtcStartTime)
     else:
@@ -259,6 +264,9 @@ elif iInstrumentSelector == alice_:         # alice
     gFactor = 2.09e-7
 
 elif iInstrumentSelector == miro_:          # miro
+=======
+elif iInstrumentSelector == 4:               # miro
+>>>>>>> origin/master
     nPixelsX = 1
     nPixelsY = 1
     PhiX = 0.33336 / 2
@@ -381,7 +389,7 @@ if iMpiRank == 0:
     for spIndex in range(nSpecies):
         if iInstrumentSelector == alice_:
             ccdFinal, wavelengths = alice.calculateBrightness(nOversampleX, nOversampleY, ccd[:, :, spIndex],
-                                                              args.gFactor)
+                                                              args)
         else:
             ccdFinal = ccd[:, :, spIndex]
 
@@ -397,8 +405,13 @@ if iMpiRank == 0:
             f.write("Rows correspond to pixels in instruments X axis, starting with the most negative value.\n")
             f.write("Columns correspond to pixels in instrument Y axis, starting with the most negative value.\n")
             f.write("/begin data\n")
+<<<<<<< HEAD
             if iInstrumentSelector == alice_:
                 alice.save_results(f, ccdFinal, wavelengths)
+=======
+            if iInstrumentSelector in [3,7]:
+                alice.save_results(f, ccdFinal, wavelengths, filename)
+>>>>>>> origin/master
             else:
                 for row in ccdFinal:
                     for value in row:

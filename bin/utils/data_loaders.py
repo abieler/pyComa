@@ -8,14 +8,13 @@ from pandas import read_csv
 
 
 def load_hybrid2_data(filename):
-    x, y, z, Bx, By, Bz, B_total, ux_e, uy_e, uz_e, n, = np.genfromtxt(filename, usecols=(0, 1, 2, 5, 6, 7, 8, 9, 10, 11, 13),
+    x, y, z, Bx, By, Bz, B_total, ux_e, uy_e, uz_e, density, = np.genfromtxt(filename, usecols=(0, 1, 2, 5, 6, 7, 8, 9, 10, 11, 13),
                                                                  unpack=True)
-    B = [np.array([bx, by, bz]) for bx, by, bz in zip(Bx, By, Bz)]
+    B = np.array([np.array([bx, by, bz]) for bx, by, bz in zip(Bx, By, Bz)])
     U_e = [np.array([ux, uy, uz]) for ux, uy, uz in zip(ux_e, uy_e, uz_e)]
     xTravel = np.array([x, y, z])
 
-    return xTravel, B_total, B, U_e
-
+    return xTravel, B_total, B, U_e, density 
 
 def get_iDim(args):
 
