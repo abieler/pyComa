@@ -2,27 +2,28 @@
 # Define indexes
 #############################################
 #Model
-dsmc      = 0
-haser     = 1
-userMode  = 2
+dsmc_         = 0
+haser_        = 1
+userMode_     = 2
 
 #Pointing
-spice     = 0
-userPointing  = 1
-traj      = 2
+spice_        = 0
+userPointing_ = 1
+traj_         = 2 
 
 #Instrument
-osirisw   = 1
-osiriswac = 1
-osirisn   = 2
-osirisnac = 2
-alice     = 3
-miro      = 4
-virtism   = 5
-virtish   = 6
-
-#Product
-column    = 1
-miro1     = 2
-alice1    = 2
-product1  = 2
+osirisw_      = 1
+osiriswac_    = 1
+osirisn_      = 2
+osirisnac_    = 2
+alice_        = 3
+miro_         = 4
+virtism_      = 5
+virtish_      = 6 
+              
+#Product      
+column_       = 1
+miro1_        = 2
+miroDustIR_   = 2
+alice1_       = 2
+product1_     = 2
