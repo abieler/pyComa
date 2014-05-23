@@ -132,7 +132,7 @@ def get_gfactor_from_db(args):
     DBqueryHigh = ('SELECT gFactor from gFactors WHERE (name'
                    '= "%s" AND gasTemp = %i) AND (v_sun = %f)'
                    ' ORDER BY v_sun DESC'
-                   % (species, gasTemp, vHigh))
+                   % (args.species, args.gasTemp, vHigh))
     print DBqueryHigh
     cur.execute(DBqueryHigh)
     dataHigh = cur.fetchall()

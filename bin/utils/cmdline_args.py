@@ -53,6 +53,7 @@ def cmdline_args(parser):
     parser.add_argument('--gFactor', type=float)
     parser.add_argument('--species', type=str, default='CO_')
     parser.add_argument('--gasTemp', type=float, default=100.0)
+    parser.add_argument('--wavelength', type=float)
 
     args = parser.parse_args()
 

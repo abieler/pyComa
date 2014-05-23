@@ -130,7 +130,7 @@ if iModelCase == 0:
     else:
         iDim = 0
         if iModelCase == 0:
-            print 'Could not detect number of iDimensions of dsmc case. Exiting now.'
+            print 'Could not detect number of dimensions of dsmc case. Exiting now.'
         sys.exit()
 
 elif iModelCase == 1:
@@ -182,7 +182,6 @@ elif iModelCase == 1:
     y = None
 
 elif iModelCase == 2:
-    #x, y, n = loadGasData(StringUserDataFile, iDim, True, DelimiterData, nHeaderRowsData)
     x, y, numberDensities = load_user_data(StringUserDataFile, iDim, DelimiterData, nHeaderRowsData)
 
 
