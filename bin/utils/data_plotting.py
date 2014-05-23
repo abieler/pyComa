@@ -12,7 +12,7 @@ from bokeh.objects import Range1d
 from data_loaders import load_in_situ_output
 
 rcParams.update({'figure.autolayout': True})
-font = {'family':'normal',
+font = {
         'weight':'bold',
         'size':16}
 
