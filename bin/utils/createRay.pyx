@@ -16,7 +16,7 @@ def createRay(np.ndarray[np.float_t, ndim=1] rRay, np.ndarray[np.float_t, ndim=1
     xTravel = []
     distance = sqrt(rRay[0]*rRay[0] + rRay[1]*rRay[1] + rRay[2]*rRay[2])
 
-    while ((distance < 1e8) and (distance > 2000)):
+    while ((distance < 1e9) and (distance > 2000)):
         xTravel.append((rRay[0], rRay[1], rRay[2]))
 
         if distance < 10000:
