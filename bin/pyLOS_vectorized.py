@@ -103,12 +103,36 @@ if iMpiRank == 0:
     print 'modelCase     :', iModelCase
     print 'pointing case :', iPointingCase
     print 'instrument    :', iInstrumentSelector
-    print 'StringKernelMetaFile:', StringKernelMetaFile
-    print 'StringUtcStartTime  :', StringUtcStartTime
-    print 'QHaser        :', QHaser
-    print 'vHaser        :', vHaser
-    print 'tdHaser       :', tdHaser
-    print 'tpHaser       :', tpHaser
+    if args.iPointingCase == 0:
+        print 'SPICE pointing selected:'
+        print '   -StringKernelMetaFile:', StringKernelMetaFile
+        print '   -StringUtcStartTime  :', StringUtcStartTime
+    elif args.iPointingCase == 1:
+        print 'User pointing selected:'
+        print '   -R          : %.2e [m]' % args.UserR
+        print '   -phase angle: %f [deg]' % args.UserUserPhaseAngle
+        print '   -latitude   : %f [deg]' % args.UserLatitude
+        print '   -alpha      : %f [deg]' % args.UserAlpha
+        print '   -beta       : %f [deg]' % args.UserBeta
+        print '   -gamma      : %f [deg]' % args.UserGamma
+    if args.iModelCase == 0:
+        print "DSMC case selected:"
+        print '   -case:      : %s' % args.StringDataFileDSMC
+        print '   -species    : %s' % args.StringDataFileDSMC.split('.')[-2]
+        if args.IsDust == 1:
+            print '   -dust min r : %.3f [m]' %args.DustSizeMin
+            print '   -dust max r : %.3f [m]' %args.DustSizeMax
+    elif args.iModelCase == 1:
+        print 'HASER case selected:'
+        print '   -QHaser     :', QHaser
+        print '   -vHaser     :', vHaser
+        print '   -tdHaser    :', tdHaser
+        print '   -tpHaser    :', tpHaser
+    elif args.iModelCase == 2:
+        print 'USER coma model uploaded:'
+        print '   -filename   : %s' % args.StringUserDataFile
+        print '   -delimiter  : "%s"' % args.DelimiterData
+        print '   -dimensions : %i' % args.iDimUser
     print '##########################################'
 
 
