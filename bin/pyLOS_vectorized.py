@@ -103,10 +103,11 @@ if iMpiRank == 0:
     print 'modelCase     :', iModelCase
     print 'pointing case :', iPointingCase
     print 'instrument    :', iInstrumentSelector
+    print ''
     if args.iPointingCase == 0:
         print 'SPICE pointing selected:'
-        print '   -StringKernelMetaFile:', StringKernelMetaFile
-        print '   -StringUtcStartTime  :', StringUtcStartTime
+        print '   -KernelFile :', StringKernelMetaFile.split('/')[-1]
+        print '   -Date       :', StringUtcStartTime
     elif args.iPointingCase == 1:
         print 'User pointing selected:'
         print '   -R          : %.2e [m]' % args.UserR
@@ -115,9 +116,10 @@ if iMpiRank == 0:
         print '   -alpha      : %f [deg]' % args.UserAlpha
         print '   -beta       : %f [deg]' % args.UserBeta
         print '   -gamma      : %f [deg]' % args.UserGamma
+    print ''
     if args.iModelCase == 0:
         print "DSMC case selected:"
-        print '   -case:      : %s' % args.StringDataFileDSMC
+        print '   -case:      : %s' % args.StringDataFileDSMC.split('/')[-2]
         print '   -species    : %s' % args.StringDataFileDSMC.split('.')[-2]
         if args.IsDust == 1:
             print '   -dust min r : %.3f [m]' %args.DustSizeMin
@@ -174,8 +176,6 @@ if iPointingCase == 0:
     rRosetta, lightTime = spice.spkpos("ROSETTA", Et, "67P/C-G_CSO", "NONE", "CHURYUMOV-GERASIMENKO")        # s/c coordinates in CSO frame of reference
     rRosetta = np.array(rRosetta) * 1000            # transform km to m
     R = spice.pxform("ROS_SPACECRAFT", "67P/C-G_CSO", Et)      # create rotation matrix R to go from instrument reference frame to CSO
-    if iMpiRank == 0:
-        print 'Distance from comet: %.2e' % (np.sqrt(np.sum(rRosetta ** 2)))
 
 elif iPointingCase == 1:
     x0 = np.array([-UserR*1000, 0, 0])           # -UserR --> start at subsolar point, in meters
@@ -185,8 +185,8 @@ elif iPointingCase == 1:
     R = rotations.createRotationMatrix(ei, ej, ek)
 
 if iMpiRank == 0:
-    print 'Distance from comet: %.2e' % (np.sqrt(np.sum(rRosetta ** 2)))
-    print 'rRosetta: %.2e, %.2e, %.2e' % (rRosetta[0], rRosetta[1], rRosetta[2])
+    print 'Distance from comet  : %.2e [m]' % (np.sqrt(np.sum(rRosetta ** 2)))
+    print 'rRosetta in CSO Frame: (%.2e, %.2e, %.2e)' % (rRosetta[0], rRosetta[1], rRosetta[2])
 
 ########################################################
 # load data
