@@ -107,10 +107,11 @@ def plot_result_LOS(ccd, StringOutFileName, args, ccd_limits):
     if args.StringPlotting == 'matplotlib':
         if args.iInstrumentSelector in [1, 2, 5]:
             create_plot_LOS_2d_matplotlib(args, ccd, pltTitle, StringOutFileName, ccd_limits)
-        elif args.iInstrumentSelector in [3, 6]:
+        elif args.iInstrumentSelector in [3, 6, 7]:
             create_plot_LOS_1d_matplotlib(args, ccd, pltTitle, StringOutFileName)
-        elif args.iInstrumentSelector == 4:
+        elif args.iInstrumentSelector in [4, 8]:
             print 'not generating plot for MIRO'
+            print '**'*20
             print 'Column Density: %.3e [#/m2]' % (ccd[0])
 
     elif args.StringPlotting == 'bokeh':
@@ -149,11 +150,14 @@ def create_plot_LOS_2d_bokeh(args, ccd, pltTitle, StringOutFileName):
 def create_plot_LOS_1d_matplotlib(args, ccd, pltTitle, figName):
 
     plt.figure(figsize=(15, 12))
-    if args.iInstrumentSelector == 3:           # alice
+    if args.iInstrumentSelector in [3, 7]:           # alice
         plt.plot(range(5, 24), ccd[0, :], '-ok', linewidth=2)
         plt.grid(True)
         plt.xlabel('Pixel Number')
-        plt.ylabel('Flux [photons / m2 / s]')
+        if args.iInstrumentSelector == 3:
+            plt.ylabel('Column Density [#/m2]')
+        elif args.iInstrumentSelector == 7:
+            plt.ylabel('Flux [photons / m2 / s]')
         plt.xticks(range(5, 24))
         plt.xlim((5, 23))
         plt.ticklabel_format(style='sci', axis='y', scilimits=(0, 0))
@@ -206,14 +210,16 @@ def build_plot_title(args, measurement='LOS'):
             pltInstrument = 'OSIRIS WAC '
         elif args.iInstrumentSelector == 2:
             pltInstrument = 'OSIRIS NAC '
-        elif args.iInstrumentSelector == 3:
+        elif args.iInstrumentSelector in [3, 7]:
             pltInstrument = 'ALICE '
-        elif args.iInstrumentSelector == 4:
+        elif args.iInstrumentSelector in [4, 8]:
             pltInstrument = 'MIRO '
         elif args.iInstrumentSelector == 5:
             pltInstrument = 'VIRTIS M '
         elif args.iInstrumentSelector == 6:
             pltInstrument = 'VIRTIS H '
+        elif args.iInstrumentSelector == 9:
+            pltInstrument = 'VIRTIS'
 
         pltTitle = 'ICES line of sight tool\n'
         pltTitle += pltInstrument

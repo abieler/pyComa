@@ -39,9 +39,7 @@ def save_results(f, ccdFinal, wavelengths, filename):
 
 
 def calculateBrightness(N_oversampleX, N_oversampleY, ccd, args):
-
-    gFactors, wavelengths = get_gfactor_from_db(args)
-
+    
     ccdFinal = np.zeros(19)
     result = []
 
@@ -66,10 +64,14 @@ def calculateBrightness(N_oversampleX, N_oversampleY, ccd, args):
 
     # calculate brightness if alice_spectra was selected
     if args.iInstrumentSelector == 7:
+        gFactors, wavelengths = get_gfactor_from_db(args)
         for gFactor in gFactors:
             ccdF = ccdFinal * gFactor / (4 * np.pi) * pixelFOV
             result.append(ccdF)
 
+        result.append(ccdFinal)
+    else:
+        wavelengths = []
         result.append(ccdFinal)
 
     return np.array(result), wavelengths
@@ -129,7 +131,7 @@ def get_gfactor_from_db(args):
         v_sun = get_v_sun(kernelMetaFile, args.aliceDate)
 
     if args.iModelCase == 0:
-        species = args.StringDataFileDSMC.split('.')[-1]
+        species = args.StringDataFileDSMC.split('.')[-2]
     else:
         species = args.species
 
@@ -144,7 +146,7 @@ def get_gfactor_from_db(args):
     DBqueryHigh = ('SELECT gFactor from gFactors WHERE (name'
                    '= "%s" AND gasTemp = %i) AND (v_sun = %f)'
                    ' ORDER BY v_sun DESC'
-                   % (species, gasTemp, vHigh))
+                   % (args.species, args.gasTemp, vHigh))
     print DBqueryHigh
     cur.execute(DBqueryHigh)
     dataHigh = cur.fetchall()

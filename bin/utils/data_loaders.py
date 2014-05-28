@@ -97,7 +97,7 @@ def load_gas_data(dataFile, dim, userData=False, userDelimiter=',',
                 for element, j in zip(variables, range(len(variables))):
                     if '"n"' in element:
                         densityIndex = j
-                        print 'found density index!!', j
+                        print 'found density index: ', j
                         break
         f.close()
 
