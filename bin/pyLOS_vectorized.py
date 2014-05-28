@@ -100,14 +100,14 @@ iMpiRank = comm.Get_rank()
 
 if iMpiRank == 0:
     print '##########################################'
-    print 'modelCase     :', iModelCase
-    print 'pointing case :', iPointingCase
-    print 'instrument    :', iInstrumentSelector
+    print 'modelCase     :', args.iModelCase
+    print 'pointing case :', args.iPointingCase
+    print 'instrument    :', args.iInstrumentSelector
     print ''
     if args.iPointingCase == 0:
         print 'SPICE pointing selected:'
-        print '   -KernelFile :', StringKernelMetaFile.split('/')[-1]
-        print '   -Date       :', StringUtcStartTime
+        print '   -KernelFile :', args.StringKernelMetaFile.split('/')[-1]
+        print '   -Date       :', args.StringUtcStartTime
     elif args.iPointingCase == 1:
         print 'User pointing selected:'
         print '   -R          : %.2e [m]' % args.UserR
@@ -369,9 +369,6 @@ for i in range(nPixelsX):
                         ccd[ii][jj][spIndex] = ColumnDensity
             nnn += 1
         kkk += 1
-
-    if iMpiRank == 0:
-        print i
 
 if iMpiRank == 0:
     print 'pixel loop done'
