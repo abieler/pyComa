@@ -265,7 +265,7 @@ elif iInstrumentSelector in [3, 7]:               # alice
 
     PixelSize = 1
 
-elif iInstrumentSelector == 4:               # miro
+elif iInstrumentSelector in [4, 8]:               # miro
     nPixelsX = 1
     nPixelsY = 1
     PhiX = 0.33336 / 2
@@ -376,11 +376,11 @@ for i in range(nPixelsX):
 if iMpiRank == 0:
     print 'pixel loop done'
     ccd_limits = (ccd.min(), ccd.max())
-    print 'max ccd:', ccd_limits[1]
-    print 'min ccd:', ccd_limits[0]
+    print 'max ccd: %.3e' % ccd_limits[1]
+    print 'min ccd: %.3e' % ccd_limits[0]
 
     for spIndex in range(nSpecies):
-        if iInstrumentSelector == 3:
+        if iInstrumentSelector in [3, 7]:
             ccdFinal, wavelengths = alice.calculateBrightness(nOversampleX, nOversampleY, ccd[:, :, spIndex],
                                                               args)
         else:
@@ -398,7 +398,7 @@ if iMpiRank == 0:
             f.write("Rows correspond to pixels in instruments X axis, starting with the most negative value.\n")
             f.write("Columns correspond to pixels in instrument Y axis, starting with the most negative value.\n")
             f.write("/begin data\n")
-            if iInstrumentSelector in [3,7]:
+            if iInstrumentSelector in [3, 7]:
                 alice.save_results(f, ccdFinal, wavelengths, filename)
             else:
                 for row in ccdFinal:
@@ -419,4 +419,3 @@ if iMpiRank == 0:
 if iMpiRank == 0:
     print '**' * 20
     print 'Time elapsed: %.2f seconds' % (time.time() - startTime)
-    print '**' * 20
