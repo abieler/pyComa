@@ -5,8 +5,8 @@ parser = argparse.ArgumentParser()
 
 def cmdline_args(parser):
 
-    parser.add_argument("--iModelCase", type=int, choices=[0, 1, 2],
-                        default=1, help='0: dsmc model, 1: haser model, 2: user model')
+    parser.add_argument("--iModelCase", type=int, choices=[0, 1, 2, 3],
+                        default=1, help='0: dsmc model, 1: haser model, 2: user model, 3: analytic dust model')
     parser.add_argument("--iPointingCase", type=int, choices=[0, 1, 2],
                         default=1, help='0: spice pointing, 1: user pointing, 2: user trajectory')
     parser.add_argument("--iInstrumentSelector", type=int, choices=[1, 2, 3, 4, 5, 6, 7, 8, 9], default=7)

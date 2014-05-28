@@ -42,6 +42,7 @@ try:
     # import own modules
     from utils.data_loaders import *
     from utils.haser import haserModel
+    from utils.dust import dustModel
     from utils.data_plotting import plot_result_LOS, build_plot_title
     import utils.rotations as rotations
     import utils.alice as alice
@@ -82,6 +83,10 @@ QHaser = args.QHaser
 vHaser = args.vHaser
 tpHaser = args.tpHaser
 tdHaser = args.tdHaser
+
+Qdust = args.QDust
+vdust = args.vDust
+
 StringKernelMetaFile = args.StringKernelMetaFile
 StringUtcStartTime = args.StringUtcStartTime
 
@@ -107,33 +112,37 @@ if iMpiRank == 0:
     print 'pointing case :', iPointingCase
     print 'instrument    :', iInstrumentSelector
     print ''
-    if args.iPointingCase == 0:
+    if args.iPointingCase == spice_:
         print 'SPICE pointing selected:'
         print '   -KernelFile :', StringKernelMetaFile.split('/')[-1]
         print '   -Date       :', StringUtcStartTime
-    elif args.iPointingCase == 1:
+    elif args.iPointingCase == userPointing_:
         print 'User pointing selected:'
         print '   -R          : %.2e [m]' % args.UserR
-        print '   -phase angle: %f [deg]' % args.UserUserPhaseAngle
+        print '   -phase angle: %f [deg]' % args.UserPhaseAngle
         print '   -latitude   : %f [deg]' % args.UserLatitude
         print '   -alpha      : %f [deg]' % args.UserAlpha
         print '   -beta       : %f [deg]' % args.UserBeta
         print '   -gamma      : %f [deg]' % args.UserGamma
     print ''
-    if args.iModelCase == 0:
+    if args.iModelCase == dsmc_:
         print "DSMC case selected:"
         print '   -case:      : %s' % args.StringDataFileDSMC.split('/')[-2]
         print '   -species    : %s' % args.StringDataFileDSMC.split('.')[-2]
         if args.IsDust == 1:
             print '   -dust min r : %.3f [m]' %args.DustSizeMin
             print '   -dust max r : %.3f [m]' %args.DustSizeMax
-    elif args.iModelCase == 1:
+    elif args.iModelCase == haser_:
         print 'HASER case selected:'
         print '   -QHaser     :', QHaser
         print '   -vHaser     :', vHaser
         print '   -tdHaser    :', tdHaser
         print '   -tpHaser    :', tpHaser
-    elif args.iModelCase == 2:
+    elif args.iModelCase == dust_:
+        print 'Analytic DUST case selected:'
+        print '   -Qdust      :', QDust
+        print '   -vdust      :', vDust
+    elif args.iModelCase == userModel_:
         print 'USER coma model uploaded:'
         print '   -filename   : %s' % args.StringUserDataFile
         print '   -delimiter  : "%s"' % args.DelimiterData
@@ -162,7 +171,7 @@ if iModelCase == dsmc_:
             print 'Could not detect number of dimensions of dsmc case. Exiting now.'
         sys.exit()
 
-elif iModelCase == haser_:
+elif iModelCase == [haser_, dust_]:
     iDim = 1
 elif iModelCase == userModel_:
     iDim = iDimUser
@@ -170,7 +179,7 @@ elif iModelCase == userModel_:
 if iMpiRank == 1:
     print 'iDimensions:', iDim
 
-if iPointingCase == 0:
+if iPointingCase == spice_:
     #################################################
     # get rosetta coordinates from spice
     #################################################
@@ -180,7 +189,7 @@ if iPointingCase == 0:
     rRosetta = np.array(rRosetta) * 1000            # transform km to m
     R = spice.pxform("ROS_SPACECRAFT", "67P/C-G_CSO", Et)      # create rotation matrix R to go from instrument reference frame to CSO
 
-elif iPointingCase == 1:
+elif iPointingCase == userPointing_:
     x0 = np.array([-UserR*1000, 0, 0])           # -UserR --> start at subsolar point, in meters
     rRosetta = rotations.rotateVector(x0, UserPhaseAngle, UserLatitude)
     ei, ej, ek = rotations.rotateCoordinateSystem2(UserPhaseAngle, UserLatitude, UserAlpha, UserBeta, UserGamma)
@@ -206,6 +215,10 @@ if iModelCase == dsmc_:
 
 elif iModelCase == haser_:
     x, numberDensities = haserModel(QHaser, vHaser, tpHaser, tdHaser)
+    y = None
+
+elif iModelCase == dust_:
+    x, numberDensities , allSizeIntervals = dustModel(QDust, vDust)
     y = None
 
 elif iModelCase == userModel_:
@@ -257,11 +270,7 @@ elif iInstrumentSelector == osirisn_:     # osiris nac
     iFOV = 0.0000188
     PixelSize = 1
 
-<<<<<<< HEAD
 elif iInstrumentSelector == alice_:         # alice
-=======
-elif iInstrumentSelector in [3, 7]:               # alice
->>>>>>> origin/master
     nOversampleX = 24
     nOversampleY = 20
 
@@ -274,8 +283,7 @@ elif iInstrumentSelector in [3, 7]:               # alice
 
     PixelSize = 1
 
-<<<<<<< HEAD
-    if iPointingCase == 0:
+    if iPointingCase == spice_:
         v_sun = alice.get_v_sun(StringKernelMetaFile, StringUtcStartTime)
     else:
         v_sun = None       # v_sun is not needed if not spice pointing
@@ -286,9 +294,6 @@ elif iInstrumentSelector in [3, 7]:               # alice
     gFactor = 2.09e-7
 
 elif iInstrumentSelector == miro_:          # miro
-=======
-elif iInstrumentSelector == 4:               # miro
->>>>>>> origin/master
     nPixelsX = 1
     nPixelsY = 1
     PhiX = 0.33336 / 2
@@ -333,13 +338,13 @@ j = np.arange(nPixelsY)
 ii, jj = np.meshgrid(i, j, indexing='ij')
 p = np.array([np.zeros((len(i), len(j))) for k in range(3)])
 
-if args.iPointingCase == 0:
+if args.iPointingCase == spice_:
     p[0] = ii*Dx - Lx/2 + Dx/2
     p[1] = jj*Dy - Ly/2 + Dy/2
     p[2] = np.ones((len(i), len(j)))
     p_hat = p / np.sqrt(p[0]**2 + p[1]**2 + p[2]**2)
 
-elif args.iPointingCase == 1:
+elif args.iPointingCase == userPointing_:
     p[1] = ii*Dx - Lx/2 + Dx/2
     p[2] = jj*Dy - Ly/2 + Dy/2
     p[0] = np.ones((len(i), len(j)))
@@ -359,7 +364,7 @@ if iMpiRank == 0:
 for i in range(nPixelsX):
     for j in range(nPixelsY):
         if (kkk == (iMpiRank + nnn * nMpiSize)):
-            if iPointingCase == 0:
+            if iPointingCase == spice_:
                 p = np.dot(R, p_hat[:, i, j]) * cso2tenishev
                 rRay = np.array([value for value in rRosetta]) * cso2tenishev
             else:
@@ -427,13 +432,8 @@ if iMpiRank == 0:
             f.write("Rows correspond to pixels in instruments X axis, starting with the most negative value.\n")
             f.write("Columns correspond to pixels in instrument Y axis, starting with the most negative value.\n")
             f.write("/begin data\n")
-<<<<<<< HEAD
             if iInstrumentSelector == alice_:
-                alice.save_results(f, ccdFinal, wavelengths)
-=======
-            if iInstrumentSelector in [3,7]:
                 alice.save_results(f, ccdFinal, wavelengths, filename)
->>>>>>> origin/master
             else:
                 for row in ccdFinal:
                     for value in row:
