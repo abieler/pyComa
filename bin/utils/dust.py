@@ -3,7 +3,7 @@ from __future__ import division
 import numpy as np
 
 
-def dustModel(Qt, v)
+def dustModel(Qt, v):
     '''
     Qt   : total dust production rate
     v    : dust outflow velocity
@@ -31,7 +31,7 @@ def dustModel(Qt, v)
     return r, n, aDist
     
 
-def dustDistribution(Qt, aMin, aMax, na)
+def dustDistribution(Qt, aMin, aMax, na):
     
     laMin = np.log10(aMin)
     laMax = np.log10(aMax)
@@ -46,5 +46,3 @@ def dustDistribution(Qt, aMin, aMax, na)
     qDust = Qt*dustNorm*aDust^(-4)
     return aDust, Qdust
     
-
-
