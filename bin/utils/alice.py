@@ -135,8 +135,6 @@ def get_gfactor_from_db(args):
     else:
         species = args.species
 
-    gasTemp = args.gasTemp
-    
     vLow = np.floor(v_sun)
     vHigh = np.ceil(v_sun)
 
@@ -146,7 +144,7 @@ def get_gfactor_from_db(args):
     DBqueryHigh = ('SELECT gFactor from gFactors WHERE (name'
                    '= "%s" AND gasTemp = %i) AND (v_sun = %f)'
                    ' ORDER BY v_sun DESC'
-                   % (args.species, args.gasTemp, vHigh))
+                   % (species, args.gasTemp, vHigh))
     print DBqueryHigh
     cur.execute(DBqueryHigh)
     dataHigh = cur.fetchall()
@@ -154,7 +152,7 @@ def get_gfactor_from_db(args):
     DBqueryLow = ('SELECT gFactor from gFactors WHERE (name'
                   '= "%s" AND gasTemp = %i) AND (v_sun = %f)'
                   ' ORDER BY v_sun DESC'
-                  % (species, gasTemp, vLow))
+                  % (species, args.gasTemp, vLow))
     print DBqueryLow
     cur.execute(DBqueryLow)
     dataLow = cur.fetchall()
