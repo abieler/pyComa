@@ -52,6 +52,22 @@ def calculate_column(nRay, dTravel, pixelSize=10**-6,
 
 
 def qabs(a,freq,nc):
+    # For testing use olivine = 0.8687
+    result = 0.8687
+
+    return result
+
+
+def dustT(a):
+    # For testing use an equilibirum temp 244K
+    result = 244
+    return
+
+
+def plank(a,freq):
+    return
+
+   
 
 
 

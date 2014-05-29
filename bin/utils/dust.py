@@ -2,8 +2,7 @@
 from __future__ import division
 import numpy as np
 
-
-def dustModel(Qt, v)
+def dustModel(Qt, v):
     '''
     Qt   : total dust production rate
     v    : dust outflow velocity
@@ -27,11 +26,12 @@ def dustModel(Qt, v)
     r = 10**(np.arange(rmin, rmax, dr))
 
     n = qDust / (4 * np.pi * r**2 * v)  # uniform radial expansion model
+    n = qDust  # Constant value for testing
 
     return r, n, aDist
     
 
-def dustDistribution(Qt, aMin, aMax, na)
+def dustDistribution(Qt, aMin, aMax, na):
     
     laMin = np.log10(aMin)
     laMax = np.log10(aMax)
@@ -43,7 +43,9 @@ def dustDistribution(Qt, aMin, aMax, na)
     dustNorm = 3.0/4.0/np.pi/dustDensity/(log(aMax)-log(aMin))
     
     qDust = np.arange(na)
-    qDust = Qt*dustNorm*aDust^(-4)
+    # qDust = Qt*dustNorm*aDust^(-4)  # Standard model
+    qDust = 1.0                     # Constant value for testing
+
     return aDust, Qdust
     
 

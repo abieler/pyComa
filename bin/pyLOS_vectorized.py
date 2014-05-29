@@ -84,8 +84,8 @@ vHaser = args.vHaser
 tpHaser = args.tpHaser
 tdHaser = args.tdHaser
 
-Qdust = args.QDust
-vdust = args.vDust
+QDust = args.QDust
+vDust = args.vDust
 
 StringKernelMetaFile = args.StringKernelMetaFile
 StringUtcStartTime = args.StringUtcStartTime
@@ -111,6 +111,7 @@ if iMpiRank == 0:
     print 'modelCase     :', iModelCase
     print 'pointing case :', iPointingCase
     print 'instrument    :', iInstrumentSelector
+    print 'product       :', iProductSelector
     print ''
     if args.iPointingCase == spice_:
         print 'SPICE pointing selected:'
@@ -171,7 +172,7 @@ if iModelCase == dsmc_:
             print 'Could not detect number of dimensions of dsmc case. Exiting now.'
         sys.exit()
 
-elif iModelCase == [haser_, dust_]:
+elif iModelCase == haser_ or iModelCase == dust_:
     iDim = 1
 elif iModelCase == userModel_:
     iDim = iDimUser
@@ -230,9 +231,6 @@ if numberDensities.ndim == 1:
 nSpecies = numberDensities.shape[1]
 if iMpiRank == 0:
     print 'Nr of species:', nSpecies
-    print numberDensities.shape
-    print allSizeIntervals.shape
-    print NumberDensityIndicies.shape
 
 ##############################################################
 # triangulation and interpolation for 2d case
@@ -413,10 +411,12 @@ if iMpiRank == 0:
     print 'max ccd:', ccd_limits[1]
     print 'min ccd:', ccd_limits[0]
 
+    if iInstrumentSelector == miro_  and iProductSelector == miroDustIR_:
+            ccdFinal, wavelengths = miro.calculateBrightness(ccd, NumberDensityIndicies, AllSizeIntervals, args)
+
     for spIndex in range(nSpecies):
-        if iInstrumentSelector == alice_:
-            ccdFinal, wavelengths = alice.calculateBrightness(nOversampleX, nOversampleY, ccd[:, :, spIndex],
-                                                              args)
+        if   iInstrumentSelector == alice_ and iProductSelector == alice1_:
+            ccdFinal, wavelengths = alice.calculateBrightness(nOversampleX, nOversampleY, ccd[:, :, spIndex], args)
         else:
             ccdFinal = ccd[:, :, spIndex]
 
@@ -432,7 +432,7 @@ if iMpiRank == 0:
             f.write("Rows correspond to pixels in instruments X axis, starting with the most negative value.\n")
             f.write("Columns correspond to pixels in instrument Y axis, starting with the most negative value.\n")
             f.write("/begin data\n")
-            if iInstrumentSelector == alice_:
+            if iInstrumentSelector == alice_ and iProductSelector == alice1_:
                 alice.save_results(f, ccdFinal, wavelengths, filename)
             else:
                 for row in ccdFinal:

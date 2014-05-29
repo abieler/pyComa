@@ -5,6 +5,7 @@
 dsmc_         = 0
 haser_        = 1
 userMode_     = 2
+dust_         = 3
 
 #Pointing
 spice_        = 0
