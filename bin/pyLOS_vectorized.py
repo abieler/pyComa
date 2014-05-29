@@ -42,11 +42,15 @@ try:
     # import own modules
     from utils.data_loaders import *
     from utils.haser import haserModel
+    from utils.dust import dustModel
     from utils.data_plotting import plot_result_LOS, build_plot_title
     import utils.rotations as rotations
     import utils.alice as alice
     import utils.createRay as createRay
     from utils.cmdline_args import cmdline_args
+
+    # import defined constants
+    from utils.rosettaDefs import *
 
 except Exception, e:
     print '--' * 20
@@ -54,7 +58,6 @@ except Exception, e:
     print e
     print '--' * 20
     sys.exit()
-
 
 startTime = time.time()
 
@@ -68,6 +71,7 @@ args = cmdline_args(parser)
 iModelCase = args.iModelCase
 iPointingCase = args.iPointingCase
 iInstrumentSelector = args.iInstrumentSelector
+iProductSelector = args.iProductSelector
 StringOutputDir = args.StringOutputDir
 
 StringDataFileDSMC = args.StringDataFileDSMC
@@ -79,6 +83,10 @@ QHaser = args.QHaser
 vHaser = args.vHaser
 tpHaser = args.tpHaser
 tdHaser = args.tdHaser
+
+Qdust = args.QDust
+vdust = args.vDust
+
 StringKernelMetaFile = args.StringKernelMetaFile
 StringUtcStartTime = args.StringUtcStartTime
 
@@ -104,33 +112,40 @@ if iMpiRank == 0:
     print 'pointing case :', args.iPointingCase
     print 'instrument    :', args.iInstrumentSelector
     print ''
-    if args.iPointingCase == 0:
+    if args.iPointingCase == spice_:
         print 'SPICE pointing selected:'
         print '   -KernelFile :', args.StringKernelMetaFile.split('/')[-1]
         print '   -Date       :', args.StringUtcStartTime
-    elif args.iPointingCase == 1:
+    elif args.iPointingCase == userPointing_:
+        print '   -KernelFile :', StringKernelMetaFile.split('/')[-1]
+        print '   -Date       :', StringUtcStartTime
+    elif args.iPointingCase == userPointing_:
         print 'User pointing selected:'
         print '   -R          : %.2e [m]' % args.UserR
-        print '   -phase angle: %f [deg]' % args.UserUserPhaseAngle
+        print '   -phase angle: %f [deg]' % args.UserPhaseAngle
         print '   -latitude   : %f [deg]' % args.UserLatitude
         print '   -alpha      : %f [deg]' % args.UserAlpha
         print '   -beta       : %f [deg]' % args.UserBeta
         print '   -gamma      : %f [deg]' % args.UserGamma
     print ''
-    if args.iModelCase == 0:
+    if args.iModelCase == dsmc_:
         print "DSMC case selected:"
         print '   -case:      : %s' % args.StringDataFileDSMC.split('/')[-2]
         print '   -species    : %s' % args.StringDataFileDSMC.split('.')[-2]
         if args.IsDust == 1:
             print '   -dust min r : %.3f [m]' %args.DustSizeMin
             print '   -dust max r : %.3f [m]' %args.DustSizeMax
-    elif args.iModelCase == 1:
+    elif args.iModelCase == haser_:
         print 'HASER case selected:'
         print '   -QHaser     :', QHaser
         print '   -vHaser     :', vHaser
         print '   -tdHaser    :', tdHaser
         print '   -tpHaser    :', tpHaser
-    elif args.iModelCase == 2:
+    elif args.iModelCase == dust_:
+        print 'Analytic DUST case selected:'
+        print '   -Qdust      :', QDust
+        print '   -vdust      :', vDust
+    elif args.iModelCase == userModel_:
         print 'USER coma model uploaded:'
         print '   -filename   : %s' % args.StringUserDataFile
         print '   -delimiter  : "%s"' % args.DelimiterData
@@ -138,7 +153,7 @@ if iMpiRank == 0:
     print '##########################################'
 
 
-if iModelCase == 0:
+if iModelCase == dsmc_:
     ############################################
     # check if 1d or 2d case
     ############################################
@@ -155,19 +170,19 @@ if iModelCase == 0:
         iDim = 1
     else:
         iDim = 0
-        if iModelCase == 0:
+        if iModelCase == dsmc_:
             print 'Could not detect number of dimensions of dsmc case. Exiting now.'
         sys.exit()
 
-elif iModelCase == 1:
+elif iModelCase in [haser_, dust_]:
     iDim = 1
-elif iModelCase == 2:
+elif iModelCase == userModel_:
     iDim = iDimUser
 
 if iMpiRank == 1:
     print 'iDimensions:', iDim
 
-if iPointingCase == 0:
+if iPointingCase == spice_:
     #################################################
     # get rosetta coordinates from spice
     #################################################
@@ -177,7 +192,7 @@ if iPointingCase == 0:
     rRosetta = np.array(rRosetta) * 1000            # transform km to m
     R = spice.pxform("ROS_SPACECRAFT", "67P/C-G_CSO", Et)      # create rotation matrix R to go from instrument reference frame to CSO
 
-elif iPointingCase == 1:
+elif iPointingCase == userPointing_:
     x0 = np.array([-UserR*1000, 0, 0])           # -UserR --> start at subsolar point, in meters
     rRosetta = rotations.rotateVector(x0, UserPhaseAngle, UserLatitude)
     ei, ej, ek = rotations.rotateCoordinateSystem2(UserPhaseAngle, UserLatitude, UserAlpha, UserBeta, UserGamma)
@@ -191,7 +206,7 @@ if iMpiRank == 0:
 ########################################################
 # load data
 ########################################################
-if iModelCase == 0:
+if iModelCase == dsmc_:
     if IsDust:
         if iMpiRank == 0:
             print 'dust case'
@@ -201,13 +216,16 @@ if iModelCase == 0:
     else:
         x, y, numberDensities = loadGasData(StringDataFileDSMC, iDim)
 
-elif iModelCase == 1:
+elif iModelCase == haser_:
     x, numberDensities = haserModel(QHaser, vHaser, tpHaser, tdHaser)
     y = None
 
-elif iModelCase == 2:
-    x, y, numberDensities = load_user_data(StringUserDataFile, iDim, DelimiterData, nHeaderRowsData)
+elif iModelCase == dust_:
+    x, numberDensities , allSizeIntervals = dustModel(QDust, vDust)
+    y = None
 
+elif iModelCase == userModel_:
+    x, y, numberDensities = load_user_data(StringUserDataFile, iDim, DelimiterData, nHeaderRowsData)
 
 if numberDensities.ndim == 1:
     numberDensities = np.array([[n] for n in numberDensities])
@@ -215,6 +233,10 @@ if numberDensities.ndim == 1:
 nSpecies = numberDensities.shape[1]
 if iMpiRank == 0:
     print 'Nr of species:', nSpecies
+    print numberDensities.shape
+    if args.IsDust:
+        print allSizeIntervals.shape
+        print NumberDensityIndicies.shape
 
 ##############################################################
 # triangulation and interpolation for 2d case
@@ -236,15 +258,15 @@ if iMpiRank == 0:
 # instrument specific definitions
 #############################################################
 
-if iInstrumentSelector == 1:                 # osiris wac
-    nPixelsX = 512                          # nr of pixels along x axis
-    nPixelsY = 512                          # nr of pixels along y axis
-    PhiX = 12 / 2                            # instrument FOV in x (half opening angle) in degrees
-    PhiY = 12 / 2                            # instrument FOV in y (half opening angle) in degrees
-    iFOV = 0.000993                         # pixel FOV in rad
-    PixelSize = 1                           # area of one pixel
+if iInstrumentSelector == osirisw_:       # osiris wac
+    nPixelsX = 512                        # nr of pixels along x axis
+    nPixelsY = 512                        # nr of pixels along y axis
+    PhiX = 12 / 2                         # instrument FOV in x (half opening angle) in degrees
+    PhiY = 12 / 2                         # instrument FOV in y (half opening angle) in degrees
+    iFOV = 0.000993                       # pixel FOV in rad
+    PixelSize = 1                         # area of one pixel
 
-elif iInstrumentSelector == 2:               # osiris nac
+elif iInstrumentSelector == osirisn_:     # osiris nac
     nPixelsX = 512
     nPixelsY = 512
     PhiX = 3 / 2
@@ -252,7 +274,7 @@ elif iInstrumentSelector == 2:               # osiris nac
     iFOV = 0.0000188
     PixelSize = 1
 
-elif iInstrumentSelector in [3, 7]:               # alice
+elif iInstrumentSelector in [alice_, aliceSpec_]:         # alice
     nOversampleX = 24
     nOversampleY = 20
 
@@ -265,15 +287,35 @@ elif iInstrumentSelector in [3, 7]:               # alice
 
     PixelSize = 1
 
-elif iInstrumentSelector in [4, 8]:               # miro
+elif iInstrumentSelector in [miro_, miroDust_]:               # miro
+    if iPointingCase == spice_:
+        v_sun = alice.get_v_sun(StringKernelMetaFile, StringUtcStartTime)
+    else:
+        v_sun = None       # v_sun is not needed if not spice pointing
+
+    #gFactor = alice.get_gfactor_from_db()
+
+    v_sun = 12
+    gFactor = 2.09e-7
+
     nPixelsX = 1
     nPixelsY = 1
     PhiX = 0.33336 / 2
     PhiY = 0.36666 / 2
     iFOV = 0.36666
     PixelSize = 1
+    
+    ''' 
+    elif iInstrumentSelector == miro_:          # miro
+        nPixelsX = 1
+        nPixelsY = 1
+        PhiX = 0.33336 / 2
+        PhiY = 0.36666 / 2
+        iFOV = 0.36666
+        PixelSize = 1
+    '''
 
-elif iInstrumentSelector == 5:               # virtis m
+elif iInstrumentSelector == virtism_:       # virtis m
     nPixelsX = 256
     nPixelsY = 256
     PhiX = 3.6669 / 2
@@ -281,7 +323,7 @@ elif iInstrumentSelector == 5:               # virtis m
     iFOV = 0.00025
     PixelSize = 1
 
-elif iInstrumentSelector == 6:               # virtis h
+elif iInstrumentSelector == virtish_:       # virtis h
     nPixelsX = 1
     nPixelsY = 3
     PhiX = 0.0334
@@ -310,13 +352,13 @@ j = np.arange(nPixelsY)
 ii, jj = np.meshgrid(i, j, indexing='ij')
 p = np.array([np.zeros((len(i), len(j))) for k in range(3)])
 
-if args.iPointingCase == 0:
+if args.iPointingCase == spice_:
     p[0] = ii*Dx - Lx/2 + Dx/2
     p[1] = jj*Dy - Ly/2 + Dy/2
     p[2] = np.ones((len(i), len(j)))
     p_hat = p / np.sqrt(p[0]**2 + p[1]**2 + p[2]**2)
 
-elif args.iPointingCase == 1:
+elif args.iPointingCase == userPointing_:
     p[1] = ii*Dx - Lx/2 + Dx/2
     p[2] = jj*Dy - Ly/2 + Dy/2
     p[0] = np.ones((len(i), len(j)))
@@ -328,12 +370,15 @@ cso2tenishev = np.array([-1, -1, 1])
 kkk = 0
 nnn = 0
 
+percentProgressLast = 0
+
 if iMpiRank == 0:
-    print 'entering pixel loop'
+    print ''
+    print 'Entering pixel loop.  Progress ...'
 for i in range(nPixelsX):
     for j in range(nPixelsY):
         if (kkk == (iMpiRank + nnn * nMpiSize)):
-            if iPointingCase == 0:
+            if iPointingCase == spice_:
                 p = np.dot(R, p_hat[:, i, j]) * cso2tenishev
                 rRay = np.array([value for value in rRosetta]) * cso2tenishev
             else:
@@ -354,7 +399,7 @@ for i in range(nPixelsX):
                 if iDim == 1:
                     DensityRay = np.interp(xTravel, x, numberDensities[:, spIndex])
                 elif iDim == 2:
-                    DensityRay = Interpolator[spIndex].__call__(xTravel[:, 0], xTravel[:, 1])        # interpolated local number density
+                    DensityRay = Interpolator[spIndex].__call__(xTravel[:, 0], xTravel[:, 1])                           # interpolated local number density
                 elif iDim == 3:
                     DensityRay = None
 
@@ -370,6 +415,12 @@ for i in range(nPixelsX):
             nnn += 1
         kkk += 1
 
+    if iMpiRank == 0:
+        percentProgress = np.floor(i / nPixelsX * 10) * 10
+        if percentProgress > percentProgressLast:
+             percentProgressLast = percentProgress
+             print int(percentProgress),'%'
+
 if iMpiRank == 0:
     print 'pixel loop done'
     ccd_limits = (ccd.min(), ccd.max())
@@ -377,7 +428,7 @@ if iMpiRank == 0:
     print 'min ccd: %.3e' % ccd_limits[0]
 
     for spIndex in range(nSpecies):
-        if iInstrumentSelector in [3, 7]:
+        if iInstrumentSelector in [alice_, aliceSpec_]:
             ccdFinal, wavelengths = alice.calculateBrightness(nOversampleX, nOversampleY, ccd[:, :, spIndex],
                                                               args)
         else:
@@ -415,4 +466,5 @@ if iMpiRank == 0:
 
 if iMpiRank == 0:
     print '**' * 20
+    print 'Run completed'
     print 'Time elapsed: %.2f seconds' % (time.time() - startTime)
