@@ -4,25 +4,40 @@ import numpy as np
 import spice
 import sqlite3
 
-pixelFOV = np.array([9.39,
-                    9.39,
-                    9.39,
-                    9.39,
-                    9.39,
-                    9.39,
-                    9.39,
-                    6.10,
-                    4.69,
-                    4.69,
-                    4.69,
-                    4.69,
-                    4.69,
-                    7.51,
-                    9.39,
-                    9.39,
-                    9.39,
-                    9.39,
-                    9.39]) * 1e-6
+def get_specs():
+
+    pixelFOV = np.array([9.39,
+                        9.39,
+                        9.39,
+                        9.39,
+                        9.39,
+                        9.39,
+                        9.39,
+                        6.10,
+                        4.69,
+                        4.69,
+                        4.69,
+                        4.69,
+                        4.69,
+                        7.51,
+                        9.39,
+                        9.39,
+                        9.39,
+                        9.39,
+                        9.39]) * 1e-6
+    nOversampleX = 24
+    nOversampleY = 20
+    instrumentSpecs = {'nPixelsX' : 19 * nOversampleX,
+                       'nPixelsY' : 1 * nOversampleY,
+                       'PhiX' : 5.852 / 2,
+                       'iFOV' : (PhiX * 2 / 180 * np.pi / (19 * nOversampleX)) * (PhiY * 2 / 180 * np.pi / (nOversampleY)),
+                       'PixelSize' : 1
+                       'computedQuantity' : 'column density [#/m2]'
+                      }
+
+    instrumentSpecs['pixelFOV'] = pixelFOV
+
+    return instrumentSpecs
 
 
 def save_results(f, ccdFinal, wavelengths, filename):
@@ -80,7 +95,6 @@ def calculateBrightness(N_oversampleX, N_oversampleY, ccd, args):
 def calculate_column(nRay, dTravel, pixelSize=10**-6,
                      iFOV=9.39*10**-6, gFactor=2*10**-7):
 
-    #N = np.trapz(iFOV * np.array(dTravel)**2 * nRay, dTravel)
     N = np.trapz(nRay, dTravel)
     return N
 
