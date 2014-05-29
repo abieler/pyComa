@@ -108,13 +108,16 @@ iMpiRank = comm.Get_rank()
 
 if iMpiRank == 0:
     print '##########################################'
-    print 'modelCase     :', iModelCase
-    print 'pointing case :', iPointingCase
-    print 'instrument    :', iInstrumentSelector
-    print 'product       :', iProductSelector
+    print 'modelCase     :', args.iModelCase
+    print 'pointing case :', args.iPointingCase
+    print 'instrument    :', args.iInstrumentSelector
+    print 'product       :', args.iProductSelector
     print ''
     if args.iPointingCase == spice_:
         print 'SPICE pointing selected:'
+        print '   -KernelFile :', args.StringKernelMetaFile.split('/')[-1]
+        print '   -Date       :', args.StringUtcStartTime
+    elif args.iPointingCase == userPointing_:
         print '   -KernelFile :', StringKernelMetaFile.split('/')[-1]
         print '   -Date       :', StringUtcStartTime
     elif args.iPointingCase == userPointing_:
@@ -172,7 +175,7 @@ if iModelCase == dsmc_:
             print 'Could not detect number of dimensions of dsmc case. Exiting now.'
         sys.exit()
 
-elif iModelCase == haser_ or iModelCase == dust_:
+elif iModelCase in [haser_, dust_]:
     iDim = 1
 elif iModelCase == userModel_:
     iDim = iDimUser
@@ -231,6 +234,7 @@ if numberDensities.ndim == 1:
 nSpecies = numberDensities.shape[1]
 if iMpiRank == 0:
     print 'Nr of species:', nSpecies
+    print numberDensities.shape
 
 ##############################################################
 # triangulation and interpolation for 2d case
@@ -268,7 +272,7 @@ elif iInstrumentSelector == osirisn_:     # osiris nac
     iFOV = 0.0000188
     PixelSize = 1
 
-elif iInstrumentSelector == alice_:         # alice
+elif iInstrumentSelector in [alice_, aliceSpec_]:         # alice
     nOversampleX = 24
     nOversampleY = 20
 
@@ -281,6 +285,7 @@ elif iInstrumentSelector == alice_:         # alice
 
     PixelSize = 1
 
+elif iInstrumentSelector in [miro_, miroDust_]:               # miro
     if iPointingCase == spice_:
         v_sun = alice.get_v_sun(StringKernelMetaFile, StringUtcStartTime)
     else:
@@ -291,13 +296,22 @@ elif iInstrumentSelector == alice_:         # alice
     v_sun = 12
     gFactor = 2.09e-7
 
-elif iInstrumentSelector == miro_:          # miro
     nPixelsX = 1
     nPixelsY = 1
     PhiX = 0.33336 / 2
     PhiY = 0.36666 / 2
     iFOV = 0.36666
     PixelSize = 1
+    
+    ''' 
+    elif iInstrumentSelector == miro_:          # miro
+        nPixelsX = 1
+        nPixelsY = 1
+        PhiX = 0.33336 / 2
+        PhiY = 0.36666 / 2
+        iFOV = 0.36666
+        PixelSize = 1
+    '''
 
 elif iInstrumentSelector == virtism_:       # virtis m
     nPixelsX = 256
@@ -408,14 +422,14 @@ for i in range(nPixelsX):
 if iMpiRank == 0:
     print 'pixel loop done'
     ccd_limits = (ccd.min(), ccd.max())
-    print 'max ccd:', ccd_limits[1]
-    print 'min ccd:', ccd_limits[0]
+    print 'max ccd: %.3e' % ccd_limits[1]
+    print 'min ccd: %.3e' % ccd_limits[0]
 
     if iInstrumentSelector == miro_  and iProductSelector == miroDustIR_:
             ccdFinal, wavelengths = miro.calculateBrightness(ccd, NumberDensityIndicies, AllSizeIntervals, args)
 
     for spIndex in range(nSpecies):
-        if   iInstrumentSelector == alice_ and iProductSelector == alice1_:
+        if iInstrumentSelector in [alice_, aliceSpec_]:
             ccdFinal, wavelengths = alice.calculateBrightness(nOversampleX, nOversampleY, ccd[:, :, spIndex], args)
         else:
             ccdFinal = ccd[:, :, spIndex]
@@ -432,7 +446,7 @@ if iMpiRank == 0:
             f.write("Rows correspond to pixels in instruments X axis, starting with the most negative value.\n")
             f.write("Columns correspond to pixels in instrument Y axis, starting with the most negative value.\n")
             f.write("/begin data\n")
-            if iInstrumentSelector == alice_ and iProductSelector == alice1_:
+            if iInstrumentSelector in [alice_, aliceSpec_]:
                 alice.save_results(f, ccdFinal, wavelengths, filename)
             else:
                 for row in ccdFinal:
@@ -452,5 +466,5 @@ if iMpiRank == 0:
 
 if iMpiRank == 0:
     print '**' * 20
+    print 'Run completed'
     print 'Time elapsed: %.2f seconds' % (time.time() - startTime)
-    print '**' * 20

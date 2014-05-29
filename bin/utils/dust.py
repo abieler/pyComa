@@ -48,5 +48,3 @@ def dustDistribution(Qt, aMin, aMax, na):
 
     return aDust, Qdust
     
-
-

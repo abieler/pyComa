@@ -117,18 +117,21 @@ def plot_result_LOS(ccd, StringOutFileName, args, ccd_limits):
     elif args.StringPlotting == 'bokeh':
         if args.iInstrumentSelector in [1, 2, 5]:
             create_plot_LOS_2d_bokeh(args, ccd, pltTitle, StringOutFileName)
-        elif args.iInstrumentSelector in [3, 6]:
+        elif args.iInstrumentSelector in [3, 6, 7]:
             create_plot_LOS_1d_bokeh(args, ccd, pltTitle, StringOutFileName)
 
 
 def create_plot_LOS_1d_bokeh(args, ccd, pltTitle, StringOutFileName):
-    bplt.output_file(args.StringOutputDir + '/' + StringOutFileName)
+    print 'setting plot title to:'
+    print pltTitle
+    bplt.output_file(args.StringOutputDir + '/' + StringOutFileName, title=pltTitle)
     bplt.line(range(0, len(ccd[0, :])), ccd[0, :], line_width=2, line_color='black')
+    bplt.save()
 
     if args.DoShowPlots:
         bplt.show()
     else:
-        print 'not showing plots on screen'
+        print 'bokeh: not showing plots on screen'
 
 
 def create_plot_LOS_2d_bokeh(args, ccd, pltTitle, StringOutFileName):
@@ -144,23 +147,27 @@ def create_plot_LOS_2d_bokeh(args, ccd, pltTitle, StringOutFileName):
     if args.DoShowPlots:
         bplt.show()
     else:
-        print 'not showing plots on screen'
+        print 'bokeh: not showing plots on screen'
 
 
 def create_plot_LOS_1d_matplotlib(args, ccd, pltTitle, figName):
 
     plt.figure(figsize=(15, 12))
+    plt.grid(True)
+    plt.xlabel('Pixel Number')
     if args.iInstrumentSelector in [3, 7]:           # alice
         plt.plot(range(5, 24), ccd[0, :], '-ok', linewidth=2)
-        plt.grid(True)
-        plt.xlabel('Pixel Number')
         if args.iInstrumentSelector == 3:
             plt.ylabel('Column Density [#/m2]')
         elif args.iInstrumentSelector == 7:
             plt.ylabel('Flux [photons / m2 / s]')
         plt.xticks(range(5, 24))
         plt.xlim((5, 23))
-        plt.ticklabel_format(style='sci', axis='y', scilimits=(0, 0))
+    else:
+        plt.plot(ccd[0, :])
+        plt.ylabel('Column Density [#/m2]')
+
+    plt.ticklabel_format(style='sci', axis='y', scilimits=(0, 0))
 
     plt.title(pltTitle)
     plt.savefig(args.StringOutputDir + '/' + figName)

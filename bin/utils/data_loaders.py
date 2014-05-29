@@ -171,7 +171,7 @@ def loadGasData(dataFile, dim, userData=False, userDelimiter=',',
                 for element, j in zip(variables, range(len(variables))):
                     if '"n"' in element:
                         densityIndex = j
-                        print 'found density index!!', j
+                        print 'found density index: ', j
                         break
         f.close()
 
@@ -325,7 +325,7 @@ def load_dust_data(allSizeIntervals, numberDensityIndices, dim, dataFile, args):
     elif dim == 2:
         y = data[:, 1]
     elif dim == 3:
-        y = None         # 3d not implemented yet!!!
+        y = None         # 3d not implemented yet!
 
     n = np.zeros(len(data[:, 0]))
     for i in userIndices:

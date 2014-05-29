@@ -21,6 +21,8 @@ alice_        = 3
 miro_         = 4
 virtism_      = 5
 virtish_      = 6 
+aliceSpec_    = 7
+miroDust_     = 8
               
 #Product      
 column_       = 1
