@@ -71,7 +71,6 @@ args = cmdline_args(parser)
 iModelCase = args.iModelCase
 iPointingCase = args.iPointingCase
 iInstrumentSelector = args.iInstrumentSelector
-iProductSelector = args.iProductSelector
 StringOutputDir = args.StringOutputDir
 
 StringDataFileDSMC = args.StringDataFileDSMC
@@ -111,15 +110,11 @@ if iMpiRank == 0:
     print 'modelCase     :', args.iModelCase
     print 'pointing case :', args.iPointingCase
     print 'instrument    :', args.iInstrumentSelector
-    print 'product       :', args.iProductSelector
     print ''
     if args.iPointingCase == spice_:
         print 'SPICE pointing selected:'
         print '   -KernelFile :', args.StringKernelMetaFile.split('/')[-1]
         print '   -Date       :', args.StringUtcStartTime
-    elif args.iPointingCase == userPointing_:
-        print '   -KernelFile :', StringKernelMetaFile.split('/')[-1]
-        print '   -Date       :', StringUtcStartTime
     elif args.iPointingCase == userPointing_:
         print 'User pointing selected:'
         print '   -R          : %.2e [m]' % args.UserR
@@ -285,16 +280,7 @@ elif iInstrumentSelector in [alice_, aliceSpec_]:         # alice
 
     PixelSize = 1
 
-elif iInstrumentSelector in [miro_, miroDust_]:               # miro
-    if iPointingCase == spice_:
-        v_sun = alice.get_v_sun(StringKernelMetaFile, StringUtcStartTime)
-    else:
-        v_sun = None       # v_sun is not needed if not spice pointing
-
-    #gFactor = alice.get_gfactor_from_db()
-
-    v_sun = 12
-    gFactor = 2.09e-7
+elif iInstrumentSelector in [miro_, miroDustIR_]:               # miro
 
     nPixelsX = 1
     nPixelsY = 1
@@ -303,16 +289,6 @@ elif iInstrumentSelector in [miro_, miroDust_]:               # miro
     iFOV = 0.36666
     PixelSize = 1
     
-    ''' 
-    elif iInstrumentSelector == miro_:          # miro
-        nPixelsX = 1
-        nPixelsY = 1
-        PhiX = 0.33336 / 2
-        PhiY = 0.36666 / 2
-        iFOV = 0.36666
-        PixelSize = 1
-    '''
-
 elif iInstrumentSelector == virtism_:       # virtis m
     nPixelsX = 256
     nPixelsY = 256
@@ -425,8 +401,9 @@ if iMpiRank == 0:
     print 'max ccd: %.3e' % ccd_limits[1]
     print 'min ccd: %.3e' % ccd_limits[0]
 
-    if iInstrumentSelector == miro_  and iProductSelector == miroDustIR_:
+    if iInstrumentSelector == miroDustIR_:
             ccdFinal, wavelengths = miro.calculateBrightness(ccd, NumberDensityIndicies, AllSizeIntervals, args)
+            nSpecies = ccdFinal.shape[2]                       
 
     for spIndex in range(nSpecies):
         if iInstrumentSelector in [alice_, aliceSpec_]:
@@ -442,9 +419,8 @@ if iMpiRank == 0:
         with open(StringOutputDir + filename, 'w') as f:
             f.write(pltTitle)
             f.write('\n')
-            f.write("Each datapoint is the column number density in 1/m2 for an instrument  pixel.\n")
-            f.write("Rows correspond to pixels in instruments X axis, starting with the most negative value.\n")
-            f.write("Columns correspond to pixels in instrument Y axis, starting with the most negative value.\n")
+            f.write(pltTitle)
+            f.write("x [pixel], y [pixel], %s \n" % ccdStr[args.iInstrumentSelector])
             f.write("/begin data\n")
             if iInstrumentSelector in [alice_, aliceSpec_]:
                 alice.save_results(f, ccdFinal, wavelengths, filename)

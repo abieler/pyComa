@@ -1,5 +1,5 @@
 #############################################
-# Define indexes
+# Define indecies
 #############################################
 #Model
 dsmc_         = 0
@@ -22,11 +22,13 @@ miro_         = 4
 virtism_      = 5
 virtish_      = 6 
 aliceSpec_    = 7
-miroDust_     = 8
+miroDustIR_   = 8
               
-#Product      
-column_       = 1
-miro1_        = 2
-miroDustIR_   = 2
-alice1_       = 2
-product1_     = 2
+ccdStr = ['Column Density [#/m^2]',
+          'Column Density [#/m^2]',
+          'Column Density [#/m^2]',
+          'Column Density [#/m^2]',
+          'Column Density [#/m^2]',
+          'Column Density [#/m^2]',
+          'Brightness [photon/m^2/s]',
+          'Brightness [?]']
