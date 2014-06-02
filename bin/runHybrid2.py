@@ -65,6 +65,7 @@ elif args.StringMeasurement == 'insitu':
     elif args.iPointingCase == 2:
         x, y, z = load_user_trajectory(args)
         r = np.array([np.sqrt(xx**2 + yy**2 + zz**2) for xx, yy, zz in zip(x,y,z)])
+        dates = range(len(r))
 
 #############################################################################
 # write coordinates to traj.dat file and execute aikef.py
