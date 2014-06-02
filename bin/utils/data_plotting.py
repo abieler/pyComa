@@ -13,6 +13,7 @@ from data_loaders import load_in_situ_output, load_in_situ_output_hybrid
 
 rcParams.update({'figure.autolayout': True})
 font = {
+        'family':'serif',
         'weight':'bold',
         'size':16}
 

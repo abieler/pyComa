@@ -14,7 +14,7 @@ import time
 import spice
 from utils.cmdline_args import cmdline_args
 from utils.createRay import createRay
-from utils.data_loaders import load_hybrid2_data
+from utils.data_loaders import load_hybrid2_data, load_user_trajectory
 import utils.spice_functions as spice_functions
 from utils.data_plotting import plot_result_insitu
 
@@ -115,7 +115,7 @@ if args.StringMeasurement == 'LOS':
                                                                         xTravelRay[1, :],
                                                                         xTravelRay[2, :])])
     dTravelRay = np.sqrt(np.sum((xTravelRay[0] - xTravelRay)**2, axis=1))
-    columnDensity = np.trapz(density, dTravelRay)
+    columnDensity = np.trapz(nElectrons, dTravelRay)
 
     with open(args.StringOutputDir + '/result.txt', 'w') as f:
         f.write(('Electron column density between s/c and Earth in [#/m3] as' +
