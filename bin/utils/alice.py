@@ -27,15 +27,23 @@ def get_specs():
                         9.39]) * 1e-6
     nOversampleX = 24
     nOversampleY = 20
-    instrumentSpecs = {'nPixelsX' : 19 * nOversampleX,
+    PhiX = 5.852 / 2
+    PhiY = 0.1 / 2 
+    iFOV = (PhiX * 2 / 180 * np.pi / (19 * nOversampleX)) * (PhiY * 2 / 180 * np.pi / (nOversampleY))
+
+    instrumentSpecs = {'name' : 'alice',
+                       'nPixelsX' : 19 * nOversampleX,
                        'nPixelsY' : 1 * nOversampleY,
-                       'PhiX' : 5.852 / 2,
-                       'iFOV' : (PhiX * 2 / 180 * np.pi / (19 * nOversampleX)) * (PhiY * 2 / 180 * np.pi / (nOversampleY)),
-                       'PixelSize' : 1
+                       'nOversampleX' : nOversampleX,
+                       'nOversampleY' : nOversampleY,
+                       'PhiX' : PhiX,
+                       'PhiY' : PhiY,
+                       'iFOV' : iFOV, 
+                       'PixelSize' : 1,
                        'computedQuantity' : 'column density [#/m2]'
                       }
 
-    instrumentSpecs['pixelFOV'] = pixelFOV
+    instrumentSpecs['PixelFOV'] = pixelFOV
 
     return instrumentSpecs
 
@@ -53,7 +61,7 @@ def save_results(f, ccdFinal, wavelengths, filename):
         f.write('\n')
 
 
-def calculateBrightness(N_oversampleX, N_oversampleY, ccd, args):
+def calculateBrightness(N_oversampleX, N_oversampleY, PixelFOV, ccd, args):
     
     ccdFinal = np.zeros(19)
     result = []
@@ -81,7 +89,7 @@ def calculateBrightness(N_oversampleX, N_oversampleY, ccd, args):
     if args.iInstrumentSelector == 7:
         gFactors, wavelengths = get_gfactor_from_db(args)
         for gFactor in gFactors:
-            ccdF = ccdFinal * gFactor / (4 * np.pi) * pixelFOV
+            ccdF = ccdFinal * gFactor / (4 * np.pi) * PixelFOV
             result.append(ccdF)
 
         result.append(ccdFinal)
@@ -174,7 +182,7 @@ def get_gfactor_from_db(args):
     DBqueryWavelengths = ('SELECT wavelength from gFactors WHERE (name'
                           '= "%s" AND gasTemp = %i) AND (v_sun = %f)'
                           ' ORDER BY v_sun DESC'
-                          % (species, gasTemp, vLow))
+                          % (species, args.gasTemp, vLow))
     print DBqueryWavelengths
     cur.execute(DBqueryWavelengths)
     dataWavelengths = cur.fetchall()
