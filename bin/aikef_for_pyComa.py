@@ -4,17 +4,22 @@ import shutil, os,  subprocess, fileinput, string, sys, stat, json
 
 server = os.uname()[1]  # hostname
 
+# if server_name.txt exists, use the contents as the server name instead of what the OS returns--to cover the case of Apache virtual hosts
+server_override = "../../../config/config_key"
+if os.path.isfile(server_override):
+   with open(server_override,"r") as myfile:
+       server="".join(line.rstrip() for line in myfile)
+print "SERVER="+server
+
 # path to ICES config
-#pathToICES = '../../../config/ices.json'  # this should be the ONLY hard-coded path
-#pathToICES = '../../../../../../www-v4.1/htdocs/ICES/config/ices.json'  # this should be the ONLY hard-coded path
-pathToICES ='../../config/ices.json'
+pathToICES = '../../../config/ices.json'  # this should be the ONLY hard-coded path
 
 iceyfp = open(pathToICES)
 assert (iceyfp), "Couldn't open "+pathToICES
 cfg = json.load(iceyfp)  # read in the configuration object from the JSON file
 iceyfp.close()
 
-modelFP = open(cfg['SERVERS'][server]['DOCROOT']+"/"+cfg['ICESROOT']+"/config/"+cfg['TYPES']['Coma']['CONFIG'])
+modelFP = open(cfg['SERVERS'][server]['DOCROOT']+"/"+cfg['TYPES']['Coma']['CONFIG'])
 Models = json.load(modelFP)
 modelFP.close()
 
