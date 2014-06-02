@@ -9,7 +9,7 @@ from matplotlib import rcParams
 import bokeh.plotting as bplt
 from bokeh.objects import Range1d
 
-from data_loaders import load_in_situ_output
+from data_loaders import load_in_situ_output, load_in_situ_output_hybrid
 
 rcParams.update({'figure.autolayout': True})
 font = {
@@ -24,14 +24,20 @@ def plot_result_insitu(args):
     print 'plotting results...'
     path = args.StringOutputDir
     nLinesPerFig = 4
-    pltTitle = build_plot_title(args, 'insitu')
+    if args.StringHybridCase is None:
+        pltTitle = build_plot_title(args, 'insitu')
+    else:
+        pltTitle = build_plot_title(args, 'hybrid')
 
     filenames = [path + '/' + filename for filename in os.listdir(path) if filename.split('.')[-1] == 'out']
     all_n_SC = []
     all_species = []
     for filename, i in zip(filenames, range(len(filenames))):
         species = os.path.split(filename)[1].split('.')[0]
-        dates_SC, r_SC, n_SC = load_in_situ_output(filename)
+        if args.StringHybridCase is None:
+            dates_SC, r_SC, n_SC = load_in_situ_output(filename)
+        else:
+            dates_SC, r_SC, n_SC = load_in_situ_output_hybrid(filename)
         all_n_SC.append(n_SC)
         all_species.append(species)
 
@@ -272,4 +278,11 @@ def build_plot_title(args, measurement='LOS'):
             pltTitle += 'Trajectory: user defined (%s)\n' % (os.path.split(args.StringUserTrajectoryFile)[1])
         else:
             pltTitle += '\n'
+    elif measurement == 'hybrid':
+        pltTitle = 'ICES in-situ tool\n'
+        pltTitle += 'Coma model: Hybrid AIKEF, (%s)\n' % args.StringHybridCase
+        if args.iPointingCase == 0:
+            pltTitle += 'Trajectory: spice (%s)' % (os.path.split(args.StringKernelMetaFile)[1].split('.')[0])
+        elif args.iPointingCase == 2:
+            pltTitle += 'Trajectory: user defined (%s)' % (os.path.split(args.StringUserTrajectoryFile)[1])
     return pltTitle

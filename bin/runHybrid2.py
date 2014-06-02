@@ -135,10 +135,10 @@ elif args.StringMeasurement == 'insitu':
             f.write('spice kernel: %s\n' % (args.StringKernelMetaFile.split('/')[-1]))
         elif args.iPointingCase == 2:
             f.write('User defined trajectory: %s' % args.StringUserTrajectoryFile)
-        f.write('date x[m] y[m] z[m] distance_from_center[m] numberDensity_e[1/m3] numberDensity_ions[1/m3] B_total[nT] gyroRadius_e[m] gyroFreq_e[rad/s] plasmaFreq_e[rad/s] gyroRadius_ion gyroFreq_ion plasmaFreq_ion\n')
-        for dd, xx, yy, zz, rr, ne, bb, rge, wge, wpe, rgi, wgi, wpi  in zip(dates, x, y, z, r, nElectrons, nIons, B_total,
+        f.write('date,x[m],y[m],z[m],distance_from_center[m],numberDensity_e[1/m3],numberDensity_ions[1/m3],B_total[nT],gyroRadius_e[m],gyroFreq_e[rad/s],plasmaFreq_e[rad/s],gyroRadius_ion,gyroFreq_ion,plasmaFreq_ion\n')
+        for dd, xx, yy, zz, rr, ne, ni, bb, rge, wge, wpe, rgi, wgi, wpi  in zip(dates, x, y, z, r, nElectrons, nIons, B_total,
                                                                              rg_electron, wg_electron, wp_electron,
                                                                              rg_ion, wg_ion, wp_ion ):
-            f.write("%s %e %e %e %e %e %e %e %e %e %e %e %e %e\n" % (dd, xx, yy, zz, rr, ne, bb, rge, wge, wpe, rgi, wgi, wpi))
+            f.write("%s,%e,%e,%e,%e,%e,%e,%e,%e,%e,%e,%e,%e,%e\n" % (dd, xx, yy, zz, rr, ne, ni, bb, rge, wge, wpe, rgi, wgi, wpi))
 
     plot_result_insitu(args)

@@ -8,13 +8,15 @@ from pandas import read_csv
 
 
 def load_hybrid2_data(filename):
-    x, y, z, Bx, By, Bz, B_total, ux_e, uy_e, uz_e, density, = np.genfromtxt(filename, usecols=(0, 1, 2, 5, 6, 7, 8, 9, 10, 11, 13),
+    x, y, z, Bx, By, Bz, B_total, ux_e, uy_e, uz_e, nElectrons, nIons, uxIons, uyIons, uzIons, uTotalIons = np.genfromtxt(filename,
+                                                                        usecols=(0, 1, 2, 5, 6, 7, 8, 9, 10, 11, 13, 15, 20, 21, 22, 23),
                                                                  unpack=True)
     B = np.array([np.array([bx, by, bz]) for bx, by, bz in zip(Bx, By, Bz)])
     U_e = [np.array([ux, uy, uz]) for ux, uy, uz in zip(ux_e, uy_e, uz_e)]
+    U_ions = [np.array([ux, uy, uz]) for ux, uy, uz in zip(uxIons, uyIons, uzIons)]
     xTravel = np.array([x, y, z])
 
-    return xTravel, B_total, B, U_e, density 
+    return xTravel, B_total, B, U_e, nElectrons, nIons, U_ions 
 
 def get_iDim(args):
 
@@ -332,6 +334,15 @@ def load_dust_data(allSizeIntervals, numberDensityIndices, dim, dataFile, args):
         n += data[:, i]
 
     return x, y, n
+
+
+def load_in_situ_output_hybrid(filename):
+
+    data = read_csv(filename, delimiter=',',skiprows=3, header=0)
+    dates =[ datetime.datetime.strptime(dd, '%Y-%m-%d %H:%M:%S') for dd in data['date']]
+    r_SC = data['distance_from_center[m]']
+    n_SC = data['numberDensity_e[1/m3]'] 
+    return dates, r_SC, n_SC
 
 
 def load_in_situ_output(filename):
