@@ -235,7 +235,7 @@ def load_user_trajectory(args):
 
     print 'trajectory file delimiter:"%s"' % args.DelimiterTraj
     x, y, z = np.genfromtxt(args.StringUserTrajectoryFile, dtype=float,
-                            skip_header=args.nHeaderRowsData,
+                            skip_header=args.nHeaderRowsTraj,
                             delimiter=args.DelimiterTraj, unpack=True)
     return x, y, z
 
