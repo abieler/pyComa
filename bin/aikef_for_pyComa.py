@@ -6,7 +6,8 @@ server = os.uname()[1]  # hostname
 
 # path to ICES config
 #pathToICES = '../../../config/ices.json'  # this should be the ONLY hard-coded path
-pathToICES = '../../../../../../www-v4.1/htdocs/ICES/config/ices.json'  # this should be the ONLY hard-coded path
+#pathToICES = '../../../../../../www-v4.1/htdocs/ICES/config/ices.json'  # this should be the ONLY hard-coded path
+pathToICES ='../../config/ices.json'
 
 iceyfp = open(pathToICES)
 assert (iceyfp), "Couldn't open "+pathToICES
