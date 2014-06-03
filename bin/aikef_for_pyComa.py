@@ -117,6 +117,7 @@ if ( len(sys.argv) > 2 and len(sys.argv)<6 ):   # 3 to 5 is acceptable
 	      	  	  print 'Error: Could not find input Trajectory file'
 	      	  	  sys.exit()
     else :
+      print 'case folder: '+os.path.join(pathToInstalledCases,case)
       print 'Error: Could not find case folder'
       print 'please install the case first'
       sys.exit()

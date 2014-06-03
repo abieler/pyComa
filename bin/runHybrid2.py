@@ -10,6 +10,7 @@ import argparse
 import os
 import matplotlib.pyplot as plt
 import time
+import shutil, fileinput, string, sys, stat, json
 
 import spice
 from utils.cmdline_args import cmdline_args
@@ -21,7 +22,26 @@ from utils.data_plotting import plot_result_insitu
 parser = argparse.ArgumentParser()
 args = cmdline_args(parser)
 
-pathToExecutable = '/Users/ices/www-dev/htdocs/ICES/Models/LoS/pyComa/bin'
+# if server_name.txt exists, use the contents as the server name instead of what the OS returns--to cover the case of Apache virtual hosts
+server_override = "../../../config/config_key"
+if os.path.isfile(server_override):
+   with open(server_override,"r") as myfile:
+       server="".join(line.rstrip() for line in myfile)
+
+# path to ICES config
+pathToICES = '../../../config/ices.json'  # this should be the ONLY hard-coded path
+
+iceyfp = open(pathToICES)
+assert (iceyfp), "Couldn't open "+pathToICES
+cfg = json.load(iceyfp)  # read in the configuration object from the JSON file
+iceyfp.close()
+
+modelFP = open(cfg['SERVERS'][server]['DOCROOT']+"/"+cfg['TYPES']['Coma']['CONFIG'])
+Models = json.load(modelFP)
+modelFP.close()
+
+pathToExecutable = cfg['SERVERS'][server]['DOCROOT']+"/"+cfg['MODELS']+"/LoS/pyComa/bin"
+#pathToExecutable = '/Users/ices/www-dev/htdocs/ICES/Models/LoS/pyComa/bin'
 #pathToExecutable = '/Users/abieler/pyComa/bin'
 
 if args.StringMeasurement == 'LOS':
