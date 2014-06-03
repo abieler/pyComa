@@ -43,9 +43,10 @@ try:
     from utils.data_loaders import *
     from utils.haser import haserModel
     from utils.dust import dustModel
-    from utils.data_plotting import plot_result_LOS, build_plot_title
+    from utils.data_plotting import plot_result_LOS, build_plot_title, plot_miro
     import utils.rotations as rotations
     import utils.alice as alice
+    import utils.miro as miro
     import utils.createRay as createRay
     from utils.cmdline_args import cmdline_args
 
@@ -117,7 +118,7 @@ if iMpiRank == 0:
         print '   -Date       :', args.StringUtcStartTime
     elif args.iPointingCase == userPointing_:
         print 'User pointing selected:'
-        print '   -R          : %.2e [m]' % args.UserR
+        print '   -R          : %.2e [km]' % args.UserR
         print '   -phase angle: %f [deg]' % args.UserPhaseAngle
         print '   -latitude   : %f [deg]' % args.UserLatitude
         print '   -alpha      : %f [deg]' % args.UserAlpha
@@ -139,8 +140,8 @@ if iMpiRank == 0:
         print '   -tpHaser    :', tpHaser
     elif args.iModelCase == dust_:
         print 'Analytic DUST case selected:'
-        print '   -Qdust      :', QDust
-        print '   -vdust      :', vDust
+        print '   -Qdust      : %f [kg/s]' % QDust 
+        print '   -vdust      : %f [m/s]' % vDust
     elif args.iModelCase == userModel_:
         print 'USER coma model uploaded:'
         print '   -filename   : %s' % args.StringUserDataFile
@@ -217,7 +218,7 @@ elif iModelCase == haser_:
     y = None
 
 elif iModelCase == dust_:
-    x, numberDensities , allSizeIntervals = dustModel(QDust, vDust)
+    x, numberDensities, massDensities, allSizeIntervals = dustModel(QDust, vDust)
     y = None
 
 elif iModelCase == userModel_:
@@ -229,7 +230,6 @@ if numberDensities.ndim == 1:
 nSpecies = numberDensities.shape[1]
 if iMpiRank == 0:
     print 'Nr of species:', nSpecies
-    print numberDensities.shape
 
 ##############################################################
 # triangulation and interpolation for 2d case
@@ -280,13 +280,32 @@ elif iInstrumentSelector in [alice_, aliceSpec_]:         # alice
 
     PixelSize = 1
 
-elif iInstrumentSelector in [miro_, miroDustIR_]:               # miro
+elif iInstrumentSelector in [miro_]:               # miro
 
     nPixelsX = 1
     nPixelsY = 1
     PhiX = 0.33336 / 2
     PhiY = 0.36666 / 2
     iFOV = 0.36666
+    PixelSize = 1
+
+elif iInstrumentSelector in [miroDustIR_]:               # miro
+
+    nPixelsX = 1
+    nPixelsY = 1
+    PhiX = 0.126051 / 2
+    PhiY = 0.126051 / 2
+    iFOV = 0.0022
+    PixelSize = 1
+
+
+elif iInstrumentSelector in [miroDustIRSpread_]:               # miro
+
+    nPixelsX = 16
+    nPixelsY = 16
+    PhiX = 16.0 / 2
+    PhiY = 16.0 / 2
+    iFOV = 0.0022
     PixelSize = 1
     
 elif iInstrumentSelector == virtism_:       # virtis m
@@ -373,7 +392,7 @@ for i in range(nPixelsX):
                 if iDim == 1:
                     DensityRay = np.interp(xTravel, x, numberDensities[:, spIndex])
                 elif iDim == 2:
-                    DensityRay = Interpolator[spIndex].__call__(xTravel[:, 0], xTravel[:, 1])                           # interpolated local number density
+                    DensityRay = Interpolator[spIndex].__call__(xTravel[:, 0], xTravel[:, 1]) #interpolated local number density
                 elif iDim == 3:
                     DensityRay = None
 
@@ -401,9 +420,15 @@ if iMpiRank == 0:
     print 'max ccd: %.3e' % ccd_limits[1]
     print 'min ccd: %.3e' % ccd_limits[0]
 
-    if iInstrumentSelector == miroDustIR_:
-            ccdFinal, wavelengths = miro.calculateBrightness(ccd, NumberDensityIndicies, AllSizeIntervals, args)
+    if iInstrumentSelector in [miroDustIR_, miroDustIRSpread_]:
+            ccdFinal, aveBright, frequencies = miro.fluxDensity(ccd, allSizeIntervals, iFOV, args)
             nSpecies = ccdFinal.shape[2]                       
+
+    ######################################################
+    # plot results
+    #######################################################
+    plot_miro(ccdFinal, aveBright, frequencies, allSizeIntervals, args)
+    print ccdFinal.shape
 
     for spIndex in range(nSpecies):
         if iInstrumentSelector in [alice_, aliceSpec_]:

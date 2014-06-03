@@ -1,72 +1,90 @@
 #!/usr/bin/env python
 from __future__ import division
 import numpy as np
-import spice
-import sqlite3
+import scipy.constants as sc
 
-def calculateBrightness(N_oversampleX, N_oversampleY, ccd, args):
+def fluxDensity(columnDensity, radius, iFOV, args):
+    # returns: 
+    # Stotal which is aveBright integrated over dust radius (a)
+    # average brightness as a function of pixel x, pixel y, a, freq
+    # and the array wavelenght array
+
+    rAU = 1.3   # AU
+    rH  = rAU * sc.au # m
     
-    ccdFinal = np.zeros(19)
-    result = []
+    # F = frequency in Hz
+    nF = 1
+    minF = 600e9
+    maxF = 600e9 
+    F = np.linspace(minF, maxF, num=nF)
 
-    ll = 0
-    for k in range(7):              # loop over first 7 pixels
-        ccdFinal[k] = np.mean(ccd[k * N_oversampleX:(k + 1) * N_oversampleX, :])
+    # get dimensions and create array    
+    (nX, nY, nR) = columnDensity.shape
+    result = np.zeros((nX, nY, nF)) 
 
-    for k in range(14, 19):          # loop over last 5 pixels
-        ccdFinal[k] = np.mean(ccd[k * N_oversampleX:(k + 1) * N_oversampleX, :])
+    aveBright = aveBrightness(columnDensity, radius, F, args)
+    
+    sA = 2.0*np.pi*(1.0-np.cos(iFOV))
 
-    ll = int(N_oversampleY * 0.3 // 2)
-    for k in range(7, 8):
-        ccdFinal[k] = np.mean(ccd[k * N_oversampleX:(k + 1) * N_oversampleX, ll:-ll])
+    sTotal = sA * np.trapz(aveBright, x=radius, axis=2) 
 
-    ll = int(N_oversampleY * 0.2 // 2)
-    for k in range(13, 14):
-        ccdFinal[k] = np.mean(ccd[k * N_oversampleX:(k + 1) * N_oversampleX, ll:-ll])
-
-    ll = int(N_oversampleY * 0.5 // 2)
-    for k in range(8, 13):
-        ccdFinal[k] = np.mean(ccd[k * N_oversampleX:(k + 1) * N_oversampleX, ll:-ll])
-
-    # calculate brightness if alice_spectra was selected
-    if args.iInstrumentSelector == 7:
-        gFactors, wavelengths = get_gfactor_from_db(args)
-        for gFactor in gFactors:
-            ccdF = ccdFinal * gFactor / (4 * np.pi) * pixelFOV
-            result.append(ccdF)
-
-        result.append(ccdFinal)
-    else:
-        wavelengths = []
-        result.append(ccdFinal)
-
-    return np.array(result), wavelengths
+    # returns: 
+    # Stotal which is aveBright integrated over dust radius (a)
+    # average brightness as a function of pixel x, pixel y, a, freq
+    # and the array wavelenght array
+    return sTotal, aveBright, F
 
 
-def calculate_column(nRay, dTravel, pixelSize=10**-6,
-                     iFOV=9.39*10**-6, gFactor=2*10**-7):
+def aveBrightness(columnDensity, radius, F, args):
+    # returns the average brightness as a function of pixel x, pixel y, a, freq
 
-    #N = np.trapz(iFOV * np.array(dTravel)**2 * nRay, dTravel)
-    N = np.trapz(nRay, dTravel)
-    return N
+    (nX, nY, nR) = columnDensity.shape
+    nF = F.shape[0]
+    result = np.zeros((nX, nY, nR, nF)) 
 
+    # Calculate relavant parameters
+    B = plank(radius, F)
+    Q = qabs(radius, F)
+    
+    for i in range(nX):
+        for j in range(nY):
+            for k in range(nR):
+                for l in range(nF):
+                    result[i,j,k,l] = np.pi * radius[k]**2 * B[k,l] * Q[k,l] * columnDensity[i,j,k]
 
-def qabs(a,freq,nc):
+    # returns the average brightness as a function of pixel x, pixel y, a, freq
+    return result
+
+def qabs(radius, F):
+    nF = F.shape[0]
+    nR = radius.shape[0]
+    result = np.zeros((nR, nF))
+
     # For testing use olivine = 0.8687
-    result = 0.8687
+    result = result + 0.8687
 
     return result
 
+def plank(radius, F):
+    nF = F.shape[0]
+    nR = radius.shape[0]
+    result = np.zeros((nR, nF))
+    
+    T = dustT(radius)              
 
-def dustT(a):
+    #black body radiation: 2 h freq^3 / c^2 / (exp(h freq / kT)-1)
+    for i in range(nR):
+        for j in range(nF):
+            result[i,j] = 2.0 * sc.h * F[j]**3 / sc.c**2 / (np.exp(sc.h * F[j] / sc.k / T[i])-1)
+
+    return result
+
+def dustT(radius):
+    result = np.zeros_like(radius)
     # For testing use an equilibirum temp 244K
-    result = 244
-    return
+    result = result + 244.0
 
-
-def plank(a,freq):
-    return
-
+    return result
    
 
 

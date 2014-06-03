@@ -23,12 +23,17 @@ virtism_      = 5
 virtish_      = 6 
 aliceSpec_    = 7
 miroDustIR_   = 8
+virtis_       = 9
+miroDustIRSpread_   = 10
               
-ccdStr = ['Column Density [#/m^2]',
+ccdStr = ['',
+          'Column Density [#/m^2]',
           'Column Density [#/m^2]',
           'Column Density [#/m^2]',
           'Column Density [#/m^2]',
           'Column Density [#/m^2]',
           'Column Density [#/m^2]',
           'Brightness [photon/m^2/s]',
+          'Brightness [?]',
+          'Brightness [?]',
           'Brightness [?]']
