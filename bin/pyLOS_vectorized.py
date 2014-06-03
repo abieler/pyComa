@@ -428,7 +428,6 @@ if iMpiRank == 0:
     # plot results
     #######################################################
     plot_miro(ccdFinal, aveBright, frequencies, allSizeIntervals, args)
-    print ccdFinal.shape
 
     for spIndex in range(nSpecies):
         if iInstrumentSelector in [alice_, aliceSpec_]:
