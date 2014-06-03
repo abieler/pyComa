@@ -339,9 +339,12 @@ def load_dust_data(allSizeIntervals, numberDensityIndices, dim, dataFile, args):
 def load_in_situ_output_hybrid(filename):
 
     data = read_csv(filename, delimiter=',',skiprows=3, header=0)
-    dates =[ datetime.datetime.strptime(dd, '%Y-%m-%d %H:%M:%S') for dd in data['date']]
     r_SC = data['distance_from_center[m]']
     n_SC = data['numberDensity_e[1/m3]'] 
+    try:
+        dates =[ datetime.datetime.strptime(dd, '%Y-%m-%d %H:%M:%S') for dd in data['date']]
+    except:
+        dates = range(len(r_SC))
     return dates, r_SC, n_SC
 
 
