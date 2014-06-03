@@ -32,7 +32,7 @@ def cmdline_args(parser):
     parser.add_argument("--iDimUser", type=int)                  # number of dimenisons of user coma model
     parser.add_argument("--StringUserTrajectoryFile", type=str)  # file to upload from user which contains user coma model
     parser.add_argument("--DelimiterTraj", type=str)             # number of dimenisons of user coma model
-    parser.add_argument("--nHeaderRowsTraj", type=int)           # number of dimenisons of user coma model
+    parser.add_argument("--nHeaderRowsTraj", type=int, default=0)           # number of dimenisons of user coma model
 
     parser.add_argument("--StringKernelMetaFile", type=str)      # spice .tm file that contains kernel info
     parser.add_argument("--StringUtcStartTime", type=str)        # format = yyyy-mm-ddTHH:MM:SS, e.g. 2014-07-11T00:00:00

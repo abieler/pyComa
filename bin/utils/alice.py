@@ -4,25 +4,48 @@ import numpy as np
 import spice
 import sqlite3
 
-pixelFOV = np.array([9.39,
-                    9.39,
-                    9.39,
-                    9.39,
-                    9.39,
-                    9.39,
-                    9.39,
-                    6.10,
-                    4.69,
-                    4.69,
-                    4.69,
-                    4.69,
-                    4.69,
-                    7.51,
-                    9.39,
-                    9.39,
-                    9.39,
-                    9.39,
-                    9.39]) * 1e-6
+def get_specs():
+
+    pixelFOV = np.array([9.39,
+                        9.39,
+                        9.39,
+                        9.39,
+                        9.39,
+                        9.39,
+                        9.39,
+                        6.10,
+                        4.69,
+                        4.69,
+                        4.69,
+                        4.69,
+                        4.69,
+                        7.51,
+                        9.39,
+                        9.39,
+                        9.39,
+                        9.39,
+                        9.39]) * 1e-6
+    nOversampleX = 24
+    nOversampleY = 20
+    PhiX = 5.852 / 2
+    PhiY = 0.1 / 2 
+    iFOV = (PhiX * 2 / 180 * np.pi / (19 * nOversampleX)) * (PhiY * 2 / 180 * np.pi / (nOversampleY))
+
+    instrumentSpecs = {'name' : 'alice',
+                       'nPixelsX' : 19 * nOversampleX,
+                       'nPixelsY' : 1 * nOversampleY,
+                       'nOversampleX' : nOversampleX,
+                       'nOversampleY' : nOversampleY,
+                       'PhiX' : PhiX,
+                       'PhiY' : PhiY,
+                       'iFOV' : iFOV, 
+                       'PixelSize' : 1,
+                       'computedQuantity' : 'column density [#/m2]'
+                      }
+
+    instrumentSpecs['PixelFOV'] = pixelFOV
+
+    return instrumentSpecs
 
 
 def save_results(f, ccdFinal, wavelengths, filename):
@@ -38,7 +61,7 @@ def save_results(f, ccdFinal, wavelengths, filename):
         f.write('\n')
 
 
-def calculateBrightness(N_oversampleX, N_oversampleY, ccd, args):
+def calculateBrightness(N_oversampleX, N_oversampleY, PixelFOV, ccd, args):
     
     ccdFinal = np.zeros(19)
     result = []
@@ -66,7 +89,7 @@ def calculateBrightness(N_oversampleX, N_oversampleY, ccd, args):
     if args.iInstrumentSelector == 7:
         gFactors, wavelengths = get_gfactor_from_db(args)
         for gFactor in gFactors:
-            ccdF = ccdFinal * gFactor / (4 * np.pi) * pixelFOV
+            ccdF = ccdFinal * gFactor / (4 * np.pi) * PixelFOV
             result.append(ccdF)
 
         result.append(ccdFinal)
@@ -80,7 +103,6 @@ def calculateBrightness(N_oversampleX, N_oversampleY, ccd, args):
 def calculate_column(nRay, dTravel, pixelSize=10**-6,
                      iFOV=9.39*10**-6, gFactor=2*10**-7):
 
-    #N = np.trapz(iFOV * np.array(dTravel)**2 * nRay, dTravel)
     N = np.trapz(nRay, dTravel)
     return N
 
@@ -135,8 +157,6 @@ def get_gfactor_from_db(args):
     else:
         species = args.species
 
-    gasTemp = args.gasTemp
-    
     vLow = np.floor(v_sun)
     vHigh = np.ceil(v_sun)
 
@@ -146,7 +166,7 @@ def get_gfactor_from_db(args):
     DBqueryHigh = ('SELECT gFactor from gFactors WHERE (name'
                    '= "%s" AND gasTemp = %i) AND (v_sun = %f)'
                    ' ORDER BY v_sun DESC'
-                   % (args.species, args.gasTemp, vHigh))
+                   % (species, args.gasTemp, vHigh))
     print DBqueryHigh
     cur.execute(DBqueryHigh)
     dataHigh = cur.fetchall()
@@ -154,7 +174,7 @@ def get_gfactor_from_db(args):
     DBqueryLow = ('SELECT gFactor from gFactors WHERE (name'
                   '= "%s" AND gasTemp = %i) AND (v_sun = %f)'
                   ' ORDER BY v_sun DESC'
-                  % (species, gasTemp, vLow))
+                  % (species, args.gasTemp, vLow))
     print DBqueryLow
     cur.execute(DBqueryLow)
     dataLow = cur.fetchall()
@@ -162,7 +182,7 @@ def get_gfactor_from_db(args):
     DBqueryWavelengths = ('SELECT wavelength from gFactors WHERE (name'
                           '= "%s" AND gasTemp = %i) AND (v_sun = %f)'
                           ' ORDER BY v_sun DESC'
-                          % (species, gasTemp, vLow))
+                          % (species, args.gasTemp, vLow))
     print DBqueryWavelengths
     cur.execute(DBqueryWavelengths)
     dataWavelengths = cur.fetchall()

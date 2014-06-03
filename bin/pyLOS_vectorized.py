@@ -49,6 +49,7 @@ try:
     import utils.miro as miro
     import utils.createRay as createRay
     from utils.cmdline_args import cmdline_args
+    from utils.instrument import Instrument
 
     # import defined constants
     from utils.rosettaDefs import *
@@ -268,6 +269,14 @@ elif iInstrumentSelector == osirisn_:     # osiris nac
     PixelSize = 1
 
 elif iInstrumentSelector in [alice_, aliceSpec_]:         # alice
+    specs = alice.get_specs()
+    instrument = Instrument(specs)
+    nPixelsX = instrument.nPixelsX
+    nPixelsY = instrument.nPixelsY
+    PhiX = instrument.PhiX
+    PhiY = instrument.PhiY
+
+    '''
     nOversampleX = 24
     nOversampleY = 20
 
@@ -279,6 +288,7 @@ elif iInstrumentSelector in [alice_, aliceSpec_]:         # alice
     iFOV = (PhiX * 2 / 180 * np.pi / (19 * nOversampleX)) * (PhiY * 2 / 180 * np.pi / (nOversampleY))
 
     PixelSize = 1
+    '''
 
 elif iInstrumentSelector in [miro_]:               # miro
 
@@ -431,7 +441,11 @@ if iMpiRank == 0:
 
     for spIndex in range(nSpecies):
         if iInstrumentSelector in [alice_, aliceSpec_]:
-            ccdFinal, wavelengths = alice.calculateBrightness(nOversampleX, nOversampleY, ccd[:, :, spIndex], args)
+            ccdFinal, wavelengths = alice.calculateBrightness(instrument.nOversampleX,
+                                                              instrument.nOversampleY,
+                                                              instrument.PixelFOV,
+                                                              ccd[:, :, spIndex],
+                                                              args)
         else:
             ccdFinal = ccd[:, :, spIndex]
 
@@ -443,15 +457,19 @@ if iMpiRank == 0:
         with open(StringOutputDir + filename, 'w') as f:
             f.write(pltTitle)
             f.write('\n')
-            f.write(pltTitle)
             f.write("x [pixel], y [pixel], %s \n" % ccdStr[args.iInstrumentSelector])
             f.write("/begin data\n")
             if iInstrumentSelector in [alice_, aliceSpec_]:
                 alice.save_results(f, ccdFinal, wavelengths, filename)
             else:
+                ix = 0
+                iy = 0
                 for row in ccdFinal:
                     for value in row:
-                        f.write('%e,' % value)
+                        f.write('%i, %i, %.5e\n' % (ix, iy, value))
+                        iy += 1
+                    ix += 1
+                    iy = 0
                     f.write('\n')
 
         ######################################################

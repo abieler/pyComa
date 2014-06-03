@@ -127,8 +127,17 @@ for filename in filenames:
 
     file = open(args.StringOutputDir + '/' + species + '.out', 'w')
     file.write('Local number densities for the rosetta spacecraft at selected dates. Comet is at (0,0,0) with the sun on the positive x axis.(inf,0,0)\n')
-    file.write('DSMC case: %s\n' % (os.path.split(args.StringDataFileDSMC)[0].split('/')[-1]))
-    file.write('spice kernel: %s\n' % (args.StringKernelMetaFile.split('/')[-1]))
+    if args.iModelCase == 0:
+        file.write('DSMC case: %s\n' % (os.path.split(args.StringDataFileDSMC)[0].split('/')[-1]))
+    elif args.iModelCase == 1:
+        file.write("HASER case: Q = %.3e [#/s], v = %f [m/s], tp = %.2e" % (args.QHaser, args.vHaser, args.tpHaser))
+        if args.tdHaser == 0:
+            file.write('\n')
+        else:
+            file.write(', %.2e\n' %(args.tdHaser))
+
+    if args.iPointingCase == 0:
+        file.write('spice kernel: %s\n' % (args.StringKernelMetaFile.split('/')[-1]))
     file.write('date,x[m],y[m],z[m],distance_from_center[m],numberDensity [1/m3]\n')
     for dd, xx, yy, zz, rr, nn in zip(dates_SC, x_SC, y_SC, z_SC, r_SC, n_SC):
         file.write("%s,%e,%e,%e,%e,%e\n" % (dd, xx, yy, zz, rr, nn))
