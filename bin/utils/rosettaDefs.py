@@ -4,7 +4,7 @@
 #Model
 dsmc_         = 0
 haser_        = 1
-userMode_     = 2
+userModel_    = 2
 dust_         = 3
 
 #Pointing
