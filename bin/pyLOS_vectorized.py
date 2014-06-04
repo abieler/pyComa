@@ -175,7 +175,7 @@ if iModelCase == dsmc_:
 elif iModelCase in [haser_, dust_]:
     iDim = 1
 elif iModelCase == userModel_:
-    iDim = iDimUser
+    iDim = args.iDimUser
 
 if iMpiRank == 1:
     print 'iDimensions:', iDim
