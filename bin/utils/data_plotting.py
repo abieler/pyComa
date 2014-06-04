@@ -311,7 +311,7 @@ def build_plot_title(args, measurement='LOS'):
                                                         args.StringUtcStartTime)
         else:
             pltTitle += 'Pointing: user defined (R: %i km, PA: %i, LAT: %i, a: %i, b: %i, c: %i)\n' %\
-                        (args.UserR / 1000, args.UserPhaseAngle,
+                        (args.UserR, args.UserPhaseAngle,
                          args.UserLatitude, args.UserAlpha,
                          args.UserBeta, args.UserGamma)
 
