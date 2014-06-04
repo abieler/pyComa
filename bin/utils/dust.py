@@ -2,6 +2,8 @@
 from __future__ import division
 import numpy as np
 
+dustDensity = 1000.0 # (kg/m^3)   # for now use water density
+
 def dustModel(Qt, v):
     '''
     Qt   : total dust production rate
@@ -9,42 +11,50 @@ def dustModel(Qt, v):
     aMin : minimum dust bin size
     aMax : maximum dust bin size
     '''
-    na = 100   # number of dust bins
-    nr = 2000  # number of spatial bins
+    na = 10   # number of dust bins
+    nr = 20   # number of spatial bins
     aMin = 1e-9 # minimum dust bin size - 1 nm
     aMax = 1.0  # maximum dust bin size - 1 m
     rMin = 2000.0 # comet radius
-    rMax = 1e8    # max radius to calculate    
+    rMax = 1e9    # max radius to calculate    
 
     #Get the initial dust distribution at the surface    
-    aDust, qDust = dustDistribution(Qt, v, aMin, aMax, na)
+    aDust, qDust = dustDistribution(Qt, aMin, aMax, na)
+    na = aDust.shape[0]
     
+    # Create the spatial array
+    lrMin = np.log10(rMin)
+    lrMax = np.log10(rMax)
+    r = 10**(np.linspace(lrMin, lrMax, num=nr))
+
     #Calculate the dust density
-    lrmin = np.log10(rMin)
-    lrmax = np.log10(rMax)
-    dr = (rMax - rMin) / nr
-    r = 10**(np.arange(rmin, rmax, dr))
+    nDensity = np.zeros((nr,na))
+    mDensity = np.zeros((nr,na))
 
-    n = qDust / (4 * np.pi * r**2 * v)  # uniform radial expansion model
-    n = qDust  # Constant value for testing
+    for i in range(nr):
+        for j in range(na):
+            # simple radial expansion model
+            nDensity[i,j] = qDust[j] / (4.0 * np.pi * r[i]**2 * v)  
+            mDensity[i,j] = 4.0/3.0*np.pi*aDust[j]**3*nDensity[i,j]
+            # Constant model just for testing
+            # nDensity[i,j] = 1.0
+            # mDensity[i,j] = 1.0
+            # 1/r^2 model just for testing
+            nDensity[i,j] = 1.0/r[i]**2
+            mDensity[i,j] = 1.0/r[i]**2
 
-    return r, n, aDist
+    return r, nDensity, mDensity, aDust
     
 
 def dustDistribution(Qt, aMin, aMax, na):
     
     laMin = np.log10(aMin)
     laMax = np.log10(aMax)
-    da = (laMax - laMin) / na
-    aDust = 10**(np.arange(laMin, laMax, da))
+    aDust = 10**(np.linspace(laMin, laMax, num=na))
 
-    dustDensity = 1000.0 (kg/m^3)   # for now use water density
+    dustNorm = 3.0/4.0/np.pi/dustDensity/(np.log(aMax)-np.log(aMin))
+    # qDust = Qt*dustNorm*aDust**(-4)  # Standard model
+    qDust = np.zeros(na)+1.0          # Constant value for testing
 
-    dustNorm = 3.0/4.0/np.pi/dustDensity/(log(aMax)-log(aMin))
-    
-    qDust = np.arange(na)
-    # qDust = Qt*dustNorm*aDust^(-4)  # Standard model
-    qDust = 1.0                     # Constant value for testing
-
-    return aDust, Qdust
+    return aDust, qDust
     

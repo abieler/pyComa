@@ -12,7 +12,7 @@ def haserModel(Q, v, tp, td=0):
     '''
 
     rmin = np.log10(2000)
-    rmax = np.log10(1e8)
+    rmax = np.log10(1e9)
     dr = (rmax - rmin) / 2000
     r = 10**(np.arange(rmin, rmax, dr))
 

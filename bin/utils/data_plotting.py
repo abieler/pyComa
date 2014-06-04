@@ -4,6 +4,7 @@ import datetime
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib
+import matplotlib.cm as cm
 from matplotlib import rcParams
 
 import bokeh.plotting as bplt
@@ -46,7 +47,6 @@ def plot_result_insitu(args):
         create_plot_insitu_bokeh(args, all_n_SC, all_species, dates_SC, r_SC, nLinesPerFig, pltTitle)
     elif args.StringPlotting.lower() == 'matplotlib':
         create_plot_insitu_matplotlib(args, all_n_SC, all_species, dates_SC, r_SC, nLinesPerFig, pltTitle)
-
 
 def create_plot_insitu_bokeh(args, all_n_SC, all_species, dates_SC, r_SC, nLinesPerFig, pltTitle):
 
@@ -112,7 +112,7 @@ def plot_result_LOS(ccd, StringOutFileName, args, ccd_limits):
     pltTitle = build_plot_title(args, 'LOS')
 
     if args.StringPlotting == 'matplotlib':
-        if args.iInstrumentSelector in [1, 2, 5]:
+        if args.iInstrumentSelector in [1, 2, 5, 9, 10]:
             create_plot_LOS_2d_matplotlib(args, ccd, pltTitle, StringOutFileName, ccd_limits)
         elif args.iInstrumentSelector in [3, 6, 7]:
             create_plot_LOS_1d_matplotlib(args, ccd, pltTitle, StringOutFileName)
@@ -194,6 +194,9 @@ def create_plot_LOS_2d_matplotlib(args, ccd, pltTitle, figName, ccd_limits):
     elif args.iInstrumentSelector == 5:
         N = 6
         phi = 3.7
+    elif args.iInstrumentSelector == 10:
+        N = 8
+        phi = 16.0
 
     dphi = phi/N
 
@@ -217,6 +220,55 @@ def create_plot_LOS_2d_matplotlib(args, ccd, pltTitle, figName, ccd_limits):
         plt.show()
 
 
+def plot_miro(sTotal, aveBright, F, aDust, args):
+
+    pltTitle = build_plot_title(args, 'LOS')
+
+    # Make the first figure.  Fixed frequency.  Brightness vs. Dust Radius)
+    figName = "MIRO_brightness_v_radius.png"
+    plt.figure(figsize=(15, 12))
+    plt.grid(True)
+    plt.xlabel(r'Dust Radius [$\mu m$]')
+    plt.ylabel(r'Average Brightness [$W m^{-2} Hz^{-1} sr^{-1}$]')
+    plt.loglog() 
+    plt.plot(aDust/1e-6, aveBright[0,0,:,0], 'or', markersize=20)
+    plt.title(pltTitle)
+
+    plt.savefig(args.StringOutputDir + '/' + figName)
+    if args.DoShowPlots:
+        plt.show()
+
+    # # Make the second figure.  Fixed Radius.  Brightness vs. Frequency)
+    # figName = "MIRO_brightness_v_freq.png"
+    # plt.figure(figsize=(15, 12))
+    # plt.grid(True)
+    # plt.xlabel('Frequency')
+    # plt.ylabel('Average Brightness [??]')
+    # #plt.loglog() 
+    # plt.plot(F, aveBright[0,0,5,:], 'or', markersize=20)
+    # plt.title(pltTitle)
+    # 
+    # plt.savefig(args.StringOutputDir + '/' + figName)
+    # if args.DoShowPlots:
+    #     plt.show()
+
+    # # Make the third figure.  Fixed Radius and freq.  varied pointing
+    # cmap = cm.jet
+    # figName = "MIRO_brightness_v_FOV.png"
+    # plt.figure(figsize=(15, 12))
+    # plt.grid(True)
+    # plt.xlabel('Angle')
+    # plt.ylabel('Angle')
+    # x = np.arange(sTotal.shape[0])
+    # y = np.arange(sTotal.shape[1])
+    # plt.scatter(x, y, c=aveBright[:,:,5,1], cmap=cmap, marker='+', s=3, linewidths=30)
+    # plt.title(pltTitle)
+    # 
+    # plt.savefig(args.StringOutputDir + '/' + figName)
+    # if args.DoShowPlots:
+    #     plt.show()
+
+
 def build_plot_title(args, measurement='LOS'):
 
     if measurement == 'LOS':
@@ -226,7 +278,7 @@ def build_plot_title(args, measurement='LOS'):
             pltInstrument = 'OSIRIS NAC '
         elif args.iInstrumentSelector in [3, 7]:
             pltInstrument = 'ALICE '
-        elif args.iInstrumentSelector in [4, 8]:
+        elif args.iInstrumentSelector in [4, 8, 10]:
             pltInstrument = 'MIRO '
         elif args.iInstrumentSelector == 5:
             pltInstrument = 'VIRTIS M '
@@ -248,6 +300,10 @@ def build_plot_title(args, measurement='LOS'):
                 pltTitle += ', Td: %0.e [s])\n' % (args.tdHaser)
         elif args.iModelCase == 2:
             pltTitle += 'Coma model: user defined (%s)\n' % (os.path.split(args.StringUserDataFile)[1])
+        elif args.iModelCase == 3:
+            pltTitle += 'Dust analytic model:  (Q: %.2e [kg/s],  v: %i [m/s])\n' % \
+                        (args.QDust, args.vDust)
+
 
         if args.iPointingCase == 0:
             pltTitle += 'Pointing: SPICE (%s, %s)\n' % (os.path.split(args.StringKernelMetaFile)[1],
