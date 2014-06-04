@@ -232,6 +232,9 @@ def load_user_trajectory(args):
     print 'loading trajectory from: ', args.StringUserTrajectoryFile
     if args.DelimiterTraj.lower() == 'space':
         args.DelimiterTraj = " "
+    elif args.DelimiterTraj.lower() == 'tab':
+        args.DelimiterTraj = "\t"
+
 
     print 'trajectory file delimiter:"%s"' % args.DelimiterTraj
     x, y, z = np.genfromtxt(args.StringUserTrajectoryFile, dtype=float,
@@ -251,6 +254,12 @@ def load_user_data(DataFile, iDim, Delimiter, nHeaderRows):
 
     if Delimiter == 'SPACE':
         Delimiter = ' '
+    elif args.DelimiterTraj.lower() == 'tab':
+        args.DelimiterTraj = "\t"
+    print 'loading user data file:'
+    print 'iDim:', iDim
+    print 'nHeaderRows:', nHeaderRows
+    print 'delimiter: "%s"' % Delimiter
 
     data = np.genfromtxt(DataFile, dtype=float,
                          skip_header=nHeaderRows,
