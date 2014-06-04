@@ -52,12 +52,18 @@ def save_results(f, ccdFinal, wavelengths, filename):
 
     nPixels = 19
     nSpecies = ccdFinal.shape[0] - 1
+    f.write('pixelNr,')
     for w in wavelengths:
-        f.write('%i [nm],' % w)
-    f.write('column density [#/m2]\n')
+        f.write('%.1f_A,' % w)
+    f.write('columnDensity [#/m2]\n')
     for i in range(nPixels):
+        j = 0
         for value in ccdFinal[:, i]:
-            f.write('%e,' % value)
+            if j == 0:
+                f.write('pixel_%i, %.3e,' % (i+5, value))
+            else:
+                f.write("%.3e," % value)
+            j += 1
         f.write('\n')
 
 

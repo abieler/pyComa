@@ -254,8 +254,8 @@ def load_user_data(DataFile, iDim, Delimiter, nHeaderRows):
 
     if Delimiter == 'SPACE':
         Delimiter = ' '
-    elif args.DelimiterTraj.lower() == 'tab':
-        args.DelimiterTraj = "\t"
+    elif Delimiter.lower() == 'tab':
+        Delimiter = "\t"
     print 'loading user data file:'
     print 'iDim:', iDim
     print 'nHeaderRows:', nHeaderRows
