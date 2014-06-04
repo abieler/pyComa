@@ -213,7 +213,8 @@ def loadGasData(dataFile, dim, userData=False, userDelimiter=',',
         data = np.genfromtxt(dataFile, dtype=float,
                              skip_header=userNrOfHeaderRows,
                              delimiter=userDelimiter,
-                             usecols=dataIndices)
+                             usecols=dataIndices,
+                             autostrip=True)
 
         if dim == 1:
             x = data[:, 0]
@@ -239,9 +240,9 @@ def load_user_trajectory(args):
     elif args.DelimiterTraj.lower() == 'semicol':
         args.DelimiterTraj = ";"
     elif args.DelimiterTraj.lower() == 'underscore':
-        args.DelimiterTraj() == '_'
+        args.DelimiterTraj = '_'
     elif args.DelimiterTraj.lower() == 'vertbar':
-        args.DelimiterTraj() == '|'
+        args.DelimiterTraj = '|'
     elif args.DelimiterTraj.lower() == 'slash':
         args.DelimiterTraj = "/"
     elif args.DelimiterTraj.lower() == 'backslash':
@@ -254,7 +255,8 @@ def load_user_trajectory(args):
 
     x, y, z = np.genfromtxt(args.StringUserTrajectoryFile, dtype=float,
                             skip_header=args.nHeaderRowsTraj,
-                            delimiter=args.DelimiterTraj, unpack=True)
+                            delimiter=args.DelimiterTraj, unpack=True,
+                            autostrip=True)
     print 'user trajectory loaded'
     return x, y, z
 
@@ -277,9 +279,9 @@ def load_user_data(DataFile, iDim, Delimiter, nHeaderRows):
     elif Delimiter.lower() == 'semicol':
         Delimiter = ";"
     elif Delimiter.lower() == 'underscore':
-        Delimiter == '_'
+        Delimiter = '_'
     elif Delimiter.lower() == 'vertbar':
-        Delimiter == '|'
+        Delimiter = '|'
     elif Delimiter.lower() == 'slash':
         Delimiter = "/"
     elif Delimiter.lower() == 'backslash':
@@ -295,7 +297,8 @@ def load_user_data(DataFile, iDim, Delimiter, nHeaderRows):
     data = np.genfromtxt(DataFile, dtype=float,
                          skip_header=nHeaderRows,
                          delimiter=Delimiter,
-                         usecols=DataIndices)
+                         usecols=DataIndices,
+                         autostrip=True)
 
     if iDim == 1:
         x = data[:, 0]
@@ -305,6 +308,11 @@ def load_user_data(DataFile, iDim, Delimiter, nHeaderRows):
         x = data[:, 0]
         y = data[:, 1]
         n = data[:, 2]
+
+    print 'user data, x[0]:', x[0]
+    print 'user data, n[0]:', n[0]
+    if iDim == 2:
+        print 'user data, y[0]:', y[0]
 
     return x, y, n
 
