@@ -234,12 +234,28 @@ def load_user_trajectory(args):
         args.DelimiterTraj = " "
     elif args.DelimiterTraj.lower() == 'tab':
         args.DelimiterTraj = "\t"
+    elif args.DelimiterTraj.lower() == 'colon':
+        args.DelimiterTraj = ":"
+    elif args.DelimiterTraj.lower() == 'semicol':
+        args.DelimiterTraj = ";"
+    elif args.DelimiterTraj.lower() == 'underscore':
+        args.DelimiterTraj() == '_'
+    elif args.DelimiterTraj.lower() == 'vertbar':
+        args.DelimiterTraj() == '|'
+    elif args.DelimiterTraj.lower() == 'slash':
+        args.DelimiterTraj = "/"
+    elif args.DelimiterTraj.lower() == 'backslash':
+        args.DelimiterTraj = "\\"
+    elif args.DelimiterTraj.lower() == 'comma':
+        args.DelimiterTraj = ","
 
 
-    print 'trajectory file delimiter:"%s"' % args.DelimiterTraj
+    print 'opening file:', args.StringUserTrajectoryFile
+
     x, y, z = np.genfromtxt(args.StringUserTrajectoryFile, dtype=float,
                             skip_header=args.nHeaderRowsTraj,
                             delimiter=args.DelimiterTraj, unpack=True)
+    print 'user trajectory loaded'
     return x, y, z
 
 
@@ -252,10 +268,25 @@ def load_user_data(DataFile, iDim, Delimiter, nHeaderRows):
     elif iDim == 3:
         DataIndices = [0, 1, 2, 3]
 
-    if Delimiter == 'SPACE':
-        Delimiter = ' '
+    if Delimiter.lower() == 'space':
+        Delimiter = " "
     elif Delimiter.lower() == 'tab':
         Delimiter = "\t"
+    elif Delimiter.lower() == 'colon':
+        Delimiter = ":"
+    elif Delimiter.lower() == 'semicol':
+        Delimiter = ";"
+    elif Delimiter.lower() == 'underscore':
+        Delimiter == '_'
+    elif Delimiter.lower() == 'vertbar':
+        Delimiter == '|'
+    elif Delimiter.lower() == 'slash':
+        Delimiter = "/"
+    elif Delimiter.lower() == 'backslash':
+        Delimiter = "\\"
+    elif Delimiter.lower() == "comma":
+        Delimiter = ","
+
     print 'loading user data file:'
     print 'iDim:', iDim
     print 'nHeaderRows:', nHeaderRows

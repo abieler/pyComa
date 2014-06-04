@@ -434,10 +434,10 @@ if iMpiRank == 0:
             ccdFinal, aveBright, frequencies = miro.fluxDensity(ccd, allSizeIntervals, iFOV, args)
             nSpecies = ccdFinal.shape[2]                       
 
-    ######################################################
-    # plot results
-    #######################################################
-    plot_miro(ccdFinal, aveBright, frequencies, allSizeIntervals, args)
+            ######################################################
+            # plot results
+            #######################################################
+            plot_miro(ccdFinal, aveBright, frequencies, allSizeIntervals, args)
 
     for spIndex in range(nSpecies):
         if iInstrumentSelector in [alice_, aliceSpec_]:
