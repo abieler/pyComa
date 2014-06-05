@@ -42,7 +42,7 @@ def aveBrightness(columnDensity, radius, F, args):
     nF = F.shape[0]
     result = np.zeros((nX, nY, nR, nF)) 
 
-    # Calculate relavant parameters
+    # Calculate relevant parameters
     B = plank(radius, F)
     Q = qabs(radius, F)
     
@@ -60,9 +60,19 @@ def qabs(radius, F):
     nR = radius.shape[0]
     result = np.zeros((nR, nF))
 
-    # For testing use olivine = 0.8687
-    result = result + 0.8687
+    # # For testing use olivine = 0.8687
+    # result = result + 0.8687
 
+    # For testing  - a function KC put together for matching Dominique's data in the power point
+    for i in range(nR):
+        for j in range(nF):
+            if radius[i] >= 1e-4:
+                result[i,j] = 1.5*np.exp(-radius[i]/1e-3)+1.0
+            elif radius[i] >=1e-5 and radius[i] < 1e-4: 
+                result[i,j] = 2e16*radius[i]**4
+            elif radius[i] < 1e-5:
+                result[i,j] = 20.0*radius[i]
+               
     return result
 
 def plank(radius, F):
