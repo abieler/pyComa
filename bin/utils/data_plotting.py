@@ -290,17 +290,18 @@ def build_plot_title(args, measurement='LOS'):
         elif args.iInstrumentSelector == 9:
             pltInstrument = 'VIRTIS'
 
-        pltTitle = 'ICES line of sight tool\n'
+        pltTitle = 'ICES line of sight tool for '
         pltTitle += pltInstrument
+        pltTitle += '\n'
         if args.iModelCase == 0:
             pltTitle += 'Coma model: DSMC (%s)\n' % (os.path.split(args.StringDataFileDSMC)[1])
         elif args.iModelCase == 1:
-            pltTitle += 'Coma model: Haser (Q: %.2e [#/s],  v: %i [m/s],  Tp: %.0e [s]' % \
+            pltTitle += 'Coma model: Haser (Q: %.2e[#/s],  v: %i[m/s],  Tp: %.0e[s]' % \
                         (args.QHaser, args.vHaser, args.tpHaser)
-            if args.tdHaser is None:
+            if args.tdHaser == 0:
                 pltTitle += ')\n'
             else:
-                pltTitle += ', Td: %0.e [s])\n' % (args.tdHaser)
+                pltTitle += ', Td: %0.e[s])\n' % (args.tdHaser)
         elif args.iModelCase == 2:
             pltTitle += 'Coma model: user defined (%s)\n' % (os.path.split(args.StringUserDataFile)[1])
         elif args.iModelCase == 3:

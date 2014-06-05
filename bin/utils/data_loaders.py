@@ -213,7 +213,8 @@ def loadGasData(dataFile, dim, userData=False, userDelimiter=',',
         data = np.genfromtxt(dataFile, dtype=float,
                              skip_header=userNrOfHeaderRows,
                              delimiter=userDelimiter,
-                             usecols=dataIndices)
+                             usecols=dataIndices,
+                             autostrip=True)
 
         if dim == 1:
             x = data[:, 0]
@@ -232,11 +233,31 @@ def load_user_trajectory(args):
     print 'loading trajectory from: ', args.StringUserTrajectoryFile
     if args.DelimiterTraj.lower() == 'space':
         args.DelimiterTraj = " "
+    elif args.DelimiterTraj.lower() == 'tab':
+        args.DelimiterTraj = "\t"
+    elif args.DelimiterTraj.lower() == 'colon':
+        args.DelimiterTraj = ":"
+    elif args.DelimiterTraj.lower() == 'semicol':
+        args.DelimiterTraj = ";"
+    elif args.DelimiterTraj.lower() == 'underscore':
+        args.DelimiterTraj = '_'
+    elif args.DelimiterTraj.lower() == 'vertbar':
+        args.DelimiterTraj = '|'
+    elif args.DelimiterTraj.lower() == 'slash':
+        args.DelimiterTraj = "/"
+    elif args.DelimiterTraj.lower() == 'backslash':
+        args.DelimiterTraj = "\\"
+    elif args.DelimiterTraj.lower() == 'comma':
+        args.DelimiterTraj = ","
 
-    print 'trajectory file delimiter:"%s"' % args.DelimiterTraj
+
+    print 'opening file:', args.StringUserTrajectoryFile
+
     x, y, z = np.genfromtxt(args.StringUserTrajectoryFile, dtype=float,
                             skip_header=args.nHeaderRowsTraj,
-                            delimiter=args.DelimiterTraj, unpack=True)
+                            delimiter=args.DelimiterTraj, unpack=True,
+                            autostrip=True)
+    print 'user trajectory loaded'
     return x, y, z
 
 
@@ -249,13 +270,35 @@ def load_user_data(DataFile, iDim, Delimiter, nHeaderRows):
     elif iDim == 3:
         DataIndices = [0, 1, 2, 3]
 
-    if Delimiter == 'SPACE':
-        Delimiter = ' '
+    if Delimiter.lower() == 'space':
+        Delimiter = " "
+    elif Delimiter.lower() == 'tab':
+        Delimiter = "\t"
+    elif Delimiter.lower() == 'colon':
+        Delimiter = ":"
+    elif Delimiter.lower() == 'semicol':
+        Delimiter = ";"
+    elif Delimiter.lower() == 'underscore':
+        Delimiter = '_'
+    elif Delimiter.lower() == 'vertbar':
+        Delimiter = '|'
+    elif Delimiter.lower() == 'slash':
+        Delimiter = "/"
+    elif Delimiter.lower() == 'backslash':
+        Delimiter = "\\"
+    elif Delimiter.lower() == "comma":
+        Delimiter = ","
+
+    print 'loading user data file:'
+    print 'iDim:', iDim
+    print 'nHeaderRows:', nHeaderRows
+    print 'delimiter: "%s"' % Delimiter
 
     data = np.genfromtxt(DataFile, dtype=float,
                          skip_header=nHeaderRows,
                          delimiter=Delimiter,
-                         usecols=DataIndices)
+                         usecols=DataIndices,
+                         autostrip=True)
 
     if iDim == 1:
         x = data[:, 0]
@@ -265,6 +308,11 @@ def load_user_data(DataFile, iDim, Delimiter, nHeaderRows):
         x = data[:, 0]
         y = data[:, 1]
         n = data[:, 2]
+
+    print 'user data, x[0]:', x[0]
+    print 'user data, n[0]:', n[0]
+    if iDim == 2:
+        print 'user data, y[0]:', y[0]
 
     return x, y, n
 
