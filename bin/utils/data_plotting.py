@@ -117,9 +117,7 @@ def plot_result_LOS(ccd, StringOutFileName, args, ccd_limits):
         elif args.iInstrumentSelector in [3, 6, 7]:
             create_plot_LOS_1d_matplotlib(args, ccd, pltTitle, StringOutFileName)
         elif args.iInstrumentSelector in [4, 8]:
-            print 'not generating plot for MIRO'
-            print '**'*20
-            print 'Column Density: %.3e [#/m2]' % (ccd[0])
+            print 'not generating plot for MIRO. Single pixel only.'
 
     elif args.StringPlotting == 'bokeh':
         if args.iInstrumentSelector in [1, 2, 5]:
@@ -195,8 +193,8 @@ def create_plot_LOS_2d_matplotlib(args, ccd, pltTitle, figName, ccd_limits):
         N = 6
         phi = 3.7
     elif args.iInstrumentSelector == 10:
-        N = 8
-        phi = 16.0
+        N = 5
+        phi = 10.0
 
     dphi = phi/N
 
@@ -206,8 +204,13 @@ def create_plot_LOS_2d_matplotlib(args, ccd, pltTitle, figName, ccd_limits):
     nLevels = 20
     dLevels = (np.log10(ccd_limits[1]) - np.log10(ccd_limits[0])) / nLevels
     pltLevels = np.arange(np.log10(ccd_limits[0]), np.log10(ccd_limits[1])+dLevels, dLevels)
-    plt.contourf(np.log10(ccd+0.1), levels=pltLevels)
-    plt.colorbar(label='log10 column density [#/m2]')
+    plt.contourf(np.log10(ccd+1.0e-200), levels=pltLevels)
+
+    if args.iInstrumentSelector == 10:
+       plt.colorbar(label=r'log10 $S_{total} [W m^{-2} Hz^{-1}$]')
+    else:
+       plt.colorbar(label='log10 column density [#/m2]')
+
     plt.xlabel("Instrument y axis [deg]")
     plt.ylabel("Instrument x axis [deg]")
     plt.xticks(np.arange(N+1)/N * (len(ccd[0])-1), np.round(xxticks,2))
@@ -231,7 +234,7 @@ def plot_miro(sTotal, aveBright, F, aDust, args):
     plt.xlabel(r'Dust Radius [$\mu m$]')
     plt.ylabel(r'Average Brightness [$W m^{-2} Hz^{-1} sr^{-1}$]')
     plt.loglog() 
-    plt.plot(aDust/1e-6, aveBright[0,0,:,0], 'or', markersize=20)
+    plt.plot(aDust/1e-6, aveBright[0,0,:,0], 'or', markersize=15)
     plt.title(pltTitle)
 
     plt.savefig(args.StringOutputDir + '/' + figName)
@@ -310,7 +313,7 @@ def build_plot_title(args, measurement='LOS'):
                                                         args.StringUtcStartTime)
         else:
             pltTitle += 'Pointing: user defined (R: %i km, PA: %i, LAT: %i, a: %i, b: %i, c: %i)\n' %\
-                        (args.UserR / 1000, args.UserPhaseAngle,
+                        (args.UserR, args.UserPhaseAngle,
                          args.UserLatitude, args.UserAlpha,
                          args.UserBeta, args.UserGamma)
 

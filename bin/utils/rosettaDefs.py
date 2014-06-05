@@ -34,6 +34,6 @@ ccdStr = ['',
           'Column Density [#/m^2]',
           'Column Density [#/m^2]',
           'Brightness [photon/m^2/s]',
-          'Brightness [?]',
-          'Brightness [?]',
-          'Brightness [?]']
+          'Brightness [W m^-2 Hz^-1]',
+          'Test',
+          'Brightness [W m^-2 Hz^-1]']

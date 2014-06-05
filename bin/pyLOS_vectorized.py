@@ -294,28 +294,28 @@ elif iInstrumentSelector in [miro_]:               # miro
 
     nPixelsX = 1
     nPixelsY = 1
-    PhiX = 0.33336 / 2
-    PhiY = 0.36666 / 2
-    iFOV = 0.36666
+    PhiX = 0.396667 / 2
+    PhiY = 0.396667 / 2
+    iFOV = 0.00692314
     PixelSize = 1
 
 elif iInstrumentSelector in [miroDustIR_]:               # miro
 
     nPixelsX = 1
     nPixelsY = 1
-    PhiX = 0.126051 / 2
-    PhiY = 0.126051 / 2
-    iFOV = 0.0022
+    PhiX = 0.125 / 2
+    PhiY = 0.125 / 2
+    iFOV = 0.00218166 
     PixelSize = 1
 
 
 elif iInstrumentSelector in [miroDustIRSpread_]:               # miro
 
-    nPixelsX = 16
-    nPixelsY = 16
-    PhiX = 16.0 / 2
-    PhiY = 16.0 / 2
-    iFOV = 0.0022
+    nPixelsX = 11
+    nPixelsY = 11
+    PhiX = 10.0 / 2
+    PhiY = 10.0 / 2
+    iFOV = 0.00218166
     PixelSize = 1
     
 elif iInstrumentSelector == virtism_:       # virtis m
@@ -426,18 +426,20 @@ for i in range(nPixelsX):
 
 if iMpiRank == 0:
     print 'pixel loop done'
+    if iInstrumentSelector in [miroDustIR_, miroDustIRSpread_]:
+            ccdTemp, aveBright, frequencies = miro.fluxDensity(ccd, allSizeIntervals, iFOV, args)
+            nSpecies = ccdTemp.shape[2]                       
+            ccd = np.zeros((nPixelsX, nPixelsY, nSpecies))
+            ccd = ccdTemp
+
     ccd_limits = (ccd.min(), ccd.max())
     print 'max ccd: %.3e' % ccd_limits[1]
     print 'min ccd: %.3e' % ccd_limits[0]
 
-    if iInstrumentSelector in [miroDustIR_, miroDustIRSpread_]:
-            ccdFinal, aveBright, frequencies = miro.fluxDensity(ccd, allSizeIntervals, iFOV, args)
-            nSpecies = ccdFinal.shape[2]                       
-
     ######################################################
     # plot results
     #######################################################
-    plot_miro(ccdFinal, aveBright, frequencies, allSizeIntervals, args)
+    plot_miro(ccd, aveBright, frequencies, allSizeIntervals, args)
 
     for spIndex in range(nSpecies):
         if iInstrumentSelector in [alice_, aliceSpec_]:
@@ -466,11 +468,10 @@ if iMpiRank == 0:
                 iy = 0
                 for row in ccdFinal:
                     for value in row:
-                        f.write('%i, %i, %.5e\n' % (ix, iy, value))
+                        f.write('%5i, %5i, %.5e\n' % (ix, iy, value))
                         iy += 1
                     ix += 1
                     iy = 0
-                    f.write('\n')
 
         ######################################################
         # plot results

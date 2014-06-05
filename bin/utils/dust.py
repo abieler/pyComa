@@ -11,10 +11,10 @@ def dustModel(Qt, v):
     aMin : minimum dust bin size
     aMax : maximum dust bin size
     '''
-    na = 10   # number of dust bins
-    nr = 20   # number of spatial bins
-    aMin = 1e-9 # minimum dust bin size - 1 nm
-    aMax = 1.0  # maximum dust bin size - 1 m
+    na = 100   # number of dust bins
+    nr = 1000   # number of spatial bins
+    aMin = 100e-9 # minimum dust bin size - 100 nm
+    aMax = 0.01   # maximum dust bin size - 1 cm
     rMin = 2000.0 # comet radius
     rMax = 1e9    # max radius to calculate    
 
@@ -40,8 +40,8 @@ def dustModel(Qt, v):
             # nDensity[i,j] = 1.0
             # mDensity[i,j] = 1.0
             # 1/r^2 model just for testing
-            nDensity[i,j] = 1.0/r[i]**2
-            mDensity[i,j] = 1.0/r[i]**2
+            # nDensity[i,j] = 1.0/r[i]**2
+            # mDensity[i,j] = 1.0/r[i]**2
 
     return r, nDensity, mDensity, aDust
     
@@ -53,8 +53,8 @@ def dustDistribution(Qt, aMin, aMax, na):
     aDust = 10**(np.linspace(laMin, laMax, num=na))
 
     dustNorm = 3.0/4.0/np.pi/dustDensity/(np.log(aMax)-np.log(aMin))
-    # qDust = Qt*dustNorm*aDust**(-4)  # Standard model
-    qDust = np.zeros(na)+1.0          # Constant value for testing
+    qDust = Qt*dustNorm*aDust**(-4)  # Standard model
+    #qDust = np.zeros(na)+1.0         # Constant value for testing
 
     return aDust, qDust
     
