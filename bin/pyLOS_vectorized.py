@@ -452,7 +452,8 @@ if iMpiRank == 0:
     ######################################################
     # plot results
     #######################################################
-    plot_miro(ccd, aveBright, frequencies, allSizeIntervals, args)
+    if args.iInstrumentSelector in [miro_]:
+        plot_miro(ccd, aveBright, frequencies, allSizeIntervals, args)
 
     for spIndex in range(nSpecies):
         if iInstrumentSelector in [alice_, aliceSpec_]:
