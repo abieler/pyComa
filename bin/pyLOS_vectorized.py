@@ -241,6 +241,15 @@ if iDim == 1:
 elif iDim == 2:
     Triangles = mtri.Triangulation(x, y)
     Interpolator = [mtri.LinearTriInterpolator(Triangles, numberDensities[:, i]) for i in range(nSpecies)]
+    if args.iInstrumentSelector == miro_:
+        print len(x)
+        print len(y)
+        print x
+        print y
+        print numberDensities[:,0]
+        plt.figure()
+        plt.plot(x, y, 'o')
+        plt.savefig('usermodel.png')
 elif iDim == 3:
     pass
 
@@ -253,16 +262,16 @@ if iMpiRank == 0:
 #############################################################
 
 if iInstrumentSelector == osirisw_:       # osiris wac
-    nPixelsX = 512                        # nr of pixels along x axis
-    nPixelsY = 512                        # nr of pixels along y axis
+    nPixelsX = 1024                        # nr of pixels along x axis
+    nPixelsY = 1024                        # nr of pixels along y axis
     PhiX = 12 / 2                         # instrument FOV in x (half opening angle) in degrees
     PhiY = 12 / 2                         # instrument FOV in y (half opening angle) in degrees
     iFOV = 0.000993                       # pixel FOV in rad
     PixelSize = 1                         # area of one pixel
 
 elif iInstrumentSelector == osirisn_:     # osiris nac
-    nPixelsX = 512
-    nPixelsY = 512
+    nPixelsX = 1024 
+    nPixelsY = 1024 
     PhiX = 3 / 2
     PhiY = 3 / 2
     iFOV = 0.0000188
@@ -403,6 +412,10 @@ for i in range(nPixelsX):
                     DensityRay = np.interp(xTravel, x, numberDensities[:, spIndex])
                 elif iDim == 2:
                     DensityRay = Interpolator[spIndex].__call__(xTravel[:, 0], xTravel[:, 1]) #interpolated local number density
+                    if args.iInstrumentSelector == miro_:
+                        print xTravel[:,0]
+                        print xTravel[:,1]
+                        print DensityRay
                 elif iDim == 3:
                     DensityRay = None
 

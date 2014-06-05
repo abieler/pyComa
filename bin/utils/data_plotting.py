@@ -43,10 +43,10 @@ def plot_result_insitu(args):
         all_n_SC.append(n_SC)
         all_species.append(species)
 
-    if args.StringPlotting.lower() == 'bokeh':
-        create_plot_insitu_bokeh(args, all_n_SC, all_species, dates_SC, r_SC, nLinesPerFig, pltTitle)
-    elif args.StringPlotting.lower() == 'matplotlib':
-        create_plot_insitu_matplotlib(args, all_n_SC, all_species, dates_SC, r_SC, nLinesPerFig, pltTitle)
+        if args.StringPlotting.lower() == 'bokeh':
+            create_plot_insitu_bokeh(args, all_n_SC, all_species, dates_SC, r_SC, nLinesPerFig, pltTitle)
+        elif args.StringPlotting.lower() == 'matplotlib':
+            create_plot_insitu_matplotlib(args, all_n_SC, all_species, dates_SC, r_SC, nLinesPerFig, pltTitle)
 
 def create_plot_insitu_bokeh(args, all_n_SC, all_species, dates_SC, r_SC, nLinesPerFig, pltTitle):
 
@@ -54,7 +54,7 @@ def create_plot_insitu_bokeh(args, all_n_SC, all_species, dates_SC, r_SC, nLines
     for species, i in zip(all_species, range(len(all_species))):
         if (i % nLinesPerFig == 0):
             bplt.output_file(args.StringOutputDir + '/' + 'result_%i.html' % (i // nLinesPerFig))
-            bplt.figure(x_axis_type='datetime')
+            bplt.figure(x_axis_type='datetime', plot_width=550, plot_height=360)
             bplt.hold()
         bplt.line(dates_SC, np.log10(all_n_SC[i]), legend=all_species[i], line_width=2,
                   line_color=pltColors[i % nLinesPerFig])
@@ -63,7 +63,7 @@ def create_plot_insitu_bokeh(args, all_n_SC, all_species, dates_SC, r_SC, nLines
         bplt.yaxis().axis_label = 'log10(n) [#/m3]'
         if (i % nLinesPerFig == (nLinesPerFig - 1)) or (i == len(all_species) - 1):
             bplt.grid().grid_line_alpha = 0.4
-            bplt.figure(x_axis_type='datetime')
+            bplt.figure(x_axis_type='datetime', plot_width=550, plot_height=360)
             bplt.line(dates_SC, r_SC/1000, line_width=2, line_color='black')
             bplt.grid().grid_line_alpha = 0.4
             bplt.xaxis().axis_label = 'Time'
@@ -93,7 +93,7 @@ def create_plot_insitu_matplotlib(args, all_n_SC, all_species, dates_SC, r_SC, n
                 ax1.set_title(pltTitle)
                 ax1.set_ylabel('Number density [#/m3]')
                 ax1.grid(True)
-                ax1.legend(framealpha=1)
+                ax1.legend(framealpha=1, loc=0)
 
                 ax2.plot(dates_SC, r_SC / 1000, '-k', lw=2)
                 ax2.set_ylabel('Distance from comet center [km]')
@@ -203,7 +203,7 @@ def create_plot_LOS_2d_matplotlib(args, ccd, pltTitle, figName, ccd_limits):
     xxticks = np.arange(-phi/2, phi/2 + dphi, dphi)
     yyticks = np.arange(-phi/2, phi/2 + dphi, dphi)
 
-    nLevels = 20
+    nLevels = 200
     dLevels = (np.log10(ccd_limits[1]) - np.log10(ccd_limits[0])) / nLevels
     pltLevels = np.arange(np.log10(ccd_limits[0]), np.log10(ccd_limits[1])+dLevels, dLevels)
     plt.contourf(np.log10(ccd+0.1), levels=pltLevels)
