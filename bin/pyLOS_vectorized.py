@@ -6,10 +6,12 @@ requires pySPICE installed
 
 requires matplotlib version 1.3.1 or higher
 
-***********************************************************************************************************
-requires mpi4py installed (on osx: anaconda mpi4py package is broken for version 1.9.2, create a symlink:
-sudo ln -s /yourPathTo/anaconda /opt/anaconda1anaconda2anaconda3 solves the problem
-***********************************************************************************************************
+***************************************************************
+requires mpi4py installed (on osx: anaconda mpi4py 
+package is broken for version 1.9.2, create a symlink:
+sudo ln -s /yourPathTo/anaconda /opt/anaconda1anaconda2anaconda3
+solves the problem
+****************************************************************
 
 ***************************************************
 requires cython installed.
@@ -23,7 +25,8 @@ by pyLOS_vectorized.py
 ****************************************************
 
 '''
-from __future__ import division                 # must be first line of program
+# must be first line of program, sets default division to floating point
+from __future__ import division  
 
 try:
     # import standard modules
@@ -131,8 +134,8 @@ if iMpiRank == 0:
         print '   -case:      : %s' % args.StringDataFileDSMC.split('/')[-2]
         print '   -species    : %s' % args.StringDataFileDSMC.split('.')[-2]
         if args.IsDust == 1:
-            print '   -dust min r : %.3f [m]' %args.DustSizeMin
-            print '   -dust max r : %.3f [m]' %args.DustSizeMax
+            print '   -dust min r : %.3e [m]' %args.DustSizeMin
+            print '   -dust max r : %.3e [m]' %args.DustSizeMax
     elif args.iModelCase == haser_:
         print 'HASER case selected:'
         print '   -QHaser     :', QHaser
@@ -241,15 +244,6 @@ if iDim == 1:
 elif iDim == 2:
     Triangles = mtri.Triangulation(x, y)
     Interpolator = [mtri.LinearTriInterpolator(Triangles, numberDensities[:, i]) for i in range(nSpecies)]
-    if args.iInstrumentSelector == miro_:
-        print len(x)
-        print len(y)
-        print x
-        print y
-        print numberDensities[:,0]
-        plt.figure()
-        plt.plot(x, y, 'o')
-        plt.savefig('usermodel.png')
 elif iDim == 3:
     pass
 
@@ -412,10 +406,6 @@ for i in range(nPixelsX):
                     DensityRay = np.interp(xTravel, x, numberDensities[:, spIndex])
                 elif iDim == 2:
                     DensityRay = Interpolator[spIndex].__call__(xTravel[:, 0], xTravel[:, 1]) #interpolated local number density
-                    if args.iInstrumentSelector == miro_:
-                        print xTravel[:,0]
-                        print xTravel[:,1]
-                        print DensityRay
                 elif iDim == 3:
                     DensityRay = None
 
@@ -446,14 +436,16 @@ if iMpiRank == 0:
             ccd = ccdTemp
 
     ccd_limits = (ccd.min(), ccd.max())
-    print 'max ccd: %.3e' % ccd_limits[1]
-    print 'min ccd: %.3e' % ccd_limits[0]
 
     ######################################################
     # plot results
     #######################################################
     if args.iInstrumentSelector in [miro_]:
         plot_miro(ccd, aveBright, frequencies, allSizeIntervals, args)
+
+    if args.IsDust:
+        UserDustSizes= [size for size in allSizeIntervals
+                       if (args.DustSizeMin <= size <= args.DustSizeMax)]
 
     for spIndex in range(nSpecies):
         if iInstrumentSelector in [alice_, aliceSpec_]:
@@ -473,7 +465,10 @@ if iMpiRank == 0:
         with open(StringOutputDir + filename, 'w') as f:
             f.write(pltTitle)
             f.write('\n')
-            f.write("x [pixel], y [pixel], %s \n" % ccdStr[args.iInstrumentSelector])
+            if args.IsDust:
+                f.write('Dust size: %e [m]\n' % UserDustSizes[spIndex])
+            if args.iInstrumentSelector not in [alice_, aliceSpec_]:
+                f.write("x [pixel], y [pixel], %s \n" % ccdStr[args.iInstrumentSelector])
             f.write("/begin data\n")
             if iInstrumentSelector in [alice_, aliceSpec_]:
                 alice.save_results(f, ccdFinal, wavelengths, filename)
