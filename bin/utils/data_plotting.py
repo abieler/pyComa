@@ -16,7 +16,7 @@ rcParams.update({'figure.autolayout': True})
 font = {
         'family':'serif',
         'weight':'bold',
-        'size':16}
+        'size':15}
 
 matplotlib.rc('font', **font)
 
@@ -54,7 +54,7 @@ def create_plot_insitu_bokeh(args, all_n_SC, all_species, dates_SC, r_SC, nLines
     for species, i in zip(all_species, range(len(all_species))):
         if (i % nLinesPerFig == 0):
             bplt.output_file(args.StringOutputDir + '/' + 'result_%i.html' % (i // nLinesPerFig))
-            bplt.figure(x_axis_type='datetime', plot_width=550, plot_height=360)
+            bplt.figure(x_axis_type='datetime', plot_width=480, plot_height=300)
             bplt.hold()
         bplt.line(dates_SC, np.log10(all_n_SC[i]), legend=all_species[i], line_width=2,
                   line_color=pltColors[i % nLinesPerFig])
@@ -63,7 +63,7 @@ def create_plot_insitu_bokeh(args, all_n_SC, all_species, dates_SC, r_SC, nLines
         bplt.yaxis().axis_label = 'log10(n) [#/m3]'
         if (i % nLinesPerFig == (nLinesPerFig - 1)) or (i == len(all_species) - 1):
             bplt.grid().grid_line_alpha = 0.4
-            bplt.figure(x_axis_type='datetime', plot_width=550, plot_height=360)
+            bplt.figure(x_axis_type='datetime', plot_width=480, plot_height=300)
             bplt.line(dates_SC, r_SC/1000, line_width=2, line_color='black')
             bplt.grid().grid_line_alpha = 0.4
             bplt.xaxis().axis_label = 'Time'
@@ -143,8 +143,10 @@ def create_plot_LOS_2d_bokeh(args, ccd, pltTitle, StringOutFileName):
 
     nPixels = len(ccd[:, 0])
     bplt.output_file(args.StringOutputDir + '/' + StringOutFileName)
-    bplt.image(image=[np.log10(ccd)], x=[0], y=[0], dw=[nPixels], dh=[nPixels], palette=["Spectral-11"],
-               x_range=Range1d(start=0, end=nPixels), y_range=Range1d(start=0, end=nPixels))
+    bplt.image(image=[np.log10(ccd)], x=[0], y=[0],
+               dw=[nPixels], dh=[nPixels], palette=["Spectral-11"],
+               x_range=Range1d(start=0, end=nPixels),
+               y_range=Range1d(start=0, end=nPixels))
     print pltTitle
     bplt.curplot().title = pltTitle
     bplt.save()
