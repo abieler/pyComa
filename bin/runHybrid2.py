@@ -103,6 +103,10 @@ print 'done running script'
 ##################################################################
 xTravelRay, B_total, B, U_e, nElectrons, nIons, U_ions = load_hybrid2_data('orbit-output.txt')
 
+
+##################################################################
+# calculate plasma parameters
+##################################################################
 B_hat = [B/np.sqrt((B**2).sum())]  # B normalized
 v_perp_B = np.array([np.cross(b_hat, np.cross(b_hat, v)) for b_hat, v in zip(B_hat, U_e)])  # v component perpendicular to B
 v_perp_B_ion = np.array([np.cross(b_hat, np.cross(b_hat, v)) for b_hat, v in zip(B_hat, U_ions)])  # v component perpendicular to B
@@ -113,6 +117,7 @@ Q_ELECTRON = 1.602176 * 10**-19
 M_ELECTRON = 9.109383 * 10**-31
 AMU = 1.6605 * 10**-27            # atomic mass unit [kg]
 Na = 6.02214129 * 10**23          # avogadro's number 1/mol
+MU_0 = 4 * np.pi * 10e-7
 mH2O = 18.01528                   # water molecule mass [g/mol]
 mIon_kg = mH2O / Na / 1000        # mass of ion molecule in kg
 M_ION = mIon_kg
@@ -126,7 +131,9 @@ wg_ion = Q_ELECTRON * B_total / M_ION
 
 wp_electron = np.sqrt(nElectrons * Q_ELECTRON**2 / (M_ELECTRON * EPSILON_0))
 wp_ion = np.sqrt(nIons * Q_ELECTRON**2 / (M_ION * EPSILON_0))
+wp_langmuir = np.sqrt(wp_electron**2 + wp_ion**2)
 
+alfvenSpeed = B_total / np.sqrt(nIons * M_ION * MU_0)
 
 
 if args.StringMeasurement == 'LOS':
@@ -147,7 +154,7 @@ if args.StringMeasurement == 'LOS':
     print "electron column density: %.3e" % (columnDensity)
 
 elif args.StringMeasurement == 'insitu':
-    with open(args.StringOutputDir + '/' + 'electrons' + '.out', 'w') as f:
+    with open(args.StringOutputDir + '/' + 'plasma' + '.out', 'w') as f:
         f.write(('Local plasma parameters at rosetta spacecraft for selected dates.'
                 ' Comet center is at (0,0,0) with the sun on the positive x axis.\n'))
         f.write('AIKEF Hybrid case: %s\n' % args.StringHybridCase)
@@ -155,10 +162,13 @@ elif args.StringMeasurement == 'insitu':
             f.write('spice kernel: %s\n' % (args.StringKernelMetaFile.split('/')[-1]))
         elif args.iPointingCase == 2:
             f.write('User defined trajectory: %s\n' % args.StringUserTrajectoryFile)
-        f.write('date,x[m],y[m],z[m],distance_from_center[m],numberDensity_e[1/m3],numberDensity_ions[1/m3],B_total[nT],gyroRadius_e[m],gyroFreq_e[rad/s],plasmaFreq_e[rad/s],gyroRadius_ion,gyroFreq_ion,plasmaFreq_ion\n')
-        for dd, xx, yy, zz, rr, ne, ni, bb, rge, wge, wpe, rgi, wgi, wpi  in zip(dates, x, y, z, r, nElectrons, nIons, B_total,
+        f.write('date,x[m],y[m],z[m],distance_from_center[m],numberDensity_e[1/m3],'
+                'numberDensity_ions[1/m3],B_total[T],gyroRadius_e[m],gyroFreq_e[rad/s],'
+                'plasmaFreq_e[rad/s],gyroRadius_ion[m],gyroFreq_ion[rad/s],'
+                'plasmaFreq_ion[rad/s], plasmaFreq_langmuirWaves[rad/s], alfvenSpeed[m/s]\n')
+        for dd, xx, yy, zz, rr, ne, ni, bb, rge, wge, wpe, rgi, wgi, wpi, wpl, va  in zip(dates, x, y, z, r, nElectrons, nIons, B_total,
                                                                              rg_electron, wg_electron, wp_electron,
-                                                                             rg_ion, wg_ion, wp_ion ):
-            f.write("%s,%e,%e,%e,%e,%e,%e,%e,%e,%e,%e,%e,%e,%e\n" % (dd, xx, yy, zz, rr, ne, ni, bb, rge, wge, wpe, rgi, wgi, wpi))
+                                                                             rg_ion, wg_ion, wp_ion, wp_langmuir, alfvenSpeed):
+            f.write("%s,%e,%e,%e,%e,%e,%e,%e,%e,%e,%e,%e,%e,%e,%e,%e\n" % (dd, xx, yy, zz, rr, ne, ni, bb, rge, wge, wpe, rgi, wgi, wpi, wpl, va))
 
     plot_result_insitu(args)
