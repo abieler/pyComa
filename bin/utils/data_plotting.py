@@ -20,6 +20,18 @@ font = {
 
 matplotlib.rc('font', **font)
 
+def plot_result_insitu_2(args, numberDensities_SC, species, dates_SC, r_SC):
+    print 'plotting in-situ results...'
+    nLinesPerFig = 6
+    if args.StringHybridCase is None:
+        pltTitle = build_plot_title(args, 'insitu')
+    else:
+        pltTitle = build_plot_title(args, 'hybrid')
+
+    if args.StringPlotting.lower() == 'bokeh':
+        create_plot_insitu_bokeh(args, numberDensities_SC, species, dates_SC, r_SC, nLinesPerFig, pltTitle)
+    elif args.StringPlotting.lower() == 'matplotlib':
+        create_plot_insitu_matplotlib(args, numberDensities_SC, species, dates_SC, r_SC, nLinesPerFig, pltTitle)
 
 def plot_result_insitu(args):
 
