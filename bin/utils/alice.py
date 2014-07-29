@@ -155,7 +155,7 @@ def get_gfactor_from_db(args):
     if args.iPointingCase == 0:
         v_sun = get_v_sun(args.StringKernelMetaFile, args.StringUtcStartTime)
     else:
-        kernelMetaFile = '/Users/ices/www-v4.1/htdocs/ICES/Models/LoS/cspice/kernels/metafiles/full_prelanding.tm'
+        kernelMetaFile = '../../../Models/LoS/cspice/kernels/metafiles/full_prelanding.tm'
         v_sun = get_v_sun(kernelMetaFile, args.aliceDate)
 
     if args.iModelCase == 0:
