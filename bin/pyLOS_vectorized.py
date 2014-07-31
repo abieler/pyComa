@@ -430,10 +430,11 @@ for i in range(nPixelsX):
 if iMpiRank == 0:
     print 'pixel loop done'
     if iInstrumentSelector in [miroDustIR_, miroDustIRSpread_]:
-            ccdTemp, aveBright, frequencies = miro.fluxDensity(ccd, allSizeIntervals, iFOV, args)
-            nSpecies = ccdTemp.shape[2]                       
-            ccd = np.zeros((nPixelsX, nPixelsY, nSpecies))
-            ccd = ccdTemp
+        #ccd, aveBright, frequencies = miro.fluxDensity(ccd, allSizeIntervals, iFOV, args)
+        ccdTemp, aveBright, frequencies = miro.fluxDensity(ccd, allSizeIntervals, iFOV, args)
+        nSpecies = ccdTemp.shape[2]                       
+        ccd = np.zeros((nPixelsX, nPixelsY, nSpecies))
+        ccd = ccdTemp
 
     ccd_limits = (ccd.min(), ccd.max())
 

@@ -66,7 +66,7 @@ def create_plot_insitu_bokeh(args, all_n_SC, all_species, dates_SC, r_SC, nLines
     for species, i in zip(all_species, range(len(all_species))):
         if (i % nLinesPerFig == 0):
             bplt.output_file(args.StringOutputDir + '/' + 'result_%i.html' % (i // nLinesPerFig))
-            bplt.figure(x_axis_type='datetime', plot_width=480, plot_height=300)
+            bplt.figure(x_axis_type='datetime', plot_width=650, plot_height=400, title='in-situ tool')
             bplt.hold()
         bplt.line(dates_SC, np.log10(all_n_SC[i]), legend=all_species[i], line_width=2,
                   line_color=pltColors[i % nLinesPerFig])
@@ -75,11 +75,11 @@ def create_plot_insitu_bokeh(args, all_n_SC, all_species, dates_SC, r_SC, nLines
         bplt.yaxis().axis_label = 'log10(n) [#/m3]'
         if (i % nLinesPerFig == (nLinesPerFig - 1)) or (i == len(all_species) - 1):
             bplt.grid().grid_line_alpha = 0.4
-            bplt.figure(x_axis_type='datetime', plot_width=480, plot_height=300)
+            bplt.figure(x_axis_type='datetime', plot_width=650, plot_height=400, title='in-situ tool')
             bplt.line(dates_SC, r_SC/1000, line_width=2, line_color='black')
             bplt.grid().grid_line_alpha = 0.4
-            bplt.xaxis().axis_label = 'Time'
-            bplt.yaxis().axis_label = 'Distance from comet center [km]'
+            bplt.xaxis().axis_label = 'Date'
+            bplt.yaxis().axis_label = 'r from comet center [km]'
             bplt.save()
 
     if args.DoShowPlots:
@@ -142,7 +142,15 @@ def create_plot_LOS_1d_bokeh(args, ccd, pltTitle, StringOutFileName):
     print 'setting plot title to:'
     print pltTitle
     bplt.output_file(args.StringOutputDir + '/' + StringOutFileName, title=pltTitle)
-    bplt.line(range(0, len(ccd[0, :])), ccd[0, :], line_width=2, line_color='black')
+    if args.iInstrumentSelector in [3, 7]:
+        bplt.line(np.arange(5, len(ccd[0, :])+5), ccd[0, :], line_width=2, line_color='black')
+        bplt.xaxis().axis_label='Pixel number'
+        if args.iInstrumentSelector == 3:
+            bplt.yaxis().axis_label='Column Density [#/m2]'
+        else:
+            bplt.yaxis().axis_label='photons / m2 / s'
+    else:
+        bplt.line(range(0, len(ccd[0, :])), ccd[0, :], line_width=2, line_color='black')
     bplt.save()
 
     if args.DoShowPlots:
