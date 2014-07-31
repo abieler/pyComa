@@ -12,5 +12,6 @@ class Instrument:
         self.iFOV = specs['iFOV']                                  # pixel FOV in rad
         self.PixelSize = specs['PixelSize']                      # area of one pixel
         self.PixelFOV = specs['PixelFOV']
+        self.frame = specs['frame']
 
         self.computedQuantity = specs['computedQuantity']

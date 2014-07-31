@@ -183,27 +183,6 @@ elif iModelCase == userModel_:
 if iMpiRank == 1:
     print 'iDimensions:', iDim
 
-if iPointingCase == spice_:
-    #################################################
-    # get rosetta coordinates from spice
-    #################################################
-    spice.furnsh(StringKernelMetaFile)
-    Et = spice.str2et(StringUtcStartTime)
-    rRosetta, lightTime = spice.spkpos("ROSETTA", Et, "67P/C-G_CSO", "NONE", "CHURYUMOV-GERASIMENKO")        # s/c coordinates in CSO frame of reference
-    rRosetta = np.array(rRosetta) * 1000            # transform km to m
-    R = spice.pxform("ROS_SPACECRAFT", "67P/C-G_CSO", Et)      # create rotation matrix R to go from instrument reference frame to CSO
-
-elif iPointingCase == userPointing_:
-    x0 = np.array([-UserR*1000, 0, 0])           # -UserR --> start at subsolar point, in meters
-    rRosetta = rotations.rotateVector(x0, UserPhaseAngle, UserLatitude)
-    ei, ej, ek = rotations.rotateCoordinateSystem2(UserPhaseAngle, UserLatitude, UserAlpha, UserBeta, UserGamma)
-
-    R = rotations.createRotationMatrix(ei, ej, ek)
-
-if iMpiRank == 0:
-    print 'Distance from comet  : %.2e [m]' % (np.sqrt(np.sum(rRosetta ** 2)))
-    print 'rRosetta in CSO Frame: (%.2e, %.2e, %.2e)' % (rRosetta[0], rRosetta[1], rRosetta[2])
-
 ########################################################
 # load data
 ########################################################
@@ -262,6 +241,7 @@ if iInstrumentSelector == osirisw_:       # osiris wac
     PhiY = 12 / 2                         # instrument FOV in y (half opening angle) in degrees
     iFOV = 0.000993                       # pixel FOV in rad
     PixelSize = 1                         # area of one pixel
+    InstrumentFrame = 'OSIRIS_WAC'
 
 elif iInstrumentSelector == osirisn_:     # osiris nac
     nPixelsX = 1024 
@@ -270,6 +250,7 @@ elif iInstrumentSelector == osirisn_:     # osiris nac
     PhiY = 3 / 2
     iFOV = 0.0000188
     PixelSize = 1
+    InstrumentFrame = 'OSIRIS_NAC'
 
 elif iInstrumentSelector in [alice_, aliceSpec_]:         # alice
     specs = alice.get_specs()
@@ -278,6 +259,7 @@ elif iInstrumentSelector in [alice_, aliceSpec_]:         # alice
     nPixelsY = instrument.nPixelsY
     PhiX = instrument.PhiX
     PhiY = instrument.PhiY
+    InstrumentFrame = instrument.frame
 
     '''
     nOversampleX = 24
@@ -301,6 +283,7 @@ elif iInstrumentSelector in [miro_]:               # miro
     PhiY = 0.396667 / 2
     iFOV = 0.00692314
     PixelSize = 1
+    InstrumentFrame = 'MIRO_MM'
 
 elif iInstrumentSelector in [miroDustIR_]:               # miro
 
@@ -310,6 +293,7 @@ elif iInstrumentSelector in [miroDustIR_]:               # miro
     PhiY = 0.125 / 2
     iFOV = 0.00218166 
     PixelSize = 1
+    InstrumentFrame = 'MIRO_MM'
 
 
 elif iInstrumentSelector in [miroDustIRSpread_]:               # miro
@@ -320,6 +304,7 @@ elif iInstrumentSelector in [miroDustIRSpread_]:               # miro
     PhiY = 10.0 / 2
     iFOV = 0.00218166
     PixelSize = 1
+    InstrumentFrame = 'MIRO_MM'
     
 elif iInstrumentSelector == virtism_:       # virtis m
     nPixelsX = 256
@@ -328,6 +313,7 @@ elif iInstrumentSelector == virtism_:       # virtis m
     PhiY = 3.6669 / 2
     iFOV = 0.00025
     PixelSize = 1
+    InstrumentFrame = 'VIRTIS-M'
 
 elif iInstrumentSelector == virtish_:       # virtis h
     nPixelsX = 1
@@ -336,6 +322,7 @@ elif iInstrumentSelector == virtish_:       # virtis h
     PhiY = 0.1
     iFOV = 0.000583
     PixelSize = 1
+    InstrumentFrame = 'VIRTIS-H'
 
 Lx = 2 * np.sin(PhiX / 180 * np.pi)
 Ly = 2 * np.sin(PhiY / 180 * np.pi)
@@ -349,6 +336,29 @@ if nPixelsY > 1:
     Dy = Ly / (nPixelsY - 1)
 else:
     Dy = Ly
+
+
+if iPointingCase == spice_:
+    #################################################
+    # get rosetta coordinates from spice
+    #################################################
+    spice.furnsh(StringKernelMetaFile)
+    Et = spice.str2et(StringUtcStartTime)
+    rRosetta, lightTime = spice.spkpos("ROSETTA", Et, "67P/C-G_CSO", "NONE", "CHURYUMOV-GERASIMENKO")        # s/c coordinates in CSO frame of reference
+    rRosetta = np.array(rRosetta) * 1000            # transform km to m
+    #R = spice.pxform("ROS_SPACECRAFT", "67P/C-G_CSO", Et)      # create rotation matrix R to go from instrument reference frame to CSO
+    R = spice.pxform(InstrumentFrame, "67P/C-G_CSO", Et)      # create rotation matrix R to go from instrument reference frame to CSO
+
+elif iPointingCase == userPointing_:
+    x0 = np.array([-UserR*1000, 0, 0])           # -UserR --> start at subsolar point, in meters
+    rRosetta = rotations.rotateVector(x0, UserPhaseAngle, UserLatitude)
+    ei, ej, ek = rotations.rotateCoordinateSystem2(UserPhaseAngle, UserLatitude, UserAlpha, UserBeta, UserGamma)
+
+    R = rotations.createRotationMatrix(ei, ej, ek)
+
+if iMpiRank == 0:
+    print 'Distance from comet  : %.2e [m]' % (np.sqrt(np.sum(rRosetta ** 2)))
+    print 'rRosetta in CSO Frame: (%.2e, %.2e, %.2e)' % (rRosetta[0], rRosetta[1], rRosetta[2])
 
 ##############################################
 # create pointing vectors p

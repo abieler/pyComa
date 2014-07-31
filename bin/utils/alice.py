@@ -40,7 +40,8 @@ def get_specs():
                        'PhiY' : PhiY,
                        'iFOV' : iFOV, 
                        'PixelSize' : 1,
-                       'computedQuantity' : 'column density [#/m2]'
+                       'computedQuantity' : 'column density [#/m2]',
+                       'frame':'ROS_ALICE'
                       }
 
     instrumentSpecs['PixelFOV'] = pixelFOV
