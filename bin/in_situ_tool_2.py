@@ -17,7 +17,7 @@ import matplotlib
 import spice
 from utils.data_loaders import *
 import utils.spice_functions as spice_functions
-from utils.data_plotting import plot_result_insitu
+from utils.data_plotting import plot_result_insitu_2
 from utils.haser import haserModel
 from utils.cmdline_args import cmdline_args
 
@@ -69,17 +69,15 @@ elif args.iModelCase == 2:
 # load data
 ##############################################################
 if args.iModelCase == 0:
-    print 'dsmc case'
     x_SC *= -1      # cso reference frame to tenishev reference frame
     y_SC *= -1      # cso reference frame to tenishev reference frame
     if args.IsDust:
+        print 'dsmc case, dust'
         NumberDensityIndices, allSizeIntervals = getAllDustIntervalIndices(args.StringDataFileDSMC, iDim)
         x, y, numberDensities, massDensities = load_dust_data_full(allSizeIntervals, NumberDensityIndices,
                                                                    iDim, args.StringDataFileDSMC, args)
-                                                                   
-
     else:
-        print 'gas'
+        print 'dsmc case, gas'
         numberDensities = []
         for filename in filenames:
             x, y, n = loadGasData(filename, iDim)
@@ -100,17 +98,14 @@ elif args.iModelCase == 2:
 if iDim == 1:
     pass
 elif iDim == 2:
-    
     Triangles = mtri.Triangulation(x, y)
     if args.IsDust:
-        print 'shape1', numberDensities.shape[1]
         nSpecies = numberDensities.shape[1]
         numberDensities = [numberDensities[:,i] for i in range(nSpecies)]
     Interpolator = [mtri.LinearTriInterpolator(Triangles, n) for n in numberDensities]
 elif iDim == 3:
     print '3d not implemented yet'
     
-
 print 'interpolation done'
 numberDensities_SC = []
 #############################################################
@@ -130,7 +125,7 @@ for n in numberDensities:
 ############################################
 if args.iModelCase == 0:
     if args.IsDust:
-        species = [size for size in allSizeIntervals]
+        species = [size for size in allSizeIntervals if args.DustSizeMin <= size <= args.DustSizeMax]
     else:
         species = [filename.split('.')[-2] for filename in filenames]
 
@@ -141,38 +136,44 @@ elif args.iModelCase == 1:
 elif args.iModelCase == 2:
     species = ['User']
 
-file = open(args.StringOutputDir + '/' + 'in_situ' + '.out', 'w')
-file.write('Local number densities for the rosetta spacecraft at selected dates. Comet is at (0,0,0) with the sun on the positive x axis.(inf,0,0)\n')
-if args.iModelCase == 0:
-    file.write('DSMC case: %s\n' % (os.path.split(args.StringDataFileDSMC)[0].split('/')[-1]))
-elif args.iModelCase == 1:
-    file.write("HASER case: Q = %.3e [#/s], v = %f [m/s], tp = %.2e" % (args.QHaser, args.vHaser, args.tpHaser))
-    if args.tdHaser == 0:
-        file.write('\n')
-    else:
-        file.write(', %.2e\n' %(args.tdHaser))
+#file = open(args.StringOutputDir + '/' + 'in_situ' + '.out', 'w')
+with open(args.StringOutputDir + '/' + 'in_situ' + '.out', 'w') as file:
+    file.write('Local number densities for the rosetta spacecraft at selected dates. Comet is at (0,0,0) with the sun on the positive x axis.(inf,0,0)\n')
+    if args.iModelCase == 0:
+        file.write('DSMC case: %s\n' % (os.path.split(args.StringDataFileDSMC)[0].split('/')[-1]))
+    elif args.iModelCase == 1:
+        file.write("HASER case: Q = %.3e [#/s], v = %f [m/s], tp = %.2e" % (args.QHaser, args.vHaser, args.tpHaser))
+        if args.tdHaser == 0:
+            file.write('\n')
+        else:
+            file.write(', %.2e\n' %(args.tdHaser))
 
-if args.iPointingCase == 0:
-    file.write('spice kernel: %s\n' % (args.StringKernelMetaFile.split('/')[-1]))
+    if args.iPointingCase == 0:
+        file.write('spice kernel: %s\n' % (args.StringKernelMetaFile.split('/')[-1]))
 
+    file.write('date,x[m],y[m],z[m],distance_from_center[m],')
+    for s in species:
+        if s == species[-1]:
+            file.write('%s [#/m3]' %s)
+        else:
+            file.write('%s [#/m3],' %s)
+    file.write('\n')
 
-file.write('date,x[m],y[m],z[m],distance_from_center[m],')
-for s in species:
-    file.write('%s [#/m3],' %s)
-file.write('\n')
-
-i = 0
-for dd, xx, yy, zz, rr, in zip(dates_SC, x_SC, y_SC, z_SC, r_SC):
-    file.write("%s,%e,%e,%e,%e," % (dd, xx, yy, zz, rr))
-    for n_SC in numberDensities_SC:
-        file.write("%e," % n_SC[i])
-    file.write("\n")
-    i += 1
-file.close()
+    i = 0
+    for dd, xx, yy, zz, rr, in zip(dates_SC, x_SC, y_SC, z_SC, r_SC):
+        file.write("%s,%e,%e,%e,%e," % (dd, xx, yy, zz, rr))
+        for n_SC in numberDensities_SC:
+            if (np.sum(n_SC == numberDensities_SC[-1]) == len(n_SC)):
+                file.write("%e" % n_SC[i])
+            else:
+                file.write("%e," % n_SC[i])
+        file.write("\n")
+        i += 1
+    file.close()
 print 'done'
 
 #######################################################
 # plot results
 #######################################################
-#plot_result_insitu(args)
-print 'Time elapsed:', time.time() - t0
+plot_result_insitu_2(args, numberDensities_SC, species, dates_SC, r_SC)
+print 'Wall time:', time.time() - t0
