@@ -158,7 +158,7 @@ if args.iPointingCase == 0:
 
 file.write('date,x[m],y[m],z[m],distance_from_center[m],')
 for s in species:
-    file.write('%s [#/m3], ' %s)
+    file.write('%s [#/m3],' %s)
 file.write('\n')
 
 i = 0
