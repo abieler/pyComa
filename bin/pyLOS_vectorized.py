@@ -241,7 +241,7 @@ if iInstrumentSelector == osirisw_:       # osiris wac
     PhiY = 12 / 2                         # instrument FOV in y (half opening angle) in degrees
     iFOV = 0.000993                       # pixel FOV in rad
     PixelSize = 1                         # area of one pixel
-    InstrumentFrame = 'OSIRIS_WAC'
+    InstrumentFrame = 'ROS_OSIRIS_WAC'
 
 elif iInstrumentSelector == osirisn_:     # osiris nac
     nPixelsX = 1024 
@@ -250,7 +250,7 @@ elif iInstrumentSelector == osirisn_:     # osiris nac
     PhiY = 3 / 2
     iFOV = 0.0000188
     PixelSize = 1
-    InstrumentFrame = 'OSIRIS_NAC'
+    InstrumentFrame = 'ROS_OSIRIS_NAC'
 
 elif iInstrumentSelector in [alice_, aliceSpec_]:         # alice
     specs = alice.get_specs()
@@ -283,7 +283,7 @@ elif iInstrumentSelector in [miro_]:               # miro
     PhiY = 0.396667 / 2
     iFOV = 0.00692314
     PixelSize = 1
-    InstrumentFrame = 'MIRO_MM'
+    InstrumentFrame = 'ROS_MIRO_MM'
 
 elif iInstrumentSelector in [miroDustIR_]:               # miro
 
@@ -293,7 +293,7 @@ elif iInstrumentSelector in [miroDustIR_]:               # miro
     PhiY = 0.125 / 2
     iFOV = 0.00218166 
     PixelSize = 1
-    InstrumentFrame = 'MIRO_MM'
+    InstrumentFrame = 'ROS_MIRO_MM'
 
 
 elif iInstrumentSelector in [miroDustIRSpread_]:               # miro
@@ -304,7 +304,7 @@ elif iInstrumentSelector in [miroDustIRSpread_]:               # miro
     PhiY = 10.0 / 2
     iFOV = 0.00218166
     PixelSize = 1
-    InstrumentFrame = 'MIRO_MM'
+    InstrumentFrame = 'ROS_MIRO_MM'
     
 elif iInstrumentSelector == virtism_:       # virtis m
     nPixelsX = 256
@@ -313,7 +313,7 @@ elif iInstrumentSelector == virtism_:       # virtis m
     PhiY = 3.6669 / 2
     iFOV = 0.00025
     PixelSize = 1
-    InstrumentFrame = 'VIRTIS-M'
+    InstrumentFrame = 'ROS_VIRTIS-M'
 
 elif iInstrumentSelector == virtish_:       # virtis h
     nPixelsX = 1
@@ -322,7 +322,7 @@ elif iInstrumentSelector == virtish_:       # virtis h
     PhiY = 0.1
     iFOV = 0.000583
     PixelSize = 1
-    InstrumentFrame = 'VIRTIS-H'
+    InstrumentFrame = 'ROS_VIRTIS-H'
 
 Lx = 2 * np.sin(PhiX / 180 * np.pi)
 Ly = 2 * np.sin(PhiY / 180 * np.pi)
