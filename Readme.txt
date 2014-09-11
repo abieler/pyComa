@@ -52,9 +52,9 @@ Install pyComa
 or download it manually from above url.
 
 4b) execute "python setup.py build_ext --inplace" in the shell inside
-the pyComa/utils directory.
+the pyComa/bin/utils directory.
 
-4c) create the following symlink:
+4c) create the following symlink (if needed):
 sudo ln -s /YourPathTo/anaconda/bin /opt/local/anaconda/bin
 
 

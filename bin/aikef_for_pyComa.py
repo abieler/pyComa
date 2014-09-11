@@ -163,7 +163,12 @@ if (doRun==True):
   print ' - link to State file directory'
   if os.path.exists(os.path.join(pathToInstalledCases,case,'bin','State')) :
      if( RuntimePath != os.path.join(pathToInstalledCases,case,'bin') ) :
-          os.symlink(os.path.join(pathToInstalledCases,case,'bin','State'),os.path.join(RuntimePath,'State'))
+          try:
+              os.symlink(os.path.join(pathToInstalledCases,case,'bin','State'),os.path.join(RuntimePath,'State'))
+          except OSError, e:
+              if e.errno != 17:
+                  raise
+              pass
      # Else, leave things as they are, and be sure NOT to unlink
   else :
      print 'Error: State directory does not exist: '+os.path.join(pathToInstalledCases,case,bin,'State')
