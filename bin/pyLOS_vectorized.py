@@ -169,6 +169,8 @@ if iModelCase == dsmc_:
         iDim = 2
     elif '1d' in allFilenamesInOneString:
         iDim = 1
+    elif '3d' in allFilenamesInOneString:
+	iDim = 3
     else:
         iDim = 0
         if iModelCase == dsmc_:
@@ -184,50 +186,52 @@ if iMpiRank == 1:
     print 'iDimensions:', iDim
 
 ########################################################
-# load data
+# load data (only iDim == 1 or 2) 3d data will be handled
+# by julia routine
 ########################################################
-if iModelCase == dsmc_:
-    if IsDust:
-        if iMpiRank == 0:
-            print 'dust case'
-        NumberDensityIndices, allSizeIntervals = getAllDustIntervalIndices(StringDataFileDSMC, iDim)
-        x, y, numberDensities, massDensities = load_dust_data_full(allSizeIntervals, NumberDensityIndices,
-                                                                   iDim, StringDataFileDSMC, args)
-    else:
-        x, y, numberDensities = loadGasData(StringDataFileDSMC, iDim)
+if iDim < 3:
+    if iModelCase == dsmc_:
+	if IsDust:
+	    if iMpiRank == 0:
+		print 'dust case'
+	    NumberDensityIndices, allSizeIntervals = getAllDustIntervalIndices(StringDataFileDSMC, iDim)
+	    x, y, numberDensities, massDensities = load_dust_data_full(allSizeIntervals, NumberDensityIndices,
+								      iDim, StringDataFileDSMC, args)
+	else:
+	    x, y, numberDensities = loadGasData(StringDataFileDSMC, iDim)
 
-elif iModelCase == haser_:
-    x, numberDensities = haserModel(QHaser, vHaser, tpHaser, tdHaser)
-    y = None
+    elif iModelCase == haser_:
+	x, numberDensities = haserModel(QHaser, vHaser, tpHaser, tdHaser)
+	y = None
 
-elif iModelCase == dust_:
-    x, numberDensities, massDensities, allSizeIntervals = dustModel(QDust, vDust)
-    y = None
+    elif iModelCase == dust_:
+	x, numberDensities, massDensities, allSizeIntervals = dustModel(QDust, vDust)
+	y = None
 
-elif iModelCase == userModel_:
-    x, y, numberDensities = load_user_data(StringUserDataFile, iDim, DelimiterData, nHeaderRowsData)
+    elif iModelCase == userModel_:
+	x, y, numberDensities = load_user_data(StringUserDataFile, iDim, DelimiterData, nHeaderRowsData)
 
-if numberDensities.ndim == 1:
-    numberDensities = np.array([[n] for n in numberDensities])
+    if numberDensities.ndim == 1:
+	numberDensities = np.array([[n] for n in numberDensities])
 
-nSpecies = numberDensities.shape[1]
-if iMpiRank == 0:
-    print 'Nr of species:', nSpecies
+    nSpecies = numberDensities.shape[1]
+    if iMpiRank == 0:
+	print 'Nr of species:', nSpecies
 
-##############################################################
-# triangulation and interpolation for 2d case
-if iMpiRank == 0:
-    print 'start interpolation'
-if iDim == 1:
-    pass
-elif iDim == 2:
-    Triangles = mtri.Triangulation(x, y)
-    Interpolator = [mtri.LinearTriInterpolator(Triangles, numberDensities[:, i]) for i in range(nSpecies)]
-elif iDim == 3:
-    pass
+    ##############################################################
+    # triangulation and interpolation for 2d case
+    if iMpiRank == 0:
+	print 'start interpolation'
+    if iDim == 1:
+	pass
+    elif iDim == 2:
+	Triangles = mtri.Triangulation(x, y)
+	Interpolator = [mtri.LinearTriInterpolator(Triangles, numberDensities[:, i]) for i in range(nSpecies)]
+    elif iDim == 3:
+	pass
 
-if iMpiRank == 0:
-    print 'interpolation done'
+    if iMpiRank == 0:
+	print 'interpolation done'
 #############################################################
 
 #############################################################
@@ -347,8 +351,11 @@ if iPointingCase == spice_:
     rRosetta, lightTime = spice.spkpos("ROSETTA", Et, "67P/C-G_CSO", "NONE", "CHURYUMOV-GERASIMENKO")        # s/c coordinates in CSO frame of reference
     rRosetta = np.array(rRosetta) * 1000            # transform km to m
     #R = spice.pxform("ROS_SPACECRAFT", "67P/C-G_CSO", Et)      # create rotation matrix R to go from instrument reference frame to CSO
-    R = spice.pxform(InstrumentFrame, "67P/C-G_CSO", Et)      # create rotation matrix R to go from instrument reference frame to CSO
-
+    if iDim < 3:
+	R = spice.pxform(InstrumentFrame, "67P/C-G_CSO", Et)      # create rotation matrix R to go from instrument reference frame to CSO
+    else:
+	R = spice.pxform(InstrumentFrame, "67P/C-G_CK", Et)      # create rotation matrix R to go from instrument reference frame to CSO
+	
 elif iPointingCase == userPointing_:
     x0 = np.array([-UserR*1000, 0, 0])           # -UserR --> start at subsolar point, in meters
     rRosetta = rotations.rotateVector(x0, UserPhaseAngle, UserLatitude)
@@ -381,8 +388,12 @@ elif args.iPointingCase == userPointing_:
     p_hat = p / np.sqrt(p[0]**2 + p[1]**2 + p[2]**2)
 
 ccd = np.zeros((nPixelsX, nPixelsY, nSpecies))
-cso2tenishev = np.array([-1, -1, 1])
-
+if iDim < 3:
+    cso2tenishev = np.array([-1, -1, 1])
+else:
+    cso2tenishev = np.array([1, 1, 1])
+    if iMpiRank == 0:
+	pFile = open('pFile.dat', 'w')
 kkk = 0
 nnn = 0
 
@@ -391,52 +402,66 @@ percentProgressLast = 0
 if iMpiRank == 0:
     print ''
     print 'Entering pixel loop.  Progress ...'
-for i in range(nPixelsX):
-    for j in range(nPixelsY):
-        if (kkk == (iMpiRank + nnn * nMpiSize)):
-            if iPointingCase == spice_:
-                p = np.dot(R, p_hat[:, i, j]) * cso2tenishev
-                rRay = np.array([value for value in rRosetta]) * cso2tenishev
-            else:
-                p = np.dot(R, p_hat[:, i, j])
-                rRay = np.array([value for value in rRosetta])
-            xTravel = np.array(createRay.createRay(rRay, p))
-            dTravel = np.sqrt(np.sum((xTravel[0] - xTravel)**2, axis=1))
+if iDim < 3:
+    for i in range(nPixelsX):
+	for j in range(nPixelsY):
+	    if (kkk == (iMpiRank + nnn * nMpiSize)):
+		if iPointingCase == spice_:
+		    p = np.dot(R, p_hat[:, i, j]) * cso2tenishev
+		    rRay = np.array([value for value in rRosetta]) * cso2tenishev
+		else:
+		    p = np.dot(R, p_hat[:, i, j])
+		    rRay = np.array([value for value in rRosetta])
+		xTravel = np.array(createRay.createRay(rRay, p))
+		dTravel = np.sqrt(np.sum((xTravel[0] - xTravel)**2, axis=1))
 
-            if iDim == 1:
-                xTravel = np.sqrt(np.sum(xTravel ** 2, axis=1))
-            elif iDim == 2:
-                xTravel[:, 1] = np.sqrt(xTravel[:, 1]**2 + xTravel[:, 2]**2)
-            elif iDim == 3:
-                pass
+		if iDim == 1:
+		    xTravel = np.sqrt(np.sum(xTravel ** 2, axis=1))
+		elif iDim == 2:
+		    xTravel[:, 1] = np.sqrt(xTravel[:, 1]**2 + xTravel[:, 2]**2)
+		elif iDim == 3:
+		    xTravel = None
+		
+		# loop over species
+		for spIndex in range(nSpecies):
+		    if iDim == 1:
+			DensityRay = np.interp(xTravel, x, numberDensities[:, spIndex])
+		    elif iDim == 2:
+			DensityRay = Interpolator[spIndex].__call__(xTravel[:, 0], xTravel[:, 1]) #interpolated local number density
+		    elif iDim == 3:
+			DensityRay = None
 
-            # loop over species
-            for spIndex in range(nSpecies):
-                if iDim == 1:
-                    DensityRay = np.interp(xTravel, x, numberDensities[:, spIndex])
-                elif iDim == 2:
-                    DensityRay = Interpolator[spIndex].__call__(xTravel[:, 0], xTravel[:, 1]) #interpolated local number density
-                elif iDim == 3:
-                    DensityRay = None
+		    ColumnDensity = np.trapz(DensityRay, dTravel)
+		    if iMpiRank != 0:
+			data = np.array([ColumnDensity, i, j, spIndex])
+			comm.send([ColumnDensity, i, j, spIndex], dest=0, tag=13)
+		    else:
+			ccd[i][j][spIndex] = ColumnDensity
+			for jjj in range(1, nMpiSize):
+			    ColumnDensity, ii, jj, spIndex = comm.recv(source=jjj, tag=13)
+			    ccd[ii][jj][spIndex] = ColumnDensity
+		nnn += 1
+	    kkk += 1
 
-                ColumnDensity = np.trapz(DensityRay, dTravel)
-                if iMpiRank != 0:
-                    data = np.array([ColumnDensity, i, j, spIndex])
-                    comm.send([ColumnDensity, i, j, spIndex], dest=0, tag=13)
-                else:
-                    ccd[i][j][spIndex] = ColumnDensity
-                    for jjj in range(1, nMpiSize):
-                        ColumnDensity, ii, jj, spIndex = comm.recv(source=jjj, tag=13)
-                        ccd[ii][jj][spIndex] = ColumnDensity
-            nnn += 1
-        kkk += 1
-
-    if iMpiRank == 0:
-        percentProgress = np.floor(i / nPixelsX * 10) * 10
-        if percentProgress > percentProgressLast:
-             percentProgressLast = percentProgress
-             print int(percentProgress),'%'
-
+	if iMpiRank == 0:
+	    percentProgress = np.floor(i / nPixelsX * 10) * 10
+	    if percentProgress > percentProgressLast:
+		percentProgressLast = percentProgress
+		print int(percentProgress),'%'
+elif (iDim == 3 and iMpiRank == 0):
+    for i in range(nPixelsX):
+	for j in range(nPixelsY):
+	    if iPointingCase == spice_:
+		p = np.dot(R, p_hat[:, i, j]) * cso2tenishev
+		rRay = np.array([value for value in rRosetta]) * cso2tenishev
+	    else:
+		p = np.dot(R, p_hat[:, i, j])
+		rRay = np.array([value for value in rRosetta])
+	    oFile.write("%.5e,%.5e,%.5e,%.5e,%.5e,%.5e\n" %(p[0], p[1], p[2], rRay[0], rRay[1], rRay[2]))
+    oFile.close()
+    print 'executing julia script'
+    #os.system('julia')
+    
 if iMpiRank == 0:
     print 'pixel loop done'
     if iInstrumentSelector in [miroDustIR_, miroDustIRSpread_]:
