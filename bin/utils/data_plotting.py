@@ -226,7 +226,14 @@ def create_plot_LOS_2d_matplotlib(args, ccd, pltTitle, figName, ccd_limits):
     nLevels = 200
     dLevels = (np.log10(ccd_limits[1]) - np.log10(ccd_limits[0])) / nLevels
     pltLevels = np.arange(np.log10(ccd_limits[0]), np.log10(ccd_limits[1])+dLevels, dLevels)
-    plt.contourf(np.log10(ccd+1.0e-200), levels=pltLevels)
+    try:
+        plt.contourf(np.log10(ccd+1.0e-200), levels=pltLevels)
+    except:
+        print '################################################'
+        print 'plotting error, contour levels not well defined'
+        print 'trying with auto-defined contours...'
+        print '################################################'
+        plt.contourf(np.log10(ccd+1.0e-200))
 
     if args.iInstrumentSelector == 10:
        plt.colorbar(label=r'log10 $S_{total} [W m^{-2} Hz^{-1}$]')
