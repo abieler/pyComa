@@ -261,6 +261,17 @@ elif iInstrumentSelector == osirisn_:     # osiris nac
 elif iInstrumentSelector in [alice_, aliceSpec_]:         # alice
     specs = alice.get_specs()
     instrument = Instrument(specs)
+    nPixelsX = instrument.nPixelsX
+    nPixelsY = instrument.nPixelsY
+    PhiX = instrument.PhiX
+    PhiY = instrument.PhiY
+    InstrumentFrame = instrument.frame
+
+    '''
+    nOversampleX = 24
+    nOversampleY = 20
+
+    nPixelsX = 19 * nOversampleX
     nPixelsY = 1 * nOversampleY
     PhiX = 5.852 / 2
     PhiY = 0.1 / 2
@@ -339,12 +350,15 @@ if iPointingCase == spice_:
     #################################################
     spice.furnsh(StringKernelMetaFile)
     Et = spice.str2et(StringUtcStartTime)
-    rRosetta, lightTime = spice.spkpos("ROSETTA", Et, "67P/C-G_CSO", "NONE", "CHURYUMOV-GERASIMENKO")        # s/c coordinates in CSO frame of reference
-    rRosetta = np.array(rRosetta) * 1000            # transform km to m
     #R = spice.pxform("ROS_SPACECRAFT", "67P/C-G_CSO", Et)      # create rotation matrix R to go from instrument reference frame to CSO
     if ((iDim == 2) or (iDim == 1)):
+        rRosetta, lightTime = spice.spkpos("ROSETTA", Et, "67P/C-G_CSO", "NONE", "CHURYUMOV-GERASIMENKO")        # s/c coordinates in CSO frame of reference
         R = spice.pxform(InstrumentFrame, "67P/C-G_CSO", Et)      # create rotation matrix R to go from instrument reference frame to CSO
     elif iDim == 3:
+        print "iDim = 3"
+        rRosetta, lightTime = spice.spkpos("ROSETTA", Et, "67P/C-G_CK", "NONE", "CHURYUMOV-GERASIMENKO")        # s/c coordinates in CSO frame of reference
+        R = spice.pxform(InstrumentFrame, "67P/C-G_CK", Et)
+    rRosetta = np.array(rRosetta) * 1000            # transform km to m
 elif iPointingCase == userPointing_:
     x0 = np.array([-UserR*1000, 0, 0])           # -UserR --> start at subsolar point, in meters
     rRosetta = rotations.rotateVector(x0, UserPhaseAngle, UserLatitude)
@@ -385,8 +399,6 @@ if iDim < 3:
     cso2tenishev = np.array([-1, -1, 1])
 else:
     cso2tenishev = np.array([1, 1, 1])
-    if iMpiRank == 0:
-	pFile = open('pFile.dat', 'w')
 kkk = 0
 nnn = 0
 
@@ -442,7 +454,7 @@ for i in range(nPixelsX):
             if iPointingCase == spice_:
                 p = np.dot(R, p_hat[:, i, j])
                 rRay = np.array([value for value in rRosetta])
-                pFile.write("%.5e,%.5e,%.5e,%.5e,%.5e,%.5e" %(p[0], p[1], p[2], rRay[0], rRay[1], rRay[2]))
+                pFile.write("%.5e,%.5e,%.5e,%.5e,%.5e,%.5e\n" %(p[0], p[1], p[2], rRay[0], rRay[1], rRay[2]))
             else:
                 print "Only spice pointing allowed for 3D cases so far!"
                 sys.exit()
@@ -456,11 +468,15 @@ for i in range(nPixelsX):
              print int(percentProgress),'%'
 if iDim == 3:
     pFile.close()
-    #subprocess.call(["julia", "/Users/abieler/newLOS/newLOS.jl"])
 
     print args.StringOutputDir
-    os.system("su - _www -c '/Applications/Julia-0.3.0.app/Contents/Resources/julia/bin/julia /Users/abieler/newLOS/newLOS.jl %s %s'" %(os.path.dirname(args.StringDataFileDSMC), args.StringOutputDir))
+    os.system("su - _www -c '/Applications/Julia-0.3.0.app/Contents/Resources/julia/bin/julia /Users/abieler/newLOS/newLOS.jl %s %s'" %(args.StringDataFileDSMC, args.StringOutputDir))
     ccdLoaded = np.loadtxt("ccd.dat")
+    k = 0
+    for i in range(nPixelsX):
+      for j in range(nPixelsY):
+	ccd[i,j,0] = ccdLoaded[k] 
+	k += 1
 if iMpiRank == 0:
     print 'pixel loop done'
     if iInstrumentSelector in [miroDustIR_, miroDustIRSpread_]:
