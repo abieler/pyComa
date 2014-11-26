@@ -59,6 +59,8 @@ def cmdline_args(parser):
     parser.add_argument('--wavelength', type=float)
     parser.add_argument('--aliceDate', type=str, default='2014-07-11T23:23:00')
 
+    parser.add_argument('--SubCase', type=str, default='')
+
     args = parser.parse_args()
 
     return args
