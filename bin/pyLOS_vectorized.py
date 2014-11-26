@@ -320,6 +320,14 @@ elif iInstrumentSelector == virtism_:       # virtis m
     iFOV = 0.00025
     PixelSize = 1
     InstrumentFrame = 'ROS_VIRTIS-M'
+    
+    # for debugging values
+    nPixelsX = 128
+    nPixelsY = 128
+    PhiX = 3.6669
+    PhiY = 3.6669
+    iFOV = 0.00025
+    PixelSize = 1
 
 elif iInstrumentSelector == virtish_:       # virtis h
     nPixelsX = 1
@@ -358,6 +366,13 @@ if iPointingCase == spice_:
         print "iDim = 3"
         rRosetta, lightTime = spice.spkpos("ROSETTA", Et, "67P/C-G_CK", "NONE", "CHURYUMOV-GERASIMENKO")        # s/c coordinates in CSO frame of reference
         R = spice.pxform(InstrumentFrame, "67P/C-G_CK", Et)
+        rSun, lt = spice.spkpos("SUN", Et, "67P/C-G_CK", "NONE", "CHURYUMOV-GERASIMENKO")
+        rSun = np.array(rSun)
+        rSun = rSun / np.sqrt((rSun**2).sum())
+        if iMpiRank == 0:
+	  with open('rSun_hat.dat', 'w') as sFile:
+	    sFile.write("%.5e,%.5e,%.5e\n" %(rSun[0], rSun[1], rSun[2]))
+	  
     rRosetta = np.array(rRosetta) * 1000            # transform km to m
 elif iPointingCase == userPointing_:
     x0 = np.array([-UserR*1000, 0, 0])           # -UserR --> start at subsolar point, in meters
@@ -408,6 +423,7 @@ percentProgressLast = 0
 if iMpiRank == 0:
     if iDim == 3:
         pFile = open('pointing.dat', 'w')
+        
     print ''
     print 'Entering pixel loop.  Progress ...'
 for i in range(nPixelsX):
@@ -470,7 +486,7 @@ if iDim == 3:
     pFile.close()
 
     print args.StringOutputDir
-    os.system("su - _www -c '/Applications/Julia-0.3.0.app/Contents/Resources/julia/bin/julia /Users/abieler/newLOS/newLOS.jl %s %s'" %(args.StringDataFileDSMC, args.StringOutputDir))
+    os.system("su _www -c '/Applications/Julia-0.3.0.app/Contents/Resources/julia/bin/julia /Users/abieler/newLOS/newLOS.jl %s %s'" %(args.StringDataFileDSMC, args.StringOutputDir))
     ccdLoaded = np.loadtxt("ccd.dat")
     k = 0
     for i in range(nPixelsX):
