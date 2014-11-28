@@ -93,6 +93,14 @@ elif args.iModelCase == 2:
     x, y, n = load_user_data(args.StringUserDataFile, iDim, args.DelimiterData, args.nHeaderRowsData)
     numberDensities = [n]
 
+if args.SubCase == 'preferred':
+    print 'preferred case'
+    AU = np.float(args.StringDataFileDSMC.split('/')[-1].split('_')[1])
+    print "AU:", AU
+    if AU >= 3.0:
+        numberDensities = [nn * 0.24 for nn in numberDensities]
+    else:
+        numberDensities = [nn * 1.25 for nn in numberDensities]
 ##############################################################
 # triangulation and interpolation for 2d case
 if iDim == 1:

@@ -111,6 +111,8 @@ comm = MPI.COMM_WORLD
 nMpiSize = comm.Get_size()
 iMpiRank = comm.Get_rank()
 
+
+
 if iMpiRank == 0:
     print '##########################################'
     print 'modelCase     :', args.iModelCase
@@ -220,6 +222,18 @@ if iDim < 3:
 elif iDim == 3:
     nSpecies = 1
 
+if args.SubCase == 'preferred':
+    print 'preferred case'
+    AU = np.float(args.StringDataFileDSMC.split('/')[-1].split('_')[1])
+    print "AU:", AU
+    if AU >= 3.0:
+        numberDensities = numberDensities * 0.24
+    else:
+        numberDensities = numberDensities * 1.25
+        
+
+
+
 ##############################################################
 # triangulation and interpolation for 2d case
 if iMpiRank == 0:
@@ -322,8 +336,8 @@ elif iInstrumentSelector == virtism_:       # virtis m
     InstrumentFrame = 'ROS_VIRTIS-M'
     
     # for debugging values
-    nPixelsX = 128
-    nPixelsY = 128
+    nPixelsX = 256 
+    nPixelsY = 256 
     PhiX = 3.6669
     PhiY = 3.6669
     iFOV = 0.00025
