@@ -1,3 +1,4 @@
+#!/opt/local/anaconda/bin/python
 '''
 python wrapper for the hybrid2 ICES tool. combines
 the line of sight capability with the hybrid2 model.
