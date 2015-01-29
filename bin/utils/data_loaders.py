@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 from __future__ import division
+import sys
 import numpy as np
 import os
 import datetime
@@ -34,11 +35,8 @@ def get_iDim(args):
             iDim = 2
         elif '1d' in allFilenamesInOneString:
             iDim = 1
-        else:
-            iDim = 0
-            if args.iModelCase == 0:
-                print 'Could not detect iDim of dsmc case. Exiting now.'
-            sys.exit()
+        elif '3d' in allFilenamesInOneString:
+            iDim = 3
 
     elif args.iModelCase == 1:
         iDim = 1
@@ -67,7 +65,8 @@ def getAllDustIntervalIndices(filename, dim):
         if 'VARIABLES' in line:
             variables = line.split(',')
             for element, j in zip(variables, range(len(variables))):
-                condition1 = ('NUMBERDENSITY' in element)
+                #condition1 = ('NUMBERDENSITY' in element)
+                condition1 = ('numberdensity' in element.lower())
                 condition2 = ('R=' in element)
                 condition3 = '"X"' in element
                 condition4 = '"Y"' in element

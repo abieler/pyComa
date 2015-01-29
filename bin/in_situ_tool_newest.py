@@ -65,6 +65,8 @@ elif args.iPointingCase == 2:
 
 os.system('rm ' + args.StringOutputDir + '/*.out')
 
+
+
 if args.iModelCase == 0:
     # DSMC case
     path = os.path.split(args.StringDataFileDSMC)[0]
@@ -143,10 +145,6 @@ if iDim < 3:
         numberDensities_SC.append(n_SC)
         i+=1
 if iDim == 3:
-    #####################################################
-    # select calculate lon/lat of Sun for each instance
-    # in time and check database for the best suited DSCMC case
-    #####################################################
     db = sqlite3.connect("/Users/abieler/ices3Dcases.sqlite")
     cur = db.cursor()
     caseCoords = {}
@@ -173,29 +171,26 @@ if iDim == 3:
         caseCoords[qd[1]] = []
         caseDates[qd[1]] = []
 
-    # sort all coordinates into arrays for their specific dsmc case
-    angleOfAcceptance = 2.0
     for llon,xx,yy,zz,dd in zip(lon, x_SC, y_SC, z_SC, dates_SC):
-        cur.execute("SELECT dsmc,lon FROM cases3D GROUP BY ABS((lon-(%f)+180)%%360-180)" %llon)
+        cur.execute("SELECT dsmc,lon FROM cases3D GROUP BY ABS(lon-(%f))" %llon)
         data = cur.fetchone()
         selectedCase = data[0]
         lo = data[1]
-        if abs(lo - llon) < angleOfAcceptance:
+        if abs(lo - llon) < 5:
             caseCoords[selectedCase].append([xx,yy,zz])
             caseDates[selectedCase].append(dd)
     db.close()
 
-    # build path where all fitting DSMC cases are located below
+    print "##########################"
+    print "debug:"
     pathToDataTmp = os.path.dirname(args.StringDataFileDSMC)
     pathToDataBase = ''
     for part in pathToDataTmp.split('/')[0:-1]:
         pathToDataBase += part
         pathToDataBase += '/' 
-
-    # write coordinates of each case to file and then start julia
-    # to perform the 3D interpolation
     for key in caseCoords.keys():
         print 'start julia for dsmc case:', key
+
         if len(caseCoords[key]) > 0:
             with open("rosettaCoords.txt", 'w') as oFile:
                 for rrr in caseCoords[key]:
@@ -203,35 +198,29 @@ if iDim == 3:
             pathToData = pathToDataBase + key + '/'
             os.system("su _www -c '/Applications/Julia-0.3.0.app/Contents/Resources/julia/bin/julia /Users/abieler/newLOS/in-situ.jl %s %s'" %(pathToData, args.StringOutputDir))
             n_SC = np.genfromtxt('interpolation.out', dtype=float)
-
-            # genfromtxt returns float instead of one element array in case
-            # there is only one entry --> make array out of that
+            print 'type(n_SC):', type(n_SC)
             if type(n_SC) == float:
                 n_SC = np.array([n_SC])
             caseDensities[key] = n_SC
         else:
-            print 'no data for this case, next please.'
+            print 'no data for this case, moving on'
             caseDensities[key] =[] 
-
-    # combine all cases into one array and sort them according to date
+    print "##########################"
     n_SC = []
     dates_SC = []
-    r_SC = []
     for key in caseDensities.keys():
         if len(caseDensities[key]) >= 1:
             n_SC.extend(caseDensities[key])
             dates_SC.extend(caseDates[key])
-            r = [np.sqrt(p[0]**2+p[1]**2+p[2]**2) for p in caseCoords[key]]
-            r_SC.extend(r)
     n_SC = np.array(n_SC)
     dates_SC = np.array(dates_SC)
-    r_SC = np.array(r_SC)
     sort_index = np.argsort(dates_SC)
 
     dates_SC = dates_SC[sort_index]
     n_SC = n_SC[sort_index]
-    r_SC = r_SC[sort_index]
     numberDensities_SC = [n_SC]
+    print "len(n_SC)", len(n_SC)
+    print "len(dates_SC)", len(dates_SC)
 ############################################
 # write results to file
 ############################################
