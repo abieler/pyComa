@@ -147,7 +147,7 @@ if iDim == 3:
     # select calculate lon/lat of Sun for each instance
     # in time and check database for the best suited DSCMC case
     #####################################################
-    db = sqlite3.connect("/Users/abieler/ices3Dcases.sqlite")
+    db = sqlite3.connect(args.StringOutputDir+'/../../ICES.sqlite')
     cur = db.cursor()
     caseCoords = {}
     caseDates = {}
@@ -167,7 +167,7 @@ if iDim == 3:
         lon.append(llon)
         r_AU.append(r)
 
-    cur.execute("SELECT * FROM cases3D")
+    cur.execute("SELECT * FROM select3D")
     queryData = cur.fetchall()
     for qd in queryData:
         caseCoords[qd[1]] = []
@@ -176,7 +176,7 @@ if iDim == 3:
     # sort all coordinates into arrays for their specific dsmc case
     angleOfAcceptance = 2.0
     for llon,xx,yy,zz,dd in zip(lon, x_SC, y_SC, z_SC, dates_SC):
-        cur.execute("SELECT dsmc,lon FROM cases3D GROUP BY ABS((lon-(%f)+180)%%360-180)" %llon)
+        cur.execute("SELECT dsmc_case,longitude FROM select3D GROUP BY ABS((longitude-(%f)+180)%%360-180)" %llon)
         data = cur.fetchone()
         selectedCase = data[0]
         lo = data[1]
