@@ -167,7 +167,7 @@ if iDim == 3:
         lon.append(llon)
         r_AU.append(r)
 
-    cur.execute("SELECT * FROM select3D")
+    cur.execute("SELECT au,dsmc_case,cast(longitude as float),cast(latitude as float),shapemodel FROM select3D")
     queryData = cur.fetchall()
     for qd in queryData:
         caseCoords[qd[1]] = []
@@ -176,7 +176,7 @@ if iDim == 3:
     # sort all coordinates into arrays for their specific dsmc case
     angleOfAcceptance = 2.0
     for llon,xx,yy,zz,dd in zip(lon, x_SC, y_SC, z_SC, dates_SC):
-        cur.execute("SELECT dsmc_case,longitude FROM select3D GROUP BY ABS((longitude-(%f)+180)%%360-180)" %llon)
+        cur.execute("SELECT dsmc_case,cast(longitude as FLOAT) FROM select3D GROUP BY ABS((cast(longitude as FLOAT)-(%f)+180)%%360-180)" %llon)
         data = cur.fetchone()
         selectedCase = data[0]
         lo = data[1]
