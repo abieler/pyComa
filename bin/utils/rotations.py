@@ -8,9 +8,50 @@ import sys
 #    print p
 import spice
 import numpy as np
+from numpy import dot,cross, inner
+from numpy.linalg import norm, inv
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
+
+def rotMat(a,b):
+  v = cross(a,b)
+  s = norm(v)
+  c = dot(a,b)
+
+  print s**2 + c**2
+
+  V = np.matrix([
+                [0, -v[2], v[1]],
+                [v[2], 0, -v[0]],
+                [-v[1], v[0], 0]
+                ])
+  U = np.eye(3) + V + dot(V,V)*(1-c)/s**2
+  U_tuple = ((U[0,0], U[0,1], U[0,2]),
+               (U[1,0], U[1,1], U[1,2]),
+               (U[2,0], U[2,1], U[2,2])
+              )
+
+  return U_tuple
+  
+
+def calculate_rotation_matrix(v1, v2):
+    G = np.matrix([[dot(v1,v2),-norm(cross(v1,v2)), 0],
+                   [norm(cross(v1,v2)), dot(v1,v2), 0],
+                   [0, 0, 1],
+                  ])
+    
+    F_i = np.array([[v1, (v2 - (dot(v1,v2)* v1))/((norm(v2 - dot(v1,v2)*v1))), cross(v2,v1)]])
+
+    U = dot(F_i, dot(G,inv(F_i)))
+    print U
+
+    U_tuple = ((U[0,0], U[0,1], U[0,2]),
+               (U[1,0], U[1,1], U[1,2]),
+               (U[2,0], U[2,1], U[2,2])
+              )
+
+    return U_tuple
 
 def plotVector(x0, x_hat, ax):
     x_hat = x_hat / np.sqrt(np.sum(x_hat**2))

@@ -38,6 +38,7 @@ try:
     # import 3rd party modules
     import spice
     import numpy as np
+    from numpy import dot
     import matplotlib.tri as mtri
     import matplotlib.pyplot as plt
     from mpi4py import MPI
@@ -51,6 +52,7 @@ try:
     import utils.rotations as rotations
     import utils.alice as alice
     import utils.miro as miro
+    import utils.sun as sun
     import utils.createRay as createRay
     from utils.cmdline_args import cmdline_args
     from utils.instrument import Instrument
@@ -232,8 +234,6 @@ if args.SubCase == 'preferred':
         numberDensities = numberDensities * 1.25
         
 
-
-
 ##############################################################
 # triangulation and interpolation for 2d case
 if iMpiRank == 0:
@@ -264,6 +264,10 @@ if iInstrumentSelector == osirisw_:       # osiris wac
     InstrumentFrame = 'ROS_OSIRIS_WAC'
 
 elif iInstrumentSelector == osirisn_:     # osiris nac
+    '''
+    # temporarily commented by andre for 
+    # calculation of column density seen
+    # from Sun
     nPixelsX = 1024 
     nPixelsY = 1024 
     nPixelsX = 1 
@@ -273,6 +277,14 @@ elif iInstrumentSelector == osirisn_:     # osiris nac
     iFOV = 0.0000188
     PixelSize = 1
     InstrumentFrame = 'ROS_OSIRIS_NAC'
+    '''
+    specs = sun.get_specs()
+    instrument = Instrument(specs)
+    nPixelsX = instrument.nPixelsX
+    nPixelsY = instrument.nPixelsY
+    PhiX = instrument.PhiX
+    PhiY = instrument.PhiY
+    InstrumentFrame = instrument.frame
 
 elif iInstrumentSelector in [alice_, aliceSpec_]:         # alice
     specs = alice.get_specs()
@@ -386,9 +398,24 @@ if iPointingCase == spice_:
         rSun, lt = spice.spkpos("SUN", Et, "67P/C-G_CK", "NONE", "CHURYUMOV-GERASIMENKO")
         rSun = np.array(rSun)
         rSun = rSun / np.sqrt((rSun**2).sum())
+        # quick and dirty fix --> andre  needs to define instrument object for all instruments!
+        try:
+            if instrument.name == 'sun':
+                rRosetta = rSun * 150  # set distance from sun at 200 km because of domain size
+                zhat = np.array([0,0,1])
+                R = rotations.rotMat(zhat, -rSun)
+        except:
+            pass
         if iMpiRank == 0:
           with open('rSun_hat.dat', 'w') as sFile:
             sFile.write("%.5e,%.5e,%.5e\n" %(rSun[0], rSun[1], rSun[2]))
+        print "R:", R
+        try:
+            print "-rSun", -rSun
+            print "rRosetta", rRosetta
+            print "pnadir:", dot(R,zhat)
+        except:
+            pass
 	  
     rRosetta = np.array(rRosetta) * 1000            # transform km to m
 elif iPointingCase == userPointing_:
