@@ -540,7 +540,10 @@ if iDim == 3:
     pFile.close()
 
     print args.StringOutputDir
-    os.system("su _www -c '/Applications/Julia-0.3.0.app/Contents/Resources/julia/bin/julia /Users/abieler/newLOS/newLOS.jl %s %s'" %(args.StringDataFileDSMC, args.StringOutputDir))
+    if args.illumination == 0:
+        os.system("su _www -c '/Applications/Julia-0.3.0.app/Contents/Resources/julia/bin/julia /Users/abieler/newLOS/newLOS.jl %s %s'" %(args.StringDataFileDSMC, args.StringOutputDir))
+    elif args.illumination == 1:
+        os.system("su _www -c '/Applications/Julia-0.3.0.app/Contents/Resources/julia/bin/julia /Users/abieler/newLOS/illumination.jl %s'" %(args.StringOutputDir))
     ccdLoaded = np.loadtxt("ccd.dat")
     k = 0
     for i in range(nPixelsX):

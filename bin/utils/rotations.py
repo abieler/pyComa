@@ -32,6 +32,7 @@ def rotMat(a,b):
                (U[2,0], U[2,1], U[2,2])
               )
 
+  println(U_tuple)
   return U_tuple
   
 
