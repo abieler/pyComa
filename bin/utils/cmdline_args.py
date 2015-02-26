@@ -60,7 +60,7 @@ def cmdline_args(parser):
     parser.add_argument('--aliceDate', type=str, default='2014-07-11T23:23:00')
 
     parser.add_argument('--SubCase', type=str, default='')
-    parser.add_argument('--illuminationCase', 'type=int', default=0)
+    parser.add_argument('--illuminationCase', type=int, default=0)
 
     args = parser.parse_args()
 
