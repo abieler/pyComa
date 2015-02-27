@@ -264,10 +264,7 @@ if iInstrumentSelector == osirisw_:       # osiris wac
     InstrumentFrame = 'ROS_OSIRIS_WAC'
 
 elif iInstrumentSelector == osirisn_:     # osiris nac
-    '''
-    # temporarily commented by andre for 
-    # calculation of column density seen
-    # from Sun
+    
     nPixelsX = 1024 
     nPixelsY = 1024 
     nPixelsX = 1 
@@ -277,6 +274,7 @@ elif iInstrumentSelector == osirisn_:     # osiris nac
     iFOV = 0.0000188
     PixelSize = 1
     InstrumentFrame = 'ROS_OSIRIS_NAC'
+    
     '''
     specs = sun.get_specs()
     instrument = Instrument(specs)
@@ -285,6 +283,7 @@ elif iInstrumentSelector == osirisn_:     # osiris nac
     PhiX = instrument.PhiX
     PhiY = instrument.PhiY
     InstrumentFrame = instrument.frame
+    '''
 
 elif iInstrumentSelector in [alice_, aliceSpec_]:         # alice
     specs = alice.get_specs()
@@ -294,20 +293,6 @@ elif iInstrumentSelector in [alice_, aliceSpec_]:         # alice
     PhiX = instrument.PhiX
     PhiY = instrument.PhiY
     InstrumentFrame = instrument.frame
-
-    '''
-    nOversampleX = 24
-    nOversampleY = 20
-
-    nPixelsX = 19 * nOversampleX
-    nPixelsY = 1 * nOversampleY
-    PhiX = 5.852 / 2
-    PhiY = 0.1 / 2
-
-    iFOV = (PhiX * 2 / 180 * np.pi / (19 * nOversampleX)) * (PhiY * 2 / 180 * np.pi / (nOversampleY))
-
-    PixelSize = 1
-    '''
 
 elif iInstrumentSelector in [miro_]:               # miro
 
@@ -349,6 +334,7 @@ elif iInstrumentSelector == virtism_:       # virtis m
     PixelSize = 1
     InstrumentFrame = 'ROS_VIRTIS-M'
     
+    '''
     # for debugging values
     nPixelsX = 256 
     nPixelsY = 256 
@@ -356,6 +342,7 @@ elif iInstrumentSelector == virtism_:       # virtis m
     PhiY = 3.6669
     iFOV = 0.00025
     PixelSize = 1
+    '''
 
 elif iInstrumentSelector == virtish_:       # virtis h
     nPixelsX = 1
@@ -540,9 +527,13 @@ if iDim == 3:
     pFile.close()
 
     print args.StringOutputDir
-    if args.illumination == 0:
+    args.iIlluminationCase = 0
+    if args.iIlluminationCase == 0:
+        if "H2O" not in args.StringDataFileDSMC:
+            parts = args.StringDataFileDSMC.split(".")
+            args.StringDataFileDSMC = parts[0] + "." + parts[1] + "." + parts[2] +".H2O.dat"
         os.system("su _www -c '/Applications/Julia-0.3.0.app/Contents/Resources/julia/bin/julia /Users/abieler/newLOS/newLOS.jl %s %s'" %(args.StringDataFileDSMC, args.StringOutputDir))
-    elif args.illumination == 1:
+    elif args.iIlluminationCase == 1:
         os.system("su _www -c '/Applications/Julia-0.3.0.app/Contents/Resources/julia/bin/julia /Users/abieler/newLOS/illumination.jl %s'" %(args.StringOutputDir))
     ccdLoaded = np.loadtxt("ccd.dat")
     k = 0
