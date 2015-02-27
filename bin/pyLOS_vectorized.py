@@ -527,7 +527,7 @@ if iDim == 3:
     pFile.close()
 
     print args.StringOutputDir
-    args.iIlluminationCase = 0
+
     if args.iIlluminationCase == 0:
         if "H2O" not in args.StringDataFileDSMC:
             parts = args.StringDataFileDSMC.split(".")
