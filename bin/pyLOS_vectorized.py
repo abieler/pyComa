@@ -529,11 +529,16 @@ if iDim == 3:
     print args.StringOutputDir
 
     if args.iIlluminationCase == 0:
+        print "Line of Sight Case!"
         if "H2O" not in args.StringDataFileDSMC:
+            print "Could not find H2O in file name, modifying file name..."
+            print "old file name:" args. StringDataFileDSMC
             parts = args.StringDataFileDSMC.split(".")
             args.StringDataFileDSMC = parts[0] + "." + parts[1] + "." + parts[2] +".H2O.dat"
+            print "new file name:", args.StringDataFileDSMC
         os.system("su _www -c '/Applications/Julia-0.3.0.app/Contents/Resources/julia/bin/julia /Users/abieler/newLOS/newLOS.jl %s %s'" %(args.StringDataFileDSMC, args.StringOutputDir))
     elif args.iIlluminationCase == 1:
+        print "Illumination Case!"
         os.system("su _www -c '/Applications/Julia-0.3.0.app/Contents/Resources/julia/bin/julia /Users/abieler/newLOS/illumination.jl %s'" %(args.StringOutputDir))
     ccdLoaded = np.loadtxt("ccd.dat")
 
