@@ -527,6 +527,7 @@ if iDim == 3:
     pFile.close()
 
     print args.StringOutputDir
+    #args.iIlluminationCase = 1
 
     if args.iIlluminationCase == 0:
         print "Line of Sight Case!"
@@ -537,11 +538,12 @@ if iDim == 3:
             args.StringDataFileDSMC = parts[0] + "." + parts[1] + "." + parts[2] +".H2O.dat"
             print "new file name:", args.StringDataFileDSMC
         #os.system("su _www -c '/Applications/Julia-0.3.0.app/Contents/Resources/julia/bin/julia /Users/abieler/newLOS/newLOS.jl %s %s'" %(args.StringDataFileDSMC, args.StringOutputDir))
-        os.system("su _www -c '/Applications/Julia-0.3.0.app/Contents/Resources/julia/bin/julia ../../../Models/LoS/pyComa/bin/newLOS.jl %s %s'" %(args.StringDataFileDSMC, args.StringOutputDir))
+        #os.system("su _www -c '/Applications/Julia-0.3.0.app/Contents/Resources/julia/bin/julia ../../../Models/LoS/pyComa/bin/newLOS.jl %s %s'" %(args.StringDataFileDSMC, args.StringOutputDir))
+        os.system("export JULIA_PKGDIR=/opt/local/share/julia/site ; /opt/local/bin/julia ../../../Models/LoS/pyComa/bin/newLOS.jl %s %s" %(args.StringDataFileDSMC, args.StringOutputDir))
     elif args.iIlluminationCase == 1:
         print "Illumination Case!"
         #os.system("su _www -c '/Applications/Julia-0.3.0.app/Contents/Resources/julia/bin/julia /Users/abieler/newLOS/illumination.jl %s'" %(args.StringOutputDir))
-        os.system("su _www -c '/Applications/Julia-0.3.0.app/Contents/Resources/julia/bin/julia ../../../Models/LoS/pyComa/bin/newLOS.jl %s'" %(args.StringOutputDir))
+        os.system("export JULIA_PKGDIR=/opt/local/share/julia/site ; /opt/local/bin/julia ../../../Models/LoS/pyComa/bin/illumination.jl %s" %(args.StringOutputDir))
     ccdLoaded = np.loadtxt("ccd.dat")
 
     # for miro ccdLoaded is a 0 sized tuple which cannot be iterated
