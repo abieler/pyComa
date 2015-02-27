@@ -25,6 +25,8 @@ aliceSpec_    = 7
 miroDustIR_   = 8
 virtis_       = 9
 miroDustIRSpread_   = 10
+debugInstr_ = 666
+debugInstrument_ = 666
               
 ccdStr = ['',
           'Column Density [#/m^2]',
