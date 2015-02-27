@@ -536,11 +536,16 @@ if iDim == 3:
     elif args.iIlluminationCase == 1:
         os.system("su _www -c '/Applications/Julia-0.3.0.app/Contents/Resources/julia/bin/julia /Users/abieler/newLOS/illumination.jl %s'" %(args.StringOutputDir))
     ccdLoaded = np.loadtxt("ccd.dat")
+
+    # for miro ccdLoaded is a 0 sized tuple which cannot be iterated
+    # hence we have to replace that with a 1 element array
+    if ccdLoaded.size == 1:
+        ccdLoaded = np.array([float(ccdLoaded)])
     k = 0
     for i in range(nPixelsX):
       for j in range(nPixelsY):
-	ccd[i,j,0] = ccdLoaded[k] 
-	k += 1
+        ccd[i,j,0] = ccdLoaded[k] 
+        k += 1
 if iMpiRank == 0:
     print 'pixel loop done'
     if iInstrumentSelector in [miroDustIR_, miroDustIRSpread_]:
@@ -555,7 +560,7 @@ if iMpiRank == 0:
     ######################################################
     # plot results
     #######################################################
-    if args.iInstrumentSelector in [miro_]:
+    if args.iInstrumentSelector in [miroDustIR_, miroDustIRSpread_]:
         plot_miro(ccd, aveBright, frequencies, allSizeIntervals, args)
 
     if args.IsDust:
