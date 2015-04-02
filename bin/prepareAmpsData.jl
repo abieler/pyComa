@@ -9,13 +9,13 @@ include("types2.jl")
 # This script has to be run only once and needs the filename
 # of the AMPS output as only input parameter.
 
-fileNameExtension = split(basename(ARGS[1]), ".")
+fileNameExtension = split(basename(ARGS[1]), ".")[end]
 
 fileName = ARGS[1]
 filePath = dirname(ARGS[1])
 
 # subtract extension and last dot from filename
-fileNameBase = basename(ARGS[1])[1:end-(length(fileNameExtension)+2)]
+fileNameBase = basename(ARGS[1])[1:end-(length(fileNameExtension)+1)]
 
 #fileName = "data.dat"
 nCells, nCellsPerBlock, nBlocks, nodeCoordinates, cubeIndices, numberDensity = load_AMPS_data(fileName)
