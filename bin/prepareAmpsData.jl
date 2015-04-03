@@ -21,10 +21,21 @@ fileNameBase = basename(ARGS[1])[1:end-(length(fileNameExtension)+1)]
 nCells, nCellsPerBlock, nBlocks, nodeCoordinates, cubeIndices, numberDensity = load_AMPS_data(fileName)
 nodes = build_nodes(nCells, nodeCoordinates, cubeIndices)
 
-@save joinpath(filePath,  fileNameBase * "_nodes.jld") nodes
-@save joinpath(filePath, fileNameBase * "_nodeCoordinates.jld") nodeCoordinates
-@save joinpath(filePath, fileNameBase * "_cubeIndices.jld") cubeIndices
-@save joinpath(filePath, fileNameBase * "_numberDensity.jld") numberDensity
-@save joinpath(filePath, fileNameBase * "_nCells.jld") nCells
-@save joinpath(filePath, fileNameBase * "_nCellsPerBlock.jld") nCellsPerBlock
-@save joinpath(filePath, fileNameBase * "_nBlocks.jld") nBlocks
+
+# @save joinpath(filePath,  fileNameBase * "_nodes.jld") nodes
+# @save joinpath(filePath, fileNameBase * "_nodeCoordinates.jld") nodeCoordinates
+# @save joinpath(filePath, fileNameBase * "_cubeIndices.jld") cubeIndices
+# @save joinpath(filePath, fileNameBase * "_numberDensity.jld") numberDensity
+# @save joinpath(filePath, fileNameBase * "_nCells.jld") nCells
+# @save joinpath(filePath, fileNameBase * "_nCellsPerBlock.jld") nCellsPerBlock
+# @save joinpath(filePath, fileNameBase * "_nBlocks.jld") nBlocks
+
+
+h5write(joinpath(filePath, fileNameBase * ".h5"), "oct/nCells", nCells)
+h5write(joinpath(filePath, fileNameBase * ".h5"), "oct/nBlocks", nBlocks)
+h5write(joinpath(filePath, fileNameBase * ".h5"), "oct/nCellsPerBlock", nCellsPerBlock)
+h5write(joinpath(filePath, fileNameBase * ".h5"), "oct/nodes", nodes)
+h5write(joinpath(filePath, fileNameBase * ".h5"), "oct/nodeCoordinates", nodeCoordinates)
+h5write(joinpath(filePath, fileNameBase * ".h5"), "oct/cubeIndices", cubeIndices)
+h5write(joinpath(filePath, fileNameBase * ".h5"), "oct/numberDensity", numberDensity)
+
