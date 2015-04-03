@@ -516,11 +516,6 @@ end
 
 function triLinearInterpolation(cell::Cell, point::Array{Float64,1})
   
-  println(cell.origin)
-  println(cell.nodes)
-  println(cell.densities)
-  println(cell.volume)
-  quit()
   xd = (point[1] - cell.nodes[1,1]) / (cell.nodes[2,1] - cell.nodes[1,1])
   yd = (point[2] - cell.nodes[1,2]) / (cell.nodes[3,2] - cell.nodes[1,2])
   zd = (point[3] - cell.nodes[1,3]) / (cell.nodes[5,3] - cell.nodes[1,3])
@@ -559,7 +554,6 @@ function doIntegration(oct::Block, pFileName::String)
 
     println(" - start 3d los calculation")
     # pVector = pointing of vector, rRay = coordinates of origin of ray
-    println("pFileName: ", pFileName)
     pVectors, rRay, nRays = load_pointing_vectors(pFileName)
     println(" - pointing vectors loaded")
     columnDensity::Float64 = 0.0
@@ -577,22 +571,17 @@ function doIntegration(oct::Block, pFileName::String)
       #nTriangles, nodeCoords, triIndices, triangles, n_hat, p, triArea = utils.load_shape_model_vtk("/Users/abieler/meshes/CSHP_original.ply")
       #nTriangles, nodeCoords, triIndices, triangles, n_hat, p, triArea = utils.load_shape_model_vtk("/Users/abieler/meshes/bigCube.ply")
     end
-    println("nRays: ", nRays)
     for i=1:nRays
       columnDensity = 0.0
       n_old = 0.0
       p = vec(pVectors[i,:])
       r = vec(rRay[i,:])
-      println("p: ", p)
-      println("r: ", r)
       distance = sqrt(sum(r.^2))
       
       while distance < rMax
         myBlock = findBlockContainingPoint(r, oct)
         l = myBlock.halfSize[1]/3
         cellIndex = findCellInBlock(myBlock, r)
-        println("DDD")
-        println(cellIndex)
         nIter = triLinearInterpolation(myBlock.cells[cellIndex], r)
         if nIter == 0.0
           break
