@@ -396,7 +396,6 @@ if iPointingCase == spice_:
         if iMpiRank == 0:
           with open('rSun_hat.dat', 'w') as sFile:
             sFile.write("%.5e,%.5e,%.5e\n" %(rSun[0], rSun[1], rSun[2]))
-        print "R:", R
         try:
             print "-rSun", -rSun
             print "rRosetta", rRosetta
@@ -539,7 +538,7 @@ if iDim == 3:
             print "new file name:", args.StringDataFileDSMC
         #os.system("su _www -c '/Applications/Julia-0.3.0.app/Contents/Resources/julia/bin/julia /Users/abieler/newLOS/newLOS.jl %s %s'" %(args.StringDataFileDSMC, args.StringOutputDir))
         #os.system("su _www -c '/Applications/Julia-0.3.0.app/Contents/Resources/julia/bin/julia ../../../Models/LoS/pyComa/bin/newLOS.jl %s %s'" %(args.StringDataFileDSMC, args.StringOutputDir))
-        os.system("export JULIA_PKGDIR=/opt/local/share/julia/site ; /opt/local/bin/julia ../../../Models/LoS/pyComa/bin/newLOS.jl %s %s" %(args.StringDataFileDSMC, args.StringOutputDir))
+        os.system("export JULIA_PKGDIR=/opt/local/share/julia/site ; /opt/local/bin/julia ../../../Models/LoS/pyComa/bin/newLOS2.jl %s %s" %(args.StringDataFileDSMC, args.StringOutputDir))
     elif args.iIlluminationCase == 1:
         print "Illumination Case!"
         #os.system("su _www -c '/Applications/Julia-0.3.0.app/Contents/Resources/julia/bin/julia /Users/abieler/newLOS/illumination.jl %s'" %(args.StringOutputDir))
