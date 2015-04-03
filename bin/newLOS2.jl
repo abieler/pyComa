@@ -9,13 +9,15 @@ const filePath = dirname(ARGS[1])
 # subtract extension and last dot from filename
 fileNameExtension = split(basename(fileName), ".")[end]
 fileNameBase = basename(fileName)[1:end-(length(fileNameExtension)+1)]
-@load joinpath(filePath,  fileNameBase * "_nodes.jld")
-@load joinpath(filePath, fileNameBase * "_nodeCoordinates.jld")
-@load joinpath(filePath, fileNameBase * "_cubeIndices.jld") 
-@load joinpath(filePath, fileNameBase * "_numberDensity.jld")
-@load joinpath(filePath, fileNameBase * "_nCells.jld")
-@load joinpath(filePath, fileNameBase * "_nCellsPerBlock.jld")
-@load joinpath(filePath, fileNameBase * "_nBlocks.jld")
+
+nCells = h5read(joinpath(filePath, fileNameBase * ".h5"), "oct/nCells")
+nBlocks = h5read(joinpath(filePath, fileNameBase * ".h5"), "oct/nBlocks")
+nCellsPerBlock = h5read(joinpath(filePath, fileNameBase * ".h5"), "oct/nCellsPerBlock")
+nodes = h5read(joinpath(filePath, fileNameBase * ".h5"), "oct/nodes")
+nodeCoordinates = h5read(joinpath(filePath, fileNameBase * ".h5"), "oct/nodeCoordinates")
+cubeIndices = h5read(joinpath(filePath, fileNameBase * ".h5"), "oct/cubeIndices")
+numberDensity= h5read(joinpath(filePath, fileNameBase * ".h5"), "oct/numberDensity")
+
 
 const xMax = maximum(nodes[:,:,1])
 const yMax = maximum(nodes[:,:,2])
