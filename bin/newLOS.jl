@@ -16,8 +16,10 @@ nCells, nCellsPerBlock, nBlocks, nodeCoordinates, cubeIndices, numberDensity = l
 cellList, nodes = build_cells(nodeCoordinates, cubeIndices, nCells, numberDensity)
 blocks = build_blocks(nBlocks, cellList, nodes)
 
+println("numberDensity[1]: ", numberDensity[1])
+
 octree = Block(root, halfSize,1, initChildren, initCells)
 println("populating octree")
 populate_octree(octree, blocks, nBlocks)
-n = doIntegration(octree, pFileName)
+@time n = doIntegration(octree, pFileName)
 writedlm(ARGS[2]* "/ccd.dat", n)
