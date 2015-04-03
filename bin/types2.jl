@@ -1,7 +1,7 @@
 using DataFrames
-using HDF5
+#using HDF5
 
-immutable Cell
+type Cell
   origin::Array{Float64,1}
   halfSize::Array{Float64,1}
   nodes::Array{Float64,2}
@@ -49,7 +49,7 @@ function load_AMPS_data(fileName::String)
   while !eof(f)
     line = readline(f)
     if (i <= (nNodes+nHeaderRows)) && (i>nHeaderRows)
-      x,y,z,n = [float(value) for value in matchall(r"(-?\d.\d+[eE][+-]\d+)", line)[[1,2,3,7]]]
+      x,y,z,n = [float(value) for value in matchall(r"(-?\d.\d+[eE][+-]\d+)", line)[[1,2,3,4]]]
       nodeCoordinates[i-nHeaderRows,1] = x
       nodeCoordinates[i-nHeaderRows,2] = y
       nodeCoordinates[i-nHeaderRows,3] = z
@@ -102,7 +102,7 @@ function build_cells(nodes::Array{Float64,3}, cubeIndices::Array{Int64,2}, numbe
       @inbounds origin[i,k] = nodes[i,1,k] + halfSize[k]
     end
     volume = lCell[1] * lCell[2] * lCell[3]
-    @inbounds allCells[i] = Cell(vec(origin[i,1:3]),halfSize,reshape(nodes[i,1:8,1:3], (8,3)),volume, vec(nodeDensities[i,1:3]))
+    @inbounds allCells[i] = Cell(vec(origin[i,1:3]),halfSize,reshape(nodes[i,1:8,1:3], (8,3)),volume, vec(nodeDensities[i,1:8]))
   end
   return allCells
 end
@@ -197,22 +197,21 @@ function findBlockContainingPoint(point::Array{Float64,1}, block::Block)
   end
 end
 
-
 function findCellInBlock(block::Block, point::Array{Float64, 1})
   
   x = point[1] - block.cells[1].nodes[1,1]
   y = point[2] - block.cells[1].nodes[1,2]
   z = point[3] - block.cells[1].nodes[1,3]
-  lx, ly, lz = block.halfSize / 2.5
-  
-  cellIndex = 1
-  cellIndex += div(x, lx)
-  cellIndex += div(y, ly) * 5
-  cellIndex += div(z, lz) * 25
+  lx = block.halfSize[1] / 2.5
+  ly = block.halfSize[2] / 2.5
+  lz = block.halfSize[3] / 2.5
+
+  cellIndex = 1.0 + div(x, lx) + div(y, ly) * 5.0 + div(z, lz) * 25.0
   
   return int(cellIndex)
 
 end
+
 
 function load_pointing_vectors(fileName::String)
   df = readtable(fileName, skipstart=0, separator=',', header=false)
@@ -261,42 +260,225 @@ function triLinearInterpolation(cell::Cell, point::Array{Float64,1})
   return c
 end
 
-function doIntegration(oct::Block, pFileName::String)
 
+function doIntegrationDEBUG(oct::Block, pFileName::String)
+    pVectors, rRay, nRays = load_pointing_vectors(pFileName)
+    columnDensity::Float64 = 0.0
+    distance::Float64 = 0.0
+    const rMax::Float64 = 2.0*10^5
+    n_old::Float64=0.0
+    n = Array(Float64, nRays)
+    dr = Array(Float64, 3)
+    p = Array(Float64, 3)
+    r = Array(Float64, 3)
+
+    # 1 == true, 0 == false
+    doCheckShadowing = 0
+    if (doCheckShadowing == 1)
+        println("shadowing of gas on")
+        #rSun_hat = vec(readdlm("rSun_hat.dat", ','))
+        #nTriangles, nodeCoords, triIndices, triangles, n_hat, p, triArea = utils.load_shape_model_vtk("/Users/abieler/meshes/CSHP_87_14kCells.ply")
+    end
+
+    for i=1:nRays
+      columnDensity = 0.0
+      n_old = 0.0
+      for k=1:3
+        p[k] = pVectors[i,k]
+        r[k] = rRay[i,k]
+      end
+      distance = sqrt(r[1]^2 + r[2]^2 + r[3]^2)
+      while distance < rMax
+        myBlock = findBlockContainingPoint(r, oct)
+        l = myBlock.halfSize[1]/3
+        cellIndex = findCellInBlock(myBlock, r)
+        nIter = triLinearInterpolation(myBlock.cells[cellIndex], r)
+        columnDensity += (n_old + nIter)/2.0 * l
+        if nIter == 0.0
+          break
+        end
+        for k=1:3
+          dr[k] = p[k] * l
+          r[k] = r[k] + dr[k]
+        end
+        distance = sqrt(r[1]^2 + r[2]^2 + r[3]^2)
+      end
+      n[i] = columnDensity
+    end
+    return n
+end
+
+function doIntegration(oct::Block, pFileName::String)
     println(" - start 3d los calculation")
-    pVectors,rRay, nRays = load_pointing_vectors(pFileName)
+    # pVector = pointing of vector, rRay = coordinates of origin of ray
+    pVectors, rRay, nRays = load_pointing_vectors(pFileName)
+    columnDensity::Float64 = 0.0
+    distance::Float64 = 0.0
+    const rMax::Float64 = 2.0*10^5
+    n_old::Float64 = 0.0
+    n = Array(Float64,nRays)
+    dr = Array(Float64, 3)
+    p = Array(Float64, 3)
+    r = Array(Float64, 3)
+    
+    for i=1:nRays
+      columnDensity = 0.0
+      n_old = 0.0
+      for k=1:3
+        p[k] = pVectors[i,k]
+        r[k] = rRay[i,k]
+      end
+      distance = sqrt(r[1]^2 + r[2]^2 + r[3]^2)
+
+      while distance < rMax
+        myBlock = findBlockContainingPoint(r, oct)
+        l = myBlock.halfSize[1]/3
+        cellIndex = findCellInBlock(myBlock, r)
+        nIter = triLinearInterpolation(myBlock.cells[cellIndex], r)
+        if nIter == 0.0
+          break
+        end
+        columnDensity += (n_old + nIter)/2.0 * l
+        n_old = nIter * 1.0
+        for k=1:3
+          dr[k] = p[k] * l
+          r[k] = r[k] + dr[k]
+        end
+        distance = sqrt(r[1]^2 + r[2]^2 + r[3]^2)
+      end
+      n[i] = columnDensity
+      #println("columnDensity: ", columnDensity)
+    end
+    return n
+end
+
+function doIntegrationShadow(oct::Block, pFileName::String)
+    println(" - start 3d los calculation")
+    # pVector = pointing of vector, rRay = coordinates of origin of ray
+    pVectors, rRay, nRays = load_pointing_vectors(pFileName)
+    columnDensity::Float64 = 0.0
+    distance::Float64 = 0.0
+    const rMax::Float64 = 2.0*10^5
+    n_old::Float64 = 0.0
+    n = Array(Float64,nRays)
+    dr = Array(Float64, 3)
+    p = Array(Float64, 3)
+    r = Array(Float64, 3)
+    isVisible = 1
+    println("shadowing of gas on")
+    rSun_hat = vec(readdlm("rSun_hat.dat", ','))
+    nTriangles, nodeCoords, triIndices, triangles, n_hat, p, triArea = utils.load_shape_model_vtk("/Users/abieler/meshes/CSHP_87_14kCells.ply")
+    for i=1:nRays
+      columnDensity = 0.0
+      n_old = 0.0
+      for k=1:3
+        p[k] = pVectors[i,k]
+        r[k] = rRay[i,k]
+      end
+      distance = sqrt(r[1]^2 + r[2]^2 + r[3]^2)
+
+      while distance < rMax
+        myBlock = findBlockContainingPoint(r, oct)
+        l = myBlock.halfSize[1]/3
+        cellIndex = findCellInBlock(myBlock, r)
+        nIter = triLinearInterpolation(myBlock.cells[cellIndex], r)
+        if nIter == 0.0
+          break
+        end
+        if (abs(r[1]) > 3000 && abs(r[2]) > 3000 && abs(r[3]) > 3000)
+          isVisible = 1
+        else
+          isVisible = isSunlit(triangles, n_hat, rSun_hat, r, nTriangles, -1)
+        end
+        for k=1:3
+          dr[k] = p[k] * l
+          r[k] = r[k] + dr[k]
+        end
+        if n_old > 0.0
+          if isVisible == 0
+            columnDensity += 0.0
+          end
+          if isVisible == 1
+            columnDensity += (n_old + nIter)/2.0 * l 
+          end
+        end
+        n_old = nIter * 1.0
+      end
+      n[i] = columnDensity
+    end
+    return n
+end
+
+
+function doIntegrationOld(oct::Block, pFileName::String)
+    println(" - start 3d los calculation")
+    # pVector = pointing of vector, rRay = coordinates of origin of ray
+    pVectors, rRay, nRays = load_pointing_vectors(pFileName)
     columnDensity::Float64 = 0.0
     distance::Float64 = 0.0
     rMax::Float64 = 2.0*10^5
     n_old::Float64=0.0
-    const n = zeros(nRays)
+    n = zeros(nRays)
+    
+    # 1 == true, 0 == false
+    doCheckShadowing = 0
+    if doCheckShadowing == 1
+        println("shadowing of gas on")
+        rSun_hat = vec(readdlm("rSun_hat.dat", ','))
+        nTriangles, nodeCoords, triIndices, triangles, n_hat, p, triArea = utils.load_shape_model_vtk("/Users/abieler/meshes/CSHP_87_14kCells.ply")
+    end
     for i=1:nRays
       columnDensity = 0.0
       n_old = 0.0
       p = vec(pVectors[i,:])
       r = vec(rRay[i,:])
       distance = sqrt(sum(r.^2))
-      
+
       while distance < rMax
-	myBlock = findBlockContainingPoint(r, oct)
-	l = myBlock.halfSize[1]/3.0
-	cellIndex = findCellInBlock(myBlock, r)
-	nIter = triLinearInterpolation(myBlock.cells[cellIndex], r)
-	if nIter == 0.0
-	  break
-	end
-	dr = p * l 
-	r += dr 
-	if n_old > 0.0
-	  columnDensity += (n_old + nIter)/2.0 * l
-	end
-	n_old = nIter * 1.0
-	distance = sqrt(sum(r.^2))
+        myBlock = findBlockContainingPoint(r, oct)
+        l = myBlock.halfSize[1]/3
+        cellIndex = findCellInBlock(myBlock, r)
+        nIter = triLinearInterpolation(myBlock.cells[cellIndex], r)
+        if nIter == 0.0
+          break
+        end
+        # check if in shadow
+        isVisible = 1 
+        if doCheckShadowing == 1
+          if (abs(r[1]) > 3000 && abs(r[2]) > 3000 && abs(r[3]) > 3000)
+           isVisible = 1
+          else
+              isVisible = isSunlit(triangles, n_hat, rSun_hat, r, nTriangles, -1)
+          end
+        end
+        dr = p * l
+        r += dr
+        if doCheckShadowing == 0
+          #println("no shadow calculation of gas")
+          if n_old > 0.0 && isVisible == 1
+            columnDensity += (n_old + nIter)/2.0 * l
+          end
+        end
+        if doCheckShadowing == 1
+          if n_old > 0.0
+            if isVisible == 0
+              columnDensity += 0.0
+            end
+            if isVisible == 1
+              columnDensity += (n_old + nIter)/2.0 * l 
+            end
+          end
+        end
+        n_old = nIter * 1.0
+        #println(r, nIter)
+        distance = sqrt(sum(r.^2))
       end
       n[i] = columnDensity
+      #println("columnDensity: ", columnDensity)
     end
     return n
 end
+
 
 function doIntegrationParallel(I)
 
