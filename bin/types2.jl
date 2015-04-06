@@ -205,13 +205,50 @@ function findCellInBlock(block::Block, point::Array{Float64, 1})
   lx = block.halfSize[1] / 2.5
   ly = block.halfSize[2] / 2.5
   lz = block.halfSize[3] / 2.5
+  fx = fld(x, lx)
+  fy = fld(y, ly)
+  fz = fld(z, lz)
 
-  cellIndex = 1.0 + div(x, lx) + div(y, ly) * 5.0 + div(z, lz) * 25.0
+  if fx > 4.0
+      fx = 4.0
+  end
+  if fy > 4.0
+      fy = 4.0
+  end
+  if fz > 4.0
+      fz = 4.0
+  end
+
+  cellIndex = 1.0 + fx + fy*5.0 + fz*25.0
+  #cellIndex = 1.0 + div(x, lx) + div(y, ly) * 5.0 + div(z, lz) * 25.0
   
   return int(cellIndex)
 
 end
 
+function findCellInBlockDebug(block::Block, point::Array{Float64, 1})
+  
+  x = point[1] - block.cells[1].nodes[1,1]
+  y = point[2] - block.cells[1].nodes[1,2]
+  z = point[3] - block.cells[1].nodes[1,3]
+  lx = block.halfSize[1] / 2.5
+  ly = block.halfSize[2] / 2.5
+  lz = block.halfSize[3] / 2.5
+
+  cellIndex = 1.0 + fld(x, lx) + fld(y, ly) * 5.0 + fld(z, lz) * 25.0
+  
+  println("x: ", x)
+  println("y: ", y)
+  println("z: ", z)
+  println("lx: ", lx)
+  println("ly: ", ly)
+  println("lz: ", lz)
+  println("f1: ", fld(x, lx))
+  println("f1: ",fld(y, ly))
+  println("f1: ",fld(z, lz))
+  return int(cellIndex)
+
+end
 
 function load_pointing_vectors(fileName::String)
   df = readtable(fileName, skipstart=0, separator=',', header=false)
@@ -280,30 +317,37 @@ function doIntegrationDEBUG(oct::Block, pFileName::String)
         #nTriangles, nodeCoords, triIndices, triangles, n_hat, p, triArea = utils.load_shape_model_vtk("/Users/abieler/meshes/CSHP_87_14kCells.ply")
     end
 
-    for i=1:nRays
-      columnDensity = 0.0
-      n_old = 0.0
-      for k=1:3
-        p[k] = pVectors[i,k]
-        r[k] = rRay[i,k]
-      end
-      distance = sqrt(r[1]^2 + r[2]^2 + r[3]^2)
-      while distance < rMax
-        myBlock = findBlockContainingPoint(r, oct)
-        l = myBlock.halfSize[1]/3
-        cellIndex = findCellInBlock(myBlock, r)
-        nIter = triLinearInterpolation(myBlock.cells[cellIndex], r)
-        columnDensity += (n_old + nIter)/2.0 * l
-        if nIter == 0.0
-          break
+    println(nRays)
+    iMonitor = 1
+    try
+        for i=1:nRays
+          iMonitor = i
+          columnDensity = 0.0
+          n_old = 0.0
+          for k=1:3
+            p[k] = pVectors[i,k]
+            r[k] = rRay[i,k]
+          end
+          distance = sqrt(r[1]^2 + r[2]^2 + r[3]^2)
+          while distance < rMax
+            myBlock = findBlockContainingPoint(r, oct)
+            l = myBlock.halfSize[1]/3
+            cellIndex = findCellInBlock(myBlock, r)
+            nIter = triLinearInterpolation(myBlock.cells[cellIndex], r)
+            columnDensity += (n_old + nIter)/2.0 * l
+            if nIter == 0.0
+              break
+            end
+            for k=1:3
+              dr[k] = p[k] * l
+              r[k] = r[k] + dr[k]
+            end
+            distance = sqrt(r[1]^2 + r[2]^2 + r[3]^2)
+          end
+          n[i] = columnDensity
         end
-        for k=1:3
-          dr[k] = p[k] * l
-          r[k] = r[k] + dr[k]
-        end
-        distance = sqrt(r[1]^2 + r[2]^2 + r[3]^2)
-      end
-      n[i] = columnDensity
+    catch
+        println("error: ", iMonitor)
     end
     return n
 end
@@ -312,15 +356,16 @@ function doIntegration(oct::Block, pFileName::String)
     println(" - start 3d los calculation")
     # pVector = pointing of vector, rRay = coordinates of origin of ray
     pVectors, rRay, nRays = load_pointing_vectors(pFileName)
+    println(" - pVectors loaded")
     columnDensity::Float64 = 0.0
     distance::Float64 = 0.0
-    const rMax::Float64 = 2.0*10^5
+    const rMax::Float64 = 1.99*10^5
     n_old::Float64 = 0.0
     n = Array(Float64,nRays)
     dr = Array(Float64, 3)
     p = Array(Float64, 3)
     r = Array(Float64, 3)
-    
+    println("nRays: ", nRays)
     for i=1:nRays
       columnDensity = 0.0
       n_old = 0.0
@@ -346,8 +391,8 @@ function doIntegration(oct::Block, pFileName::String)
         end
         distance = sqrt(r[1]^2 + r[2]^2 + r[3]^2)
       end
+
       n[i] = columnDensity
-      #println("columnDensity: ", columnDensity)
     end
     return n
 end
