@@ -29,7 +29,7 @@ const root = [0.0, 0.0, 0.0]
 cellList = build_cells(nodes, cubeIndices, numberDensity, nCells)
 blocks = build_blocks(nBlocks, cellList, nodes)
 octree = Block(root, halfSize,1, initChildren, initCells)
-println("populating octree")
+println(" - populating octree")
 populate_octree(octree, blocks, nBlocks)
 @time n = doIntegration(octree, pFileName)
 writedlm(ARGS[2]* "/ccd.dat", n)
