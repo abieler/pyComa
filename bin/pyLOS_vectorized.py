@@ -333,16 +333,6 @@ elif iInstrumentSelector == virtism_:       # virtis m
     iFOV = 0.00025
     PixelSize = 1
     InstrumentFrame = 'ROS_VIRTIS-M'
-    
-    '''
-    # for debugging values
-    nPixelsX = 256 
-    nPixelsY = 256 
-    PhiX = 3.6669
-    PhiY = 3.6669
-    iFOV = 0.00025
-    PixelSize = 1
-    '''
 
 elif iInstrumentSelector == virtish_:       # virtis h
     nPixelsX = 1
