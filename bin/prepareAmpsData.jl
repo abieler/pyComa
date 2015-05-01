@@ -8,6 +8,8 @@ include("types2.jl")
 
 # This script has to be run only once and needs the filename
 # of the AMPS output as only input parameter.
+# example run command:
+# julia prepareAmpsData.jl /www//www/ices/Data/Coma/DSMC/CG_3.5_au_50/CG_3.5_au_50.H2O.dat
 
 fileNameExtension = split(basename(ARGS[1]), ".")[end]
 
