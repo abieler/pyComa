@@ -68,6 +68,8 @@ os.system('rm ' + args.StringOutputDir + '/*.out')
 if args.iModelCase == 0:
     # DSMC case
     path = os.path.split(args.StringDataFileDSMC)[0]
+    dsmc_case = os.path.dirname(args.StringDataFileDSMC).split('/')[-1]
+    
     if args.IsDust:
         filenames = [path + '/' + filename for filename in os.listdir(path) if (filename.split('.')[-1].lower() == 'dat') and 'Dust' in filename]
     else:
@@ -167,7 +169,8 @@ if iDim == 3:
         lon.append(llon)
         r_AU.append(r)
 
-    cur.execute("SELECT au,dsmc_case,cast(longitude as float),cast(latitude as float),shapemodel FROM select3D")
+    tup = (dsmc_case,)
+    cur.execute("SELECT au,dsmc_case,cast(longitude as float),cast(latitude as float),shapemodel FROM select3D WHERE dsmc_case=?", tup)
     queryData = cur.fetchall()
     for qd in queryData:
         caseCoords[qd[1]] = []
@@ -176,7 +179,8 @@ if iDim == 3:
     # sort all coordinates into arrays for their specific dsmc case
     angleOfAcceptance = 2.0
     for llon,xx,yy,zz,dd in zip(lon, x_SC, y_SC, z_SC, dates_SC):
-        cur.execute("SELECT dsmc_case,cast(longitude as FLOAT) FROM select3D GROUP BY ABS((cast(longitude as FLOAT)-(%f)+180)%%360-180)" %llon)
+        tup = (dsmc_case,llon)
+        cur.execute("SELECT dsmc_case,cast(longitude as FLOAT) FROM select3D WHERE dsmc_case=? GROUP BY ABS((cast(longitude as FLOAT)-(?)+180)%360-180)", tup)
         data = cur.fetchone()
         selectedCase = data[0]
         lo = data[1]

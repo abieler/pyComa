@@ -1,7 +1,6 @@
 println("start julia in-situ calculation. not finished yet")
 using HDF5
 using JLD
-#include("types.jl")
 include("types2.jl")
 
 
