@@ -516,12 +516,6 @@ if iDim == 3:
 
     if args.iIlluminationCase == 0:
         print "Line of Sight Case!"
-        if "H2O" not in args.StringDataFileDSMC:
-            print "Could not find H2O in file name, modifying file name..."
-            print "old file name:", args.StringDataFileDSMC
-            parts = args.StringDataFileDSMC.split(".")
-            args.StringDataFileDSMC = parts[0] + "." + parts[1] + "." + parts[2] +".H2O.dat"
-            print "new file name:", args.StringDataFileDSMC
         os.system("export JULIA_PKGDIR=/opt/local/share/julia/site ; /opt/local/bin/julia ../../../Models/LoS/pyComa/bin/newLOS2.jl %s %s" %(args.StringDataFileDSMC, args.StringOutputDir))
     elif args.iIlluminationCase == 1:
         print "Illumination Case!"
