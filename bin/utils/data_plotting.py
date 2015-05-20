@@ -12,7 +12,7 @@ from bokeh.objects import Range1d
 
 from data_loaders import load_in_situ_output, load_in_situ_output_hybrid
 
-rcParams.update({'figure.autolayout': True})
+#rcParams.update({'figure.autolayout': True})
 font = {
         'family':'serif',
         'weight':'bold',
@@ -240,8 +240,8 @@ def create_plot_LOS_2d_matplotlib(args, ccd, pltTitle, figName, ccd_limits):
     else:
        plt.colorbar(label='log10 column density [#/m2]')
 
-    plt.xlabel("Instrument y axis [deg]")
-    plt.ylabel("Instrument x axis [deg]")
+    plt.xlabel("Instrument y axis [deg]", fontsize=18, fontweight='bold')
+    plt.ylabel("Instrument x axis [deg]", fontsize=18, fontweight='bold')
     plt.xticks(np.arange(N+1)/N * (len(ccd[0])-1), np.round(xxticks,2))
     plt.yticks(np.arange(N+1)/N*(len(ccd[0])-1), np.round(yyticks,2))
 
