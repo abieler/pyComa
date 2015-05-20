@@ -194,6 +194,7 @@ if iDim == 3:
 
     # write coordinates of each case to file and then start julia
     # to perform the 3D interpolation
+    print "cases keys:", caseCoords.keys()
     for key in caseCoords.keys():
         print 'start julia for dsmc case:', key
         if len(caseCoords[key]) > 0:
@@ -201,7 +202,9 @@ if iDim == 3:
                 for rrr in caseCoords[key]:
                     oFile.write("%.5e,%.5e,%.5e\n" %(rrr[0], rrr[1], rrr[2]))
             pathToData = pathToDataBase + key + '/'
-            os.system("su _www -c '/Applications/Julia-0.3.0.app/Contents/Resources/julia/bin/julia /Users/abieler/newLOS/in-situ.jl %s %s'" %(pathToData, args.StringOutputDir))
+            print 'pathToData', pathToData
+            #os.system("su _www -c '/Applications/Julia-0.3.0.app/Contents/Resources/julia/bin/julia /Users/abieler/newLOS/in-situ.jl %s %s'" %(pathToData, args.StringOutputDir))
+            os.system("export JULIA_PKGDIR=/opt/local/share/julia/site ; /opt/local/bin/julia ../../../Models/LoS/pyComa/bin/in-situ.jl %s %s" %(pathToData, args.StringOutputDir))
             n_SC = np.genfromtxt('interpolation.out', dtype=float)
 
             # genfromtxt returns float instead of one element array in case
