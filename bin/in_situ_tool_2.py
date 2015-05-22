@@ -74,8 +74,6 @@ if args.iModelCase == 0:
         filenames = [path + '/' + filename for filename in os.listdir(path) if (filename.split('.')[-1].lower() == 'dat') and 'Dust' in filename]
     else:
         filenames = [path + '/' + filename for filename in os.listdir(path) if (filename.split('.')[-1].lower() == 'dat') and 'Dust' not in filename]
-    print filenames
-    print '----------------------------------------------------'
 
 elif args.iModelCase == 1:
     filenames = ['Haser']
@@ -195,7 +193,6 @@ if iDim == 3:
     # write coordinates of each case to file and then start julia
     # to perform the 3D interpolation
     for key in caseCoords.keys():
-        print 'start julia for dsmc case:', key
         if len(caseCoords[key]) > 0:
             with open("rosettaCoords.txt", 'w') as oFile:
                 for rrr in caseCoords[key]:
