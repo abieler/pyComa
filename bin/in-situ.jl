@@ -1,38 +1,43 @@
-println("start julia in-situ calculation. not finished yet")
-using HDF5
-using JLD
+using HDF5, JLD
 include("types2.jl")
 
-
-nDim = 3
-path = ARGS[1]
+fileName = ARGS[1]
 pFileName = ARGS[2] * "/rosettaCoords.txt"
+filePath = dirname(ARGS[1])
 
-println("dsmc path: ", path)
-DSMCfileNames = readdir(path)
+# subtract extension and last dot from filename
+fileNameExtension = split(basename(fileName), ".")[end]
+fileNameBase = basename(fileName)[1:end-(length(fileNameExtension)+1)]
+println("- (julia) dsmc-run: ", joinpath(filePath, fileNameBase * ".h5"))
 
-fileName = ""
-for f in DSMCfileNames
-    println(f)
-    if contains(f, "H2O")
-        fileName = path * f
-    end
-end
+nCells = h5read(joinpath(filePath, fileNameBase * ".h5"), "oct/nCells")
+nBlocks = h5read(joinpath(filePath, fileNameBase * ".h5"), "oct/nBlocks")
+nCellsPerBlock = h5read(joinpath(filePath, fileNameBase * ".h5"), "oct/nCellsPerBlock")
+nodes = h5read(joinpath(filePath, fileNameBase * ".h5"), "oct/nodes")
+nodeCoordinates = h5read(joinpath(filePath, fileNameBase * ".h5"), "oct/nodeCoordinates")
+cubeIndices = h5read(joinpath(filePath, fileNameBase * ".h5"), "oct/cubeIndices")
+numberDensity= h5read(joinpath(filePath, fileNameBase * ".h5"), "oct/numberDensity")
 
-halfSize = [200000., 200000., 200000.]
-root = [0.0, 0.0, 0.0]
 
-nCells, nCellsPerBlock, nBlocks, nodeCoordinates, cubeIndices, numberDensity = load_AMPS_data_full(fileName)
-cellList, nodes = build_cells(nodeCoordinates, cubeIndices, nCells, numberDensity)
+const xMax = maximum(nodes[:,:,1])
+const yMax = maximum(nodes[:,:,2])
+const zMax = maximum(nodes[:,:,3])
+
+const halfSize = [xMax, yMax, zMax]
+const root = [0.0, 0.0, 0.0]
+
+cellList = build_cells(nodes, cubeIndices, numberDensity, nCells)
 blocks = build_blocks(nBlocks, cellList, nodes)
-
 octree = Block(root, halfSize,1, initChildren, initCells)
-println("populating octree")
+println(" - (julia) populating octree")
 populate_octree(octree, blocks, nBlocks)
+println(" - (julia) start 3D integration")
+
+
 n = doInSituCalculation(octree, pFileName)
-println(" - write result to file")
+println(" - (julia) write result to file")
 println(size(n))
 writedlm(ARGS[2] * "/interpolation.out", n)
-println(" - write result to file ok")
-println(" - done julia interpolation")
+println(" - (julia) write result to file ok")
+println(" - (julia) done julia interpolation")
 println("+ + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + +")

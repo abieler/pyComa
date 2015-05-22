@@ -499,3 +499,20 @@ function doIntegrationParallel(I)
     return n
 
 end
+
+function doInSituCalculation(oct::Block, pFileName::String)
+  println(" - start 3D in-situ interpolation")
+  rRay = loadPointsToIterate(pFileName)
+  nPoints = size(rRay)[1]
+  colDensity = zeros(Float64, nPoints)
+  for i=1:nPoints
+      r = vec(rRay[i,:])
+      myBlock = findBlockContainingPoint(r, oct)
+      cellIndex = findCellInBlock(myBlock, r)
+      colDensity[i] = triLinearInterpolation(myBlock.cells[cellIndex], r)
+      #println(r, colDensity[i])
+  end
+
+  return colDensity
+
+end
