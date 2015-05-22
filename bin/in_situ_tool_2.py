@@ -170,7 +170,7 @@ if iDim == 3:
         r_AU.append(r)
 
     tup = (dsmc_case,)
-    cur.execute("SELECT au,dsmc_case,cast(longitude as float),cast(latitude as float),shapemodel FROM select3D WHERE dsmc_case=?", tup)
+    cur.execute("SELECT au,data_prefix,cast(longitude as float),cast(latitude as float),shapemodel FROM select3D WHERE dsmc_case=?", tup)
     queryData = cur.fetchall()
     for qd in queryData:
         caseCoords[qd[1]] = []
@@ -180,7 +180,7 @@ if iDim == 3:
     angleOfAcceptance = 2.0
     for llon,xx,yy,zz,dd in zip(lon, x_SC, y_SC, z_SC, dates_SC):
         tup = (dsmc_case,llon)
-        cur.execute("SELECT dsmc_case,cast(longitude as FLOAT) FROM select3D WHERE dsmc_case=? GROUP BY ABS((cast(longitude as FLOAT)-(?)+180)%360-180)", tup)
+        cur.execute("SELECT data_prefix,cast(longitude as FLOAT) FROM select3D WHERE dsmc_case=? GROUP BY ABS((cast(longitude as FLOAT)-(?)+180)%360-180)", tup)
         data = cur.fetchone()
         selectedCase = data[0]
         lo = data[1]
@@ -190,25 +190,20 @@ if iDim == 3:
     db.close()
 
     # build path where all fitting DSMC cases are located below
-    pathToDataTmp = os.path.dirname(args.StringDataFileDSMC)
-    pathToDataBase = ''
-    for part in pathToDataTmp.split('/')[0:-1]:
-        pathToDataBase += part
-        pathToDataBase += '/' 
+    pathToData = os.path.dirname(args.StringDataFileDSMC)
 
     # write coordinates of each case to file and then start julia
     # to perform the 3D interpolation
-    print "cases keys:", caseCoords.keys()
     for key in caseCoords.keys():
         print 'start julia for dsmc case:', key
         if len(caseCoords[key]) > 0:
             with open("rosettaCoords.txt", 'w') as oFile:
                 for rrr in caseCoords[key]:
                     oFile.write("%.5e,%.5e,%.5e\n" %(rrr[0], rrr[1], rrr[2]))
-            pathToData = pathToDataBase + key + '/'
-            print 'pathToData', pathToData
+            runName = key+".H2O.dat"
+            dsmcFileName = os.path.join(pathToData, runName) 
             #os.system("su _www -c '/Applications/Julia-0.3.0.app/Contents/Resources/julia/bin/julia /Users/abieler/newLOS/in-situ.jl %s %s'" %(pathToData, args.StringOutputDir))
-            os.system("export JULIA_PKGDIR=/opt/local/share/julia/site ; /opt/local/bin/julia ../../../Models/LoS/pyComa/bin/in-situ.jl %s %s" %(pathToData, args.StringOutputDir))
+            os.system("export JULIA_PKGDIR=/opt/local/share/julia/site ; /opt/local/bin/julia ../../../Models/LoS/pyComa/bin/in-situ.jl %s %s" %(dsmcFileName, args.StringOutputDir))
             n_SC = np.genfromtxt('interpolation.out', dtype=float)
 
             # genfromtxt returns float instead of one element array in case
@@ -218,7 +213,7 @@ if iDim == 3:
             caseDensities[key] = n_SC
         else:
             print 'no data for this case, next please.'
-            caseDensities[key] =[] 
+            caseDensities[key] = [] 
 
     # combine all cases into one array and sort them according to date
     n_SC = []
