@@ -95,7 +95,10 @@ def create_plot_insitu_matplotlib(args, all_n_SC, all_species, dates_SC, r_SC, n
                 fig = plt.figure(figsize=(14, 14))
                 ax1 = fig.add_subplot(211)
                 ax2 = fig.add_subplot(212)
-            ax1.semilogy(dates_SC, all_n_SC[i], label=all_species[i], lw=2)
+            try:
+                ax1.semilogy(dates_SC, all_n_SC[i], label=all_species[i], lw=2)
+            except:
+                print 'plt error'
 
             # plot distance from comet and save figure
             if (i % nLinesPerFig == (nLinesPerFig - 1)) or (i == len(all_species) - 1):
