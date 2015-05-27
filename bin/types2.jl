@@ -122,7 +122,7 @@ function build_blocks(nBlocks::Int64, allCells::Array{Cell,1}, nodes::Array{Floa
       lBlock[i,j] = maximum(blockCellCoords[1:nCellsPerBlock,1:8,j]) - minimum(blockCellCoords[1:nCellsPerBlock,1:8,j])  
       origin[i,j] = minimum(blockCellCoords[1:nCellsPerBlock,1:8,j]) + lBlock[i,j] / 2
     end
-    @inbounds blocks[i] = Block(vec(origin[i,1:3]), vec(lBlock[i,1:3]).*0.5, 1, initChildren, blockCells)
+    @inbounds blocks[i] = Block(vec(origin[i,1:3]), vec(lBlock[i,1:3]).*0.5, 1, Array(Block, 8), blockCells)
   end
   if myid() == 1
       println("OK")
@@ -132,14 +132,14 @@ end
 
 function splitBlock(node::Block)
   
-  xc1 = [node.origin[1] - node.halfSize[1]/2, node.origin[2] - node.halfSize[2]/2,  node.origin[3] - node.halfSize[3]/2] 
-  xc2 = [node.origin[1] - node.halfSize[1]/2, node.origin[2] - node.halfSize[2]/2,  node.origin[3] + node.halfSize[3]/2]
-  xc3 = [node.origin[1] - node.halfSize[1]/2, node.origin[2] + node.halfSize[2]/2,  node.origin[3] - node.halfSize[3]/2] 
-  xc4 = [node.origin[1] - node.halfSize[1]/2, node.origin[2] + node.halfSize[2]/2,  node.origin[3] + node.halfSize[3]/2]
-  xc5 = [node.origin[1] + node.halfSize[1]/2, node.origin[2] - node.halfSize[2]/2,  node.origin[3] - node.halfSize[3]/2]
-  xc6 = [node.origin[1] + node.halfSize[1]/2, node.origin[2] - node.halfSize[2]/2,  node.origin[3] + node.halfSize[3]/2]
-  xc7 = [node.origin[1] + node.halfSize[1]/2, node.origin[2] + node.halfSize[2]/2,  node.origin[3] - node.halfSize[3]/2]
-  xc8 = [node.origin[1] + node.halfSize[1]/2, node.origin[2] + node.halfSize[2]/2,  node.origin[3] + node.halfSize[3]/2]
+  xc1 = [node.origin[1] - node.halfSize[1]/2.0, node.origin[2] - node.halfSize[2]/2.0,  node.origin[3] - node.halfSize[3]/2.0] 
+  xc2 = [node.origin[1] - node.halfSize[1]/2.0, node.origin[2] - node.halfSize[2]/2.0,  node.origin[3] + node.halfSize[3]/2.0]
+  xc3 = [node.origin[1] - node.halfSize[1]/2.0, node.origin[2] + node.halfSize[2]/2.0,  node.origin[3] - node.halfSize[3]/2.0] 
+  xc4 = [node.origin[1] - node.halfSize[1]/2.0, node.origin[2] + node.halfSize[2]/2.0,  node.origin[3] + node.halfSize[3]/2.0]
+  xc5 = [node.origin[1] + node.halfSize[1]/2.0, node.origin[2] - node.halfSize[2]/2.0,  node.origin[3] - node.halfSize[3]/2.0]
+  xc6 = [node.origin[1] + node.halfSize[1]/2.0, node.origin[2] - node.halfSize[2]/2.0,  node.origin[3] + node.halfSize[3]/2.0]
+  xc7 = [node.origin[1] + node.halfSize[1]/2.0, node.origin[2] + node.halfSize[2]/2.0,  node.origin[3] - node.halfSize[3]/2.0]
+  xc8 = [node.origin[1] + node.halfSize[1]/2.0, node.origin[2] + node.halfSize[2]/2.0,  node.origin[3] + node.halfSize[3]/2.0]
   
   node.children[1] = Block(xc1, node.halfSize/2, 1, Array(Block, 8), Array(Cell,1))
   node.children[2] = Block(xc2, node.halfSize/2, 1, Array(Block, 8), Array(Cell,1))
@@ -501,7 +501,7 @@ function doIntegrationParallel(I)
 end
 
 function doInSituCalculation(oct::Block, pFileName::String)
-  println(" - start 3D in-situ interpolation")
+  println(" - (julia) start 3D in-situ interpolation")
   rRay = loadPointsToIterate(pFileName)
   nPoints = size(rRay)[1]
   colDensity = zeros(Float64, nPoints)
