@@ -52,6 +52,9 @@ if args.iPointingCase == 0:
     x_SC, y_SC, z_SC, r_SC, dates_SC = spice_functions.get_coordinates(args.StringUtcStartTime, args.StringKernelMetaFile,
                                                              'ROSETTA', frame, "None", "CHURYUMOV-GERASIMENKO",
                                                              args.StringUtcStopTime, args.nDeltaT)
+    x_sun, y_sun, z_sun, r_sun, dates_sun = spice_functions.get_coordinates(args.StringUtcStartTime, args.StringKernelMetaFile,
+                                                             'SUN', frame, "None", "CHURYUMOV-GERASIMENKO",
+                                                             args.StringUtcStopTime, args.nDeltaT)
 elif args.iPointingCase == 1:
     print 'user pointing is not a valid choice for in situ tool!'
     print 'for user defined trajectory select iPointingCase = 2'
@@ -149,88 +152,102 @@ if iDim == 3:
     #####################################################
     db = sqlite3.connect(args.StringOutputDir+'/../../ICES.sqlite')
     cur = db.cursor()
-    caseCoords = {}
-    caseDates = {}
-    caseDensities = {}
+    tup = (dsmc_case,)
+    #caseCoords = {}
+    #caseDates = {}
+    #caseDensities = {}
+    runs = {} 
+    runNames = []
 
+    # retrieve all possible run names for the selected case
+    # that means all dsmc files for all AUs
+    cur.execute("SELECT data_prefix FROM select3D WHERE dsmc_case=?", tup)
+    queryData = cur.fetchall()
+    for qd in queryData:
+        runs[qd[0]] =  [[],[]]
+        runNames.append(qd[0])
+
+    # get all longitudes and latitudes of the sun for all
+    # dates where data is needed
     km2AU = 1.0 / 149597871
-    lat = []
-    lon = []
+    lat_sun = []
+    lon_sun = []
     r_AU = []
     shapeModel = 'rmoc'
-    for xx,yy,zz in zip(x_SC, y_SC, z_SC):
+    for xx,yy,zz in zip(x_sun, y_sun, z_sun):
         r, llon, llat = spice.reclat([xx,yy,zz])
         r = r*km2AU
         llon = llon / np.pi * 180
         llat = llat / np.pi * 180
-        lat.append(llat)
-        lon.append(llon)
+        lat_sun.append(llat)
+        lon_sun.append(llon)
         r_AU.append(r)
 
-    tup = (dsmc_case,)
-    cur.execute("SELECT au,data_prefix,cast(longitude as float),cast(latitude as float),shapemodel FROM select3D WHERE dsmc_case=?", tup)
-    queryData = cur.fetchall()
-    for qd in queryData:
-        caseCoords[qd[1]] = []
-        caseDates[qd[1]] = []
+    print "selecting cases from lat lon of sun"
+    kk = 0
+    for llat, llon in zip(lat_sun, lon_sun):
+        sql = "SELECT data_prefix FROM select3D WHERE dsmc_case='%s' ORDER BY abs( (((latitude-(%.3f)) + 180) %% 360) - 180), abs( (((longitude-(%.3f)) + 180) %% 360) - 180) LIMIT 1;" % (dsmc_case,llat, llon)
+        cur.execute(sql)
+        runName = cur.fetchone()[0]
+        runs[runName][0].append(dates_SC[kk])
+        runs[runName][1].append([x_SC[kk], y_SC[kk], z_SC[kk]])
+        kk += 1
 
-    # sort all coordinates into arrays for their specific dsmc case
-    angleOfAcceptance = 2.0
-    for llon,xx,yy,zz,dd in zip(lon, x_SC, y_SC, z_SC, dates_SC):
-        tup = (dsmc_case,llon)
-        cur.execute("SELECT data_prefix,cast(longitude as FLOAT) FROM select3D WHERE dsmc_case=? GROUP BY ABS((cast(longitude as FLOAT)-(?)+180)%360-180)", tup)
-        data = cur.fetchone()
-        selectedCase = data[0]
-        lo = data[1]
-        if abs(lo - llon) < angleOfAcceptance:
-            caseCoords[selectedCase].append([xx,yy,zz])
-            caseDates[selectedCase].append(dd)
+    species3D = []
+    cur.execute("SELECT species from dsmc_species WHERE dcase='%s'"% dsmc_case)
+    qData = cur.fetchall()
+    for qd in qData:
+        species3D.append(qd[0])
+
     db.close()
 
     # build path where all fitting DSMC cases are located below
     pathToData = os.path.dirname(args.StringDataFileDSMC)
 
+
     # write coordinates of each case to file and then start julia
     # to perform the 3D interpolation
-    for key in caseCoords.keys():
-        if len(caseCoords[key]) > 0:
+    for key in runNames:
+        if len(runs[key][0]) > 0:
             with open("rosettaCoords.txt", 'w') as oFile:
-                for rrr in caseCoords[key]:
+                for rrr in runs[key][1]:
                     oFile.write("%.5e,%.5e,%.5e\n" %(rrr[0], rrr[1], rrr[2]))
-            runName = key+".H2O.dat"
-            dsmcFileName = os.path.join(pathToData, runName) 
-            #os.system("su _www -c '/Applications/Julia-0.3.0.app/Contents/Resources/julia/bin/julia /Users/abieler/newLOS/in-situ.jl %s %s'" %(pathToData, args.StringOutputDir))
-            os.system("export JULIA_PKGDIR=/opt/local/share/julia/site ; /opt/local/bin/julia ../../../Models/LoS/pyComa/bin/in-situ.jl %s %s" %(dsmcFileName, args.StringOutputDir))
-            n_SC = np.genfromtxt('interpolation.out', dtype=float)
+            for spec in species3D:
+                runName = key+"." + spec + ".dat"
+                dsmcFileName = os.path.join(pathToData, runName) 
+                #os.system("su _www -c '/Applications/Julia-0.3.0.app/Contents/Resources/julia/bin/julia /Users/abieler/newLOS/in-situ.jl %s %s'" %(pathToData, args.StringOutputDir))
+                os.system("export JULIA_PKGDIR=/opt/local/share/julia/site ; /opt/local/bin/julia ../../../Models/LoS/pyComa/bin/in-situ.jl %s %s" %(dsmcFileName, args.StringOutputDir))
+                n_SC = np.genfromtxt('interpolation.out', dtype=float)
 
-            # genfromtxt returns float instead of one element array in case
-            # there is only one entry --> make array out of that
-            if type(n_SC) == float:
-                n_SC = np.array([n_SC])
-            caseDensities[key] = n_SC
+                # genfromtxt returns float instead of one element array in case
+                # there is only one entry --> make array out of that
+                if type(n_SC) == float:
+                    n_SC = np.array([n_SC])
+                runs[key].append(n_SC)
         else:
             print 'no data for this case, next please.'
-            caseDensities[key] = [] 
 
     # combine all cases into one array and sort them according to date
-    n_SC = []
-    dates_SC = []
-    r_SC = []
-    for key in caseDensities.keys():
-        if len(caseDensities[key]) >= 1:
-            n_SC.extend(caseDensities[key])
-            dates_SC.extend(caseDates[key])
-            r = [np.sqrt(p[0]**2+p[1]**2+p[2]**2) for p in caseCoords[key]]
-            r_SC.extend(r)
-    n_SC = np.array(n_SC)
-    dates_SC = np.array(dates_SC)
-    r_SC = np.array(r_SC)
-    sort_index = np.argsort(dates_SC)
+    numberDensities_SC = []
+    for i in range(len(species3D)):
+        n_SC = []
+        dates_SC = []
+        r_SC = []
+        for key in runNames:
+            if len(runs[key][0]) >= 1:
+                n_SC.extend(runs[key][2+i])
+                dates_SC.extend(runs[key][0])
+                r = [np.sqrt(p[0]**2+p[1]**2+p[2]**2) for p in runs[key][1]]
+                r_SC.extend(r)
+        n_SC = np.array(n_SC)
+        dates_SC = np.array(dates_SC)
+        r_SC = np.array(r_SC)
+        sort_index = np.argsort(dates_SC)
 
-    dates_SC = dates_SC[sort_index]
-    n_SC = n_SC[sort_index]
-    r_SC = r_SC[sort_index]
-    numberDensities_SC = [n_SC]
+        dates_SC = dates_SC[sort_index]
+        n_SC = n_SC[sort_index]
+        r_SC = r_SC[sort_index]
+        numberDensities_SC.append(n_SC)
 ############################################
 # write results to file
 ############################################
@@ -238,7 +255,12 @@ if args.iModelCase == 0:
     if args.IsDust:
         species = [size for size in allSizeIntervals if args.DustSizeMin <= size <= args.DustSizeMax]
     else:
-        species = [filename.split('.')[-2] for filename in filenames]
+        species = []
+        for filename in filenames:
+            spec = filename.split('.')[-2]
+            if spec not in species:
+                species.append(spec)
+        #species = [filename.split('.')[-2] for filename in filenames]
 
     x_SC *= -1          # transform back from tenishev to cso frame of reference
     y_SC *= -1          # transform back from thenisev to cso frame of reference
