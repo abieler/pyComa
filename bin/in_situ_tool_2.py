@@ -153,9 +153,11 @@ if iDim == 3:
     db = sqlite3.connect(args.StringOutputDir+'/../../ICES.sqlite')
     cur = db.cursor()
     tup = (dsmc_case,)
-    #caseCoords = {}
-    #caseDates = {}
-    #caseDensities = {}
+
+    # runs is a dictionary with run names as keys and
+    # and holding at least 3 lists. these lists hold
+    # dates, coordinates and number densities that belong
+    # to this run.
     runs = {} 
     runNames = []
 
