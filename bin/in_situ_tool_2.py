@@ -103,7 +103,7 @@ if iDim < 3:
                 
     elif args.iModelCase == 1:
         print 'haser case'
-        x, n = haserModel(args.QHaser, args.vHaser, args.tpHaser, args.tdHaser)
+        x, n = haserModel(args.QHaser, args.vHaser, args.tpHaser, args.tdHaser, args.tgHaser)
         y = None
         numberDensities = [n]
     elif args.iModelCase == 2:
@@ -225,7 +225,7 @@ if iDim == 3:
                     n_SC = np.array([n_SC])
                 runs[key].append(n_SC)
         else:
-            print 'no data for this case, next please.'
+            pass
 
     # combine all cases into one array and sort them according to date
     numberDensities_SC = []

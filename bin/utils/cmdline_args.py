@@ -25,6 +25,7 @@ def cmdline_args(parser):
     parser.add_argument("--vHaser", type=float, default=500.0)   # outflow velocity in m/s
     parser.add_argument("--tpHaser", type=float, default=1e5)    # exponential life time parent
     parser.add_argument("--tdHaser", type=float, default=0)      # exponential life time daughter
+    parser.add_argument("--tgHaser", type=float, default=0)      # exponential life time granddaughter 
 
     parser.add_argument("--StringUserDataFile", type=str)        # file to upload from user which contains user coma model
     parser.add_argument("--DelimiterData", type=str)             # delimiter used in datafile

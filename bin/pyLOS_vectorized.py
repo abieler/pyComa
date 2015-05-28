@@ -90,6 +90,7 @@ QHaser = args.QHaser
 vHaser = args.vHaser
 tpHaser = args.tpHaser
 tdHaser = args.tdHaser
+tgHaser = args.tgHaser
 
 QDust = args.QDust
 vDust = args.vDust
@@ -145,8 +146,9 @@ if iMpiRank == 0:
         print 'HASER case selected:'
         print '   -QHaser     :', QHaser
         print '   -vHaser     :', vHaser
-        print '   -tdHaser    :', tdHaser
         print '   -tpHaser    :', tpHaser
+        print '   -tdHaser    :', tdHaser
+        print '   -tgHaser    :', tgHaser
     elif args.iModelCase == dust_:
         print 'Analytic DUST case selected:'
         print '   -Qdust      : %f [kg/s]' % QDust 
@@ -204,7 +206,7 @@ if iModelCase == dsmc_ and iDim < 3:
         x, y, numberDensities = loadGasData(StringDataFileDSMC, iDim)
 
 elif iModelCase == haser_:
-    x, numberDensities = haserModel(QHaser, vHaser, tpHaser, tdHaser)
+    x, numberDensities = haserModel(QHaser, vHaser, tpHaser, tdHaser, tgHaser)
     y = None
 
 elif iModelCase == dust_:
