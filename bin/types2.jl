@@ -108,9 +108,6 @@ function build_cells(nodes::Array{Float64,3}, cubeIndices::Array{Int64,2}, numbe
 end
 
 function build_blocks(nBlocks::Int64, allCells::Array{Cell,1}, nodes::Array{Float64,3})
-  if myid() == 1
-      print(" - assigning cells to blocks...   ")
-  end
   lBlock = Array(Float64, (nBlocks,3))
   origin = Array(Float64, (nBlocks,3))
   blocks = Array(Block, nBlocks)
@@ -501,7 +498,6 @@ function doIntegrationParallel(I)
 end
 
 function doInSituCalculation(oct::Block, pFileName::String)
-  println(" - (julia) start 3D in-situ interpolation")
   rRay = loadPointsToIterate(pFileName)
   nPoints = size(rRay)[1]
   colDensity = zeros(Float64, nPoints)
@@ -510,7 +506,6 @@ function doInSituCalculation(oct::Block, pFileName::String)
       myBlock = findBlockContainingPoint(r, oct)
       cellIndex = findCellInBlock(myBlock, r)
       colDensity[i] = triLinearInterpolation(myBlock.cells[cellIndex], r)
-      #println(r, colDensity[i])
   end
 
   return colDensity
