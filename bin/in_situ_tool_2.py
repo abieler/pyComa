@@ -154,10 +154,11 @@ if iDim == 3:
     cur = db.cursor()
     tup = (dsmc_case,)
 
-    # runs is a dictionary with run names as keys and
-    # and holding at least 3 lists. these lists hold
+    # runs is a dictionary with run names as keys,
+    # holding at least 3 lists. these lists have
     # dates, coordinates and number densities that belong
-    # to this run.
+    # to this run. if more than 1 species, more number
+    # density lists are appended
     runs = {} 
     runNames = []
 
@@ -170,7 +171,7 @@ if iDim == 3:
         runNames.append(qd[0])
 
     # get all longitudes and latitudes of the sun for all
-    # dates where data is needed
+    # dates where data has to be interpolated 
     km2AU = 1.0 / 149597871
     lat_sun = []
     lon_sun = []
