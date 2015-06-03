@@ -1,7 +1,9 @@
+*.orig
 *.pyc
 *.so
 *.o
 *.swp
+*.swo
 *.c
 *~
 *.bkp
