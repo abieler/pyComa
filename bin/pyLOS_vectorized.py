@@ -269,8 +269,6 @@ elif iInstrumentSelector == osirisn_:     # osiris nac
     
     nPixelsX = 1024 
     nPixelsY = 1024 
-    nPixelsX = 1 
-    nPixelsY = 1 
     PhiX = 3 / 2
     PhiY = 3 / 2
     iFOV = 0.0000188
