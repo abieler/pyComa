@@ -278,7 +278,7 @@ function doIntegration(oct::Block, pFileName::String)
     distance::Float64 = 0.0
     # rMax::Float64 = 1.99*10^5
     rMax = minimum(oct.halfSize)*0.99
-    println("new rMax determined: ", rMax)
+    println(" - new rMax determined: ", rMax)
     n_old::Float64 = 0.0
     l::Float64 = 0.0
     n = Array(Float64,nRays)
