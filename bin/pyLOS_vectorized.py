@@ -183,6 +183,11 @@ if iModelCase == dsmc_:
         if iModelCase == dsmc_:
             print 'Could not detect number of dimensions of dsmc case. Exiting now.'
         sys.exit()
+    # this is an ugly trick to choose the illumination case
+    # because it is treated as an 3D case. but this way the 
+    # user can select any case this way.
+    if args.iIlluminationCase == 1:
+        iDim = 3
 
 elif iModelCase in [haser_, dust_]:
     iDim = 1
