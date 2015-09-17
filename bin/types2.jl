@@ -1,4 +1,6 @@
 using DataFrames
+using PyCall
+@pyimport abieler.shapeUtils as utils
 #using HDF5
 
 type Cell
@@ -511,5 +513,131 @@ function doInSituCalculation(oct::Block, pFileName::String)
   end
 
   return colDensity
+
+end
+
+function calcBrightnessFromNucleus(pFileName::String)
+
+    path = dirname(pFileName)
+    pVectors, rRay, nRays = load_pointing_vectors(pFileName)
+    println(" - pointing vectors loaded")
+    println("load shape model from new location")
+    nTriangles, nodeCoords, triIndices, triangles, n_hat, p, triArea = utils.load_shape_model_vtk("/www/ices/Data/Nucleus/shapeModels/CSHP_87_14kCells.ply")
+    #nTriangles, nodeCoords, triIndices, triangles, n_hat, p, triArea = utils.load_shape_model_vtk("/www/ices/Data/Nucleus/shapeModels/CSHP_87_35004Cells.ply")
+    #nTriangles, nodeCoords, triIndices, triangles, n_hat, p, triArea = utils.load_shape_model_vtk("/www/ices/Data/Nucleus/shapeModels/SHAP5_stefano.ply")
+    
+    triangles2 = ones(3,3,nTriangles) 
+    n_hat2 = ones(3, nTriangles)
+
+    for i=1:nTriangles
+      for j=1:3
+        n_hat2[j,i] = n_hat[i,j]
+        for k=1:3
+          triangles2[k,j,i] = triangles[i,j,k]
+        end
+      end
+    end
+
+
+    f = open("rSun_hat.dat", "r")
+    line = readline(f)
+    println(line)
+    d = matchall(r"(-?\d+.?\d+[eE]?[+-]?\d+)", line)
+    println(d)
+    rSun_hat = zeros(Float64, 3)    
+    rRosetta = zeros(Float64,3)
+    for i=1:3
+      rSun_hat[i]= float(d[i])
+      rRosetta[i] = rRay[1,i]
+    end
+
+    br = Float64[]
+    for i=1:nRays
+        p = vec(pVectors[i,:])
+        iFacet = visibleFacetIndex(triangles2, n_hat2, p, rRosetta, nTriangles)
+        if iFacet > 0
+           alpha = angle_btw_vec(vec(rSun_hat), vec(n_hat2[:,iFacet])) 
+           push!(br, alpha)
+        else
+            push!(br, pi)
+        end
+    end
+    return br
+end
+
+function angle_btw_vec(v1::Array{Float64,1}, v2::Array{Float64,1})
+  if (v1 == v2)
+      return 0.0
+  end
+  acos(dot(v1,v2))
+end
+
+function visibleFacetIndex(triangles::Array{Float64,3}, n_hat::Array{Float64, 2}, r::Array{Float64,1}, p0::Array{Float64,1}, nTriangles::Int64)
+  i = 0
+  j = 0
+  k = 0
+  
+  a = 0.0
+  b = 0.0
+  rI = 0.0
+  
+  dot_uv = 0.0
+  dot_uu = 0.0
+  dot_vv = 0.0
+  dot_wv = 0.0
+  dot_wu = 0.0
+  
+  divisor = 0.0
+  sI = 0.0
+  tI = 0.0
+  
+  pI = [0.,0.,0.]
+  u = [0.,0.,0.]
+  v = [0.,0.,0.]
+  w = [0.,0.,0.]
+  
+  
+  for i=1:nTriangles
+    a = 0.0
+    b = 0.0
+    @simd for k=1:3
+      @inbounds a = a + n_hat[k,i] * (triangles[k,1,i] - p0[k]) 
+      @inbounds b = b + n_hat[k,i] * r[k]
+    end
+    if ((a != 0.0) && (b != 0.0))
+      rI = a / b
+      if rI >= 0.0
+        dot_uv = 0.0
+        dot_uu = 0.0
+        dot_vv = 0.0
+        dot_wu = 0.0
+        dot_wv = 0.0
+        
+        for k=1:3
+	  @inbounds pI[k] = p0[k] + rI * r[k]
+	  @inbounds u[k] = triangles[k,2,i] - triangles[k,1,i]
+	  @inbounds v[k] = triangles[k,3,i] - triangles[k,1,i]
+	  @inbounds w[k] = pI[k] - triangles[k,1,i]
+	  
+	  @inbounds dot_uv = dot_uv + u[k]*v[k]
+	  @inbounds dot_uu = dot_uu + u[k]*u[k]
+	  @inbounds dot_vv = dot_vv + v[k]*v[k]
+	  @inbounds dot_wu = dot_wu + w[k]*u[k]
+	  @inbounds dot_wv = dot_wv + w[k]*v[k]
+        end
+        
+	divisor = dot_uv*dot_uv - dot_uu * dot_vv
+	sI = (dot_uv*dot_wv - dot_vv*dot_wu) / divisor
+	tI = (dot_uv*dot_wu - dot_uu*dot_wv) / divisor
+	
+	if ((tI >= 0.0) && (sI >= 0.0) && (sI + tI < 1.0))
+	  return i
+	end
+    
+      end
+      
+    end
+  end
+  return -1
 
 end
