@@ -1,7 +1,6 @@
 using DataFrames
 using PyCall
 @pyimport abieler.shapeUtils as utils
-#using HDF5
 
 type Cell
   origin::Array{Float64,1}

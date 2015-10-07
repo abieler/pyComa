@@ -1,8 +1,5 @@
 #using HDF5
-#using JLD
-#include("typesCleaned.jl")
 include("types2.jl")
-
 
 pFileName = ARGS[1] * "/pointing.dat"
 
