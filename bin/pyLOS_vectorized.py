@@ -142,6 +142,11 @@ if iMpiRank == 0:
         if args.IsDust == 1:
             print '   -dust min r : %.3e [m]' %args.DustSizeMin
             print '   -dust max r : %.3e [m]' %args.DustSizeMax
+
+    elif args.iModelCase == batsrus_:
+        print "BATSRUS case selected:"
+        print '   -case:      : %s' % args.StringDataFileDSMC.split('/')[-2]
+
     elif args.iModelCase == haser_:
         print 'HASER case selected:'
         print '   -QHaser     :', QHaser
@@ -188,6 +193,10 @@ if iModelCase == dsmc_:
     # user can select any case this way.
     if args.iIlluminationCase == 1:
         iDim = 3
+
+elif iModelCase == batsrus_:
+
+
 
 elif iModelCase in [haser_, dust_]:
     iDim = 1

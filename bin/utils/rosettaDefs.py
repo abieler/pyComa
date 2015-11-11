@@ -6,6 +6,7 @@ dsmc_         = 0
 haser_        = 1
 userModel_    = 2
 dust_         = 3
+batsrus_      = 4
 
 #Pointing
 spice_        = 0
