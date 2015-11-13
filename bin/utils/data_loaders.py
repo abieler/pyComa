@@ -5,7 +5,25 @@ import numpy as np
 import os
 import datetime
 import time
+import re
 from pandas import read_csv
+from utils.rosettaDefs import *
+
+
+def parse_bats_case_info(dataFileName):
+    ext = dataFileName.split(".")[-1]
+    baseName = dataFileName[:-(len(ext)+1)]
+    print "baseName: ", baseName
+    infoFileName = baseName + ".h"
+    iFile = open(infoFileName, "r")
+    for line in iFile:
+        if "nIJK_D" in line:
+            i, j, k = [int(value) for value in re.findall("(\d+)", line)]
+    iFile.close()
+    conf_path = "../../../Models/LoS/BATL"
+    batl_config_cmd = conf_path + "/Config.pl --g=%i,%i,%i" % (i,j,k)
+    print batl_config_cmd
+    #os.system(batl_config_cmd)
 
 
 def load_hybrid2_data(filename):
@@ -21,7 +39,7 @@ def load_hybrid2_data(filename):
 
 def get_iDim(args):
 
-    if args.iModelCase == 0:
+    if args.iModelCase == dsmc_:
         ############################################
         # check if 1d or 2d case
         ############################################
@@ -38,11 +56,14 @@ def get_iDim(args):
         elif '3d' in allFilenamesInOneString:
             iDim = 3
 
-    elif args.iModelCase == 1:
+    elif args.iModelCase == haser_:
         iDim = 1
 
-    elif args.iModelCase == 2:
+    elif args.iModelCase == userModel_:
         iDim = args.iDimUser
+
+    elif args.iModelCase == batsrus_:
+        iDim = 3
 
     print 'iDim:', iDim
     return iDim

@@ -68,7 +68,7 @@ elif args.iPointingCase == 2:
 
 os.system('rm ' + args.StringOutputDir + '/*.out')
 
-if args.iModelCase == 0:
+if args.iModelCase == dsmc_:
     # DSMC case
     path = os.path.split(args.StringDataFileDSMC)[0]
     dsmc_case = os.path.dirname(args.StringDataFileDSMC).split('/')[-1]
@@ -78,15 +78,15 @@ if args.iModelCase == 0:
     else:
         filenames = [path + '/' + filename for filename in os.listdir(path) if (filename.split('.')[-1].lower() == 'dat') and 'Dust' not in filename]
 
-elif args.iModelCase == 1:
+elif args.iModelCase == haser_:
     filenames = ['Haser']
-elif args.iModelCase == 2:
+elif args.iModelCase == userModel_:
     filenames = [args.StringUserDataFile]
 ##############################################################
 # load data (for 3D cases data is loaded from julia program)
 ##############################################################
 if iDim < 3:
-    if args.iModelCase == 0:
+    if args.iModelCase == dsmc_:
         x_SC *= -1      # cso reference frame to tenishev reference frame
         y_SC *= -1      # cso reference frame to tenishev reference frame
         if args.IsDust:
@@ -101,12 +101,12 @@ if iDim < 3:
                 x, y, n = loadGasData(filename, iDim)
                 numberDensities.append(n)
                 
-    elif args.iModelCase == 1:
+    elif args.iModelCase == haser_:
         print 'haser case'
         x, n = haserModel(args.QHaser, args.vHaser, args.tpHaser, args.tdHaser, args.tgHaser)
         y = None
         numberDensities = [n]
-    elif args.iModelCase == 2:
+    elif args.iModelCase == userModel_:
         print 'user case'
         x, y, n = load_user_data(args.StringUserDataFile, iDim, args.DelimiterData, args.nHeaderRowsData)
         numberDensities = [n]
@@ -130,7 +130,7 @@ if iDim < 3:
             numberDensities = [numberDensities[:,i] for i in range(nSpecies)]
         Interpolator = [mtri.LinearTriInterpolator(Triangles, n) for n in numberDensities]
     elif iDim == 3:
-        print '3d not implemented yet'
+        pass 
         
     print 'interpolation done'
     numberDensities_SC = []
@@ -146,115 +146,121 @@ if iDim < 3:
         numberDensities_SC.append(n_SC)
         i+=1
 if iDim == 3:
-    #####################################################
-    # select calculate lon/lat of Sun for each instance
-    # in time and check database for the best suited DSCMC case
-    #####################################################
-    db = sqlite3.connect(args.StringOutputDir+'/../../ICES.sqlite')
-    cur = db.cursor()
-    tup = (dsmc_case,)
+    if iModelCase == dsmc_:
+        #####################################################
+        # select calculate lon/lat of Sun for each instance
+        # in time and check database for the best suited DSCMC case
+        #####################################################
+        db = sqlite3.connect(args.StringOutputDir+'/../../ICES.sqlite')
+        cur = db.cursor()
+        tup = (dsmc_case,)
 
-    # runs is a dictionary with run names as keys,
-    # holding at least 3 lists. these lists have
-    # dates, coordinates and number densities that belong
-    # to this run. if more than 1 species, more number
-    # density lists are appended
-    runs = {} 
-    runNames = []
+        # runs is a dictionary with run names as keys,
+        # holding at least 3 lists. these lists have
+        # dates, coordinates and number densities that belong
+        # to this run. if more than 1 species, more number
+        # density lists are appended
+        runs = {} 
+        runNames = []
 
-    # retrieve all possible run names for the selected case
-    # that means all dsmc files for all AUs
-    cur.execute("SELECT data_prefix FROM select3D WHERE dsmc_case=?", tup)
-    queryData = cur.fetchall()
-    for qd in queryData:
-        runs[qd[0]] =  [[],[]]
-        runNames.append(qd[0])
+        # retrieve all possible run names for the selected case
+        # that means all dsmc files for all AUs
+        cur.execute("SELECT data_prefix FROM select3D WHERE dsmc_case=?", tup)
+        queryData = cur.fetchall()
+        for qd in queryData:
+            runs[qd[0]] =  [[],[]]
+            runNames.append(qd[0])
 
-    # get all longitudes and latitudes of the sun for all
-    # dates where data has to be interpolated 
-    km2AU = 1.0 / 149597871
-    lat_sun = []
-    lon_sun = []
-    r_AU = []
-    shapeModel = 'rmoc'
-    for xx,yy,zz in zip(x_sun, y_sun, z_sun):
-        r, llon, llat = spice.reclat([xx,yy,zz])
-        r = r*km2AU
-        llon = llon / np.pi * 180
-        llat = llat / np.pi * 180
-        lat_sun.append(llat)
-        lon_sun.append(llon)
-        r_AU.append(r)
+        # get all longitudes and latitudes of the sun for all
+        # dates where data has to be interpolated 
+        km2AU = 1.0 / 149597871
+        lat_sun = []
+        lon_sun = []
+        r_AU = []
+        shapeModel = 'rmoc'
+        for xx,yy,zz in zip(x_sun, y_sun, z_sun):
+            r, llon, llat = spice.reclat([xx,yy,zz])
+            r = r*km2AU
+            llon = llon / np.pi * 180
+            llat = llat / np.pi * 180
+            lat_sun.append(llat)
+            lon_sun.append(llon)
+            r_AU.append(r)
 
-    print "selecting cases from lat lon of sun"
-    kk = 0
-    for llat, llon in zip(lat_sun, lon_sun):
-        sql = "SELECT data_prefix FROM select3D WHERE dsmc_case='%s' ORDER BY abs( (((latitude-(%.3f)) + 180) %% 360) - 180), abs( (((longitude-(%.3f)) + 180) %% 360) - 180) LIMIT 1;" % (dsmc_case,llat, llon)
-        cur.execute(sql)
-        runName = cur.fetchone()[0]
-        runs[runName][0].append(dates_SC[kk])
-        runs[runName][1].append([x_SC[kk], y_SC[kk], z_SC[kk]])
-        kk += 1
+        print "selecting cases from lat lon of sun"
+        kk = 0
+        for llat, llon in zip(lat_sun, lon_sun):
+            sql = "SELECT data_prefix FROM select3D WHERE dsmc_case='%s' ORDER BY abs( (((latitude-(%.3f)) + 180) %% 360) - 180), abs( (((longitude-(%.3f)) + 180) %% 360) - 180) LIMIT 1;" % (dsmc_case,llat, llon)
+            cur.execute(sql)
+            runName = cur.fetchone()[0]
+            runs[runName][0].append(dates_SC[kk])
+            runs[runName][1].append([x_SC[kk], y_SC[kk], z_SC[kk]])
+            kk += 1
 
-    species3D = []
-    cur.execute("SELECT species from dsmc_species WHERE dcase='%s'"% dsmc_case)
-    qData = cur.fetchall()
-    for qd in qData:
-        species3D.append(qd[0])
+        species3D = []
+        cur.execute("SELECT species from dsmc_species WHERE dcase='%s'"% dsmc_case)
+        qData = cur.fetchall()
+        for qd in qData:
+            species3D.append(qd[0])
 
-    db.close()
+        db.close()
 
-    # build path where all fitting DSMC cases are located below
-    pathToData = os.path.dirname(args.StringDataFileDSMC)
+        # build path where all fitting DSMC cases are located below
+        pathToData = os.path.dirname(args.StringDataFileDSMC)
 
 
-    # write coordinates of each case to file and then start julia
-    # to perform the 3D interpolation
-    for key in runNames:
-        if len(runs[key][0]) > 0:
-            with open("rosettaCoords.txt", 'w') as oFile:
-                for rrr in runs[key][1]:
-                    oFile.write("%.5e,%.5e,%.5e\n" %(rrr[0], rrr[1], rrr[2]))
-            for spec in species3D:
-                runName = key+"." + spec + ".dat"
-                dsmcFileName = os.path.join(pathToData, runName) 
-                #os.system("su _www -c '/Applications/Julia-0.3.0.app/Contents/Resources/julia/bin/julia /Users/abieler/newLOS/in-situ.jl %s %s'" %(pathToData, args.StringOutputDir))
-                os.system("export JULIA_PKGDIR=/opt/local/share/julia/site ; /opt/local/bin/julia ../../../Models/LoS/pyComa/bin/in-situ.jl %s %s" %(dsmcFileName, args.StringOutputDir))
-                n_SC = np.genfromtxt('interpolation.out', dtype=float)
-
-                # genfromtxt returns float instead of one element array in case
-                # there is only one entry --> make array out of that
-                if type(n_SC) == float:
-                    n_SC = np.array([n_SC])
-                runs[key].append(n_SC)
-        else:
-            pass
-
-    # combine all cases into one array and sort them according to date
-    numberDensities_SC = []
-    for i in range(len(species3D)):
-        n_SC = []
-        dates_SC = []
-        r_SC = []
+        # write coordinates of each case to file and then start julia
+        # to perform the 3D interpolation
         for key in runNames:
-            if len(runs[key][0]) >= 1:
-                n_SC.extend(runs[key][2+i])
-                dates_SC.extend(runs[key][0])
-                r = [np.sqrt(p[0]**2+p[1]**2+p[2]**2) for p in runs[key][1]]
-                r_SC.extend(r)
-        n_SC = np.array(n_SC)
-        dates_SC = np.array(dates_SC)
-        r_SC = np.array(r_SC)
-        sort_index = np.argsort(dates_SC)
+            if len(runs[key][0]) > 0:
+                with open("rosettaCoords.txt", 'w') as oFile:
+                    for rrr in runs[key][1]:
+                        oFile.write("%.5e,%.5e,%.5e\n" %(rrr[0], rrr[1], rrr[2]))
+                for spec in species3D:
+                    runName = key+"." + spec + ".dat"
+                    dsmcFileName = os.path.join(pathToData, runName) 
+                    #os.system("su _www -c '/Applications/Julia-0.3.0.app/Contents/Resources/julia/bin/julia /Users/abieler/newLOS/in-situ.jl %s %s'" %(pathToData, args.StringOutputDir))
+                    os.system("export JULIA_PKGDIR=/opt/local/share/julia/site ; /opt/local/bin/julia ../../../Models/LoS/pyComa/bin/in-situ.jl %s %s" %(dsmcFileName, args.StringOutputDir))
+                    n_SC = np.genfromtxt('interpolation.out', dtype=float)
 
-        dates_SC = dates_SC[sort_index]
-        n_SC = n_SC[sort_index]
-        r_SC = r_SC[sort_index]
-        numberDensities_SC.append(n_SC)
+                    # genfromtxt returns float instead of one element array in case
+                    # there is only one entry --> make array out of that
+                    if type(n_SC) == float:
+                        n_SC = np.array([n_SC])
+                    runs[key].append(n_SC)
+            else:
+                pass
+
+        # combine all cases into one array and sort them according to date
+        numberDensities_SC = []
+        for i in range(len(species3D)):
+            n_SC = []
+            dates_SC = []
+            r_SC = []
+            for key in runNames:
+                if len(runs[key][0]) >= 1:
+                    n_SC.extend(runs[key][2+i])
+                    dates_SC.extend(runs[key][0])
+                    r = [np.sqrt(p[0]**2+p[1]**2+p[2]**2) for p in runs[key][1]]
+                    r_SC.extend(r)
+            n_SC = np.array(n_SC)
+            dates_SC = np.array(dates_SC)
+            r_SC = np.array(r_SC)
+            sort_index = np.argsort(dates_SC)
+
+            dates_SC = dates_SC[sort_index]
+            n_SC = n_SC[sort_index]
+            r_SC = r_SC[sort_index]
+            numberDensities_SC.append(n_SC)
+
+    elif iModelCase == batsrus_:
+        print "Andre has not implemented his stuff yet"
+        sys.exit()
+
 ############################################
 # write results to file
 ############################################
-if args.iModelCase == 0:
+if args.iModelCase == dsmc_:
     if args.IsDust:
         species = [size for size in allSizeIntervals if args.DustSizeMin <= size <= args.DustSizeMax]
     else:
@@ -267,24 +273,24 @@ if args.iModelCase == 0:
 
     x_SC *= -1          # transform back from tenishev to cso frame of reference
     y_SC *= -1          # transform back from thenisev to cso frame of reference
-elif args.iModelCase == 1:
+elif args.iModelCase == haser_:
     species = ['Haser']
-elif args.iModelCase == 2:
+elif args.iModelCase == userModel_:
     species = ['User']
 
 #file = open(args.StringOutputDir + '/' + 'in_situ' + '.out', 'w')
 with open(args.StringOutputDir + '/' + 'in_situ' + '.out', 'w') as file:
     file.write('Local number densities for the rosetta spacecraft at selected dates. Comet is at (0,0,0) with the sun on the positive x axis.(inf,0,0)\n')
-    if args.iModelCase == 0:
+    if args.iModelCase == dsmc_:
         file.write('DSMC case: %s\n' % (os.path.split(args.StringDataFileDSMC)[0].split('/')[-1]))
-    elif args.iModelCase == 1:
+    elif args.iModelCase == haser_:
         file.write("HASER case: Q = %.3e [#/s], v = %f [m/s], tp = %.2e" % (args.QHaser, args.vHaser, args.tpHaser))
         if args.tdHaser == 0:
             file.write('\n')
         else:
             file.write(', %.2e\n' %(args.tdHaser))
 
-    if args.iPointingCase == 0:
+    if args.iPointingCase == spice_:
         file.write('spice kernel: %s\n' % (args.StringKernelMetaFile.split('/')[-1]))
 
     file.write('date,x[m],y[m],z[m],distance_from_center[m],')
