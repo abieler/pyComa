@@ -22,6 +22,7 @@ import utils.spice_functions as spice_functions
 from utils.data_plotting import plot_result_insitu_2
 from utils.haser import haserModel
 from utils.cmdline_args import cmdline_args
+from utils.rosettaDefs import *
 
 t0 = time.time()
 parser = argparse.ArgumentParser()

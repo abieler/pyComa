@@ -193,10 +193,9 @@ if iModelCase == dsmc_:
     # user can select any case this way.
     if args.iIlluminationCase == 1:
         iDim = 3
-
 elif iModelCase == batsrus_:
-
-
+    iDim = 3
+    parse_bats_case_info(StringDataFileDSMC)
 
 elif iModelCase in [haser_, dust_]:
     iDim = 1
@@ -530,7 +529,11 @@ if iDim == 3:
 
     if args.iIlluminationCase == 0:
         print "Line of Sight Case!"
-        os.system("export JULIA_PKGDIR=/opt/local/share/julia/site ; /opt/local/bin/julia ../../../Models/LoS/pyComa/bin/newLOS2.jl %s %s" %(args.StringDataFileDSMC, args.StringOutputDir))
+        if iModelCase == dsmc_:
+            os.system("export JULIA_PKGDIR=/opt/local/share/julia/site ; /opt/local/bin/julia ../../../Models/LoS/pyComa/bin/newLOS2.jl %s %s" %(args.StringDataFileDSMC, args.StringOutputDir))
+        elif iModelCase == batsrus_:
+            print "Andre has not implemented his part yet!"
+            sys.exit()
     elif args.iIlluminationCase == 1:
         print "Illumination Case!"
         os.system("export JULIA_PKGDIR=/opt/local/share/julia/site ; /opt/local/bin/julia ../../../Models/LoS/pyComa/bin/illumination.jl %s" %(args.StringOutputDir))
