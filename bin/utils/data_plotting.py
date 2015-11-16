@@ -11,6 +11,7 @@ import bokeh.plotting as bplt
 from bokeh.objects import Range1d
 
 from data_loaders import load_in_situ_output, load_in_situ_output_hybrid
+from rosettaDefs import *
 
 #rcParams.update({'figure.autolayout': True})
 font = {
@@ -22,7 +23,11 @@ matplotlib.rc('font', **font)
 
 def plot_result_insitu_2(args, numberDensities_SC, species, dates_SC, r_SC):
     print 'plotting in-situ results...'
+
     nLinesPerFig = 6
+    if args.iModelCase == batsrus_:
+        nLinesPerFig = 1
+
     if args.StringHybridCase is None:
         pltTitle = build_plot_title(args, 'insitu')
     else:
@@ -91,30 +96,38 @@ def create_plot_insitu_bokeh(args, all_n_SC, all_species, dates_SC, r_SC, nLines
 def create_plot_insitu_matplotlib(args, all_n_SC, all_species, dates_SC, r_SC, nLinesPerFig, pltTitle):
 
     for species, i in zip(all_species, range(len(all_species))):
-            if (i % nLinesPerFig == 0):   # make new figure for every 4 species
-                fig = plt.figure(figsize=(14, 14))
-                ax1 = fig.add_subplot(211)
-                ax2 = fig.add_subplot(212)
-            try:
-                ax1.semilogy(dates_SC, all_n_SC[i], label=all_species[i], lw=2)
-            except:
-                print 'plt error'
+        if (i % nLinesPerFig == 0):   # make new figure for every 4 species
+            fig = plt.figure(figsize=(14, 14))
+            ax1 = fig.add_subplot(211)
+            ax2 = fig.add_subplot(212)
+            negValues = False
+        try:
+            if all_n_SC[i].min() < 0:
+                negValues = True
+            if negValues == True:
+                ax1.plot(dates_SC, all_n_SC[i], label=all_species[i], lw=2)
+            else:
+                #ax1.semilogy(dates_SC, all_n_SC[i], label=all_species[i], lw=2)
+                ax1.plot(dates_SC, all_n_SC[i], label=all_species[i], lw=2)
 
-            # plot distance from comet and save figure
-            if (i % nLinesPerFig == (nLinesPerFig - 1)) or (i == len(all_species) - 1):
-                nFig = (i-(nLinesPerFig-1)) // nLinesPerFig
-                if nFig < 0:
-                    nFig = 0
-                ax1.set_title(pltTitle)
-                ax1.set_ylabel('Number density [#/m3]')
-                ax1.grid(True)
-                ax1.legend(framealpha=1, loc=0)
+        except:
+            print 'plt error'
 
-                ax2.plot(dates_SC, r_SC / 1000, '-k', lw=2)
-                ax2.set_ylabel('Distance from comet center [km]')
-                ax2.grid(True)
-                plt.gcf().autofmt_xdate()
-                plt.savefig(args.StringOutputDir + '/' + 'result_%i.png' % nFig)
+        # plot distance from comet and save figure
+        if (i % nLinesPerFig == (nLinesPerFig - 1)) or (i == len(all_species) - 1):
+            nFig = (i-(nLinesPerFig-1)) // nLinesPerFig
+            if nFig < 0:
+                nFig = 0
+            ax1.set_title(pltTitle)
+            ax1.set_ylabel('Number density [#/m3]')
+            ax1.grid(True)
+            ax1.legend(framealpha=1, loc=0)
+
+            ax2.plot(dates_SC, r_SC / 1000, '-k', lw=2)
+            ax2.set_ylabel('Distance from comet center [km]')
+            ax2.grid(True)
+            plt.gcf().autofmt_xdate()
+            plt.savefig(args.StringOutputDir + '/' + 'result_%i.png' % nFig)
 
     if args.DoShowPlots:
         plt.show()

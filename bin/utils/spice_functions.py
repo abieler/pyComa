@@ -7,7 +7,6 @@ import datetime
 def get_coordinates(UtcStartTime, KernelMetaFile, Target, RefFrame, Abcorr, Observer, UtcStopTime=None, nDeltaT=100):
 
     try:
-        print "start spice stuff"
         spice.furnsh(KernelMetaFile)
 
         date = datetime.datetime.strptime(UtcStartTime, '%Y-%m-%dT%H:%M:%S')
@@ -20,10 +19,8 @@ def get_coordinates(UtcStartTime, KernelMetaFile, Target, RefFrame, Abcorr, Obse
 
         dt = datetime.timedelta(seconds=nDeltaT)
         while date < EndDate:
-            print date
             UtcString = date.strftime("%Y-%m-%dT%H:%M:%S")
             et = spice.str2et(UtcString)
-            #rObserver, LightTime = spice.spkpos("ROSETTA", et, "J2000", "NONE", "CHURYUMOV-GERASIMENKO")
             rTarget, LightTime = spice.spkpos(Target, et, RefFrame, Abcorr, Observer)
 
             x.append(rTarget[0])

@@ -23,6 +23,7 @@ from utils.data_plotting import plot_result_insitu_2
 from utils.haser import haserModel
 from utils.cmdline_args import cmdline_args
 from utils.rosettaDefs import *
+from utils.batl import *
 
 t0 = time.time()
 parser = argparse.ArgumentParser()
@@ -147,7 +148,7 @@ if iDim < 3:
         numberDensities_SC.append(n_SC)
         i+=1
 if iDim == 3:
-    if iModelCase == dsmc_:
+    if args.iModelCase == dsmc_:
         #####################################################
         # select calculate lon/lat of Sun for each instance
         # in time and check database for the best suited DSCMC case
@@ -254,9 +255,23 @@ if iDim == 3:
             r_SC = r_SC[sort_index]
             numberDensities_SC.append(n_SC)
 
-    elif iModelCase == batsrus_:
-        print "Andre has not implemented his stuff yet"
-        sys.exit()
+    elif args.iModelCase == batsrus_:
+        batsDataFile  = "/www/ices/Data/Coma/BATSRUS/CG_1.3_au_00/CG_1.3_au_00.idl"
+        nPoints = len(x_SC)
+        myCoords = np.zeros((nPoints, iDim))
+        i = 0
+        for xx,yy,zz in zip(x_SC, y_SC, z_SC):
+            myCoords[i,0] = xx 
+            myCoords[i,1] = yy
+            myCoords[i,2] = zz
+            i += 1
+
+        S, varNames = interpolate(batsDataFile, myCoords)
+        print S.shape
+        print len(varNames)
+        numberDensities_SC = []
+        for iVar in range(S.shape[1]):
+            numberDensities_SC.append(S[:,iVar])
 
 ############################################
 # write results to file
@@ -274,6 +289,8 @@ if args.iModelCase == dsmc_:
 
     x_SC *= -1          # transform back from tenishev to cso frame of reference
     y_SC *= -1          # transform back from thenisev to cso frame of reference
+elif args.iModelCase == batsrus_:
+    species = [varName for varName in varNames]
 elif args.iModelCase == haser_:
     species = ['Haser']
 elif args.iModelCase == userModel_:
@@ -284,6 +301,9 @@ with open(args.StringOutputDir + '/' + 'in_situ' + '.out', 'w') as file:
     file.write('Local number densities for the rosetta spacecraft at selected dates. Comet is at (0,0,0) with the sun on the positive x axis.(inf,0,0)\n')
     if args.iModelCase == dsmc_:
         file.write('DSMC case: %s\n' % (os.path.split(args.StringDataFileDSMC)[0].split('/')[-1]))
+    elif args.iModelCase == batsrus_:
+        file.write('BATSRUS case: %s\n' % (os.path.split(args.StringDataFileDSMC)[0].split('/')[-1]))
+        
     elif args.iModelCase == haser_:
         file.write("HASER case: Q = %.3e [#/s], v = %f [m/s], tp = %.2e" % (args.QHaser, args.vHaser, args.tpHaser))
         if args.tdHaser == 0:
