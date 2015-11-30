@@ -532,7 +532,11 @@ if iDim == 3:
         if iModelCase == dsmc_:
             os.system("export JULIA_PKGDIR=/opt/local/share/julia/site ; /opt/local/bin/julia ../../../Models/LoS/pyComa/bin/newLOS2.jl %s %s" %(args.StringDataFileDSMC, args.StringOutputDir))
         elif iModelCase == batsrus_:
-            print "Andre has not implemented his part yet!"
+            print "------------------------------------------------"
+            print " 3D BATSRUS cases not officially available yet"
+            print " please contact kenhan@umich.edu or abieler@umich.edu"
+            print " to get early access to these results"
+            print "------------------------------------------------"
             sys.exit()
     elif args.iIlluminationCase == 1:
         print "Illumination Case!"

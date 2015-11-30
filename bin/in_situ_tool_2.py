@@ -256,7 +256,13 @@ if iDim == 3:
             numberDensities_SC.append(n_SC)
 
     elif args.iModelCase == batsrus_:
-        batsDataFile  = "/www/ices/Data/Coma/BATSRUS/CG_1.3_au_00/CG_1.3_au_00.idl"
+        print "------------------------------------------------"
+        print " 3D BATSRUS cases not officially available yet"
+        print " please contact kenhan@umich.edu or abieler@umich.edu"
+        print " to get early access to these results"
+        print "------------------------------------------------"
+        sys.exit()
+        #batsDataFile  = "/www/ices/Data/Coma/BATSRUS/CG_1.3_au_00/CG_1.3_au_00.idl"
         nPoints = len(x_SC)
         myCoords = np.zeros((nPoints, iDim))
         i = 0
@@ -266,7 +272,7 @@ if iDim == 3:
             myCoords[i,2] = zz
             i += 1
 
-        S, varNames = interpolate(batsDataFile, myCoords)
+        S, varNames = interpolate(args.StringDataFileDSMC, myCoords)
         print S.shape
         print len(varNames)
         numberDensities_SC = []
