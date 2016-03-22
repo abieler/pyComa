@@ -192,7 +192,7 @@ if iDim == 3:
         print "selecting cases from lat lon of sun"
         kk = 0
         for llat, llon in zip(lat_sun, lon_sun):
-            sql = "SELECT data_prefix FROM select3D WHERE dsmc_case='%s' ORDER BY abs( (((latitude-(%.3f)) + 180) %% 360) - 180), abs( (((longitude-(%.3f)) + 180) %% 360) - 180) LIMIT 1;" % (dsmc_case,llat, llon)
+            sql = "SELECT data_prefix FROM select3D WHERE dsmc_case='%s' ORDER BY abs( (((latitude-(%.1f)) + 180) %% 360) - 180), abs( (((longitude-(%.1f)) + 180) %% 360) - 180) LIMIT 1;" % (dsmc_case,llat, llon)
             cur.execute(sql)
             runName = cur.fetchone()[0]
             runs[runName][0].append(dates_SC[kk])
