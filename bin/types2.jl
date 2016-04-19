@@ -22,7 +22,7 @@ initChildren = Array(Block, 8)
 initCells = Array(Cell,1)
 
 
-function load_AMPS_data(fileName::String)
+function load_AMPS_data(fileName::AbstractString)
   f = open(fileName, "r")
   nNodes = 0
   nCells = 0
@@ -220,10 +220,10 @@ function findCellInBlock(block::Block, point::Array{Float64, 1})
   end
 
   cellIndex = 1 + fx + fy*nx + fz*nx*ny
-  return int(cellIndex)
+  return round(Int64, cellIndex)
 end
 
-function load_pointing_vectors(fileName::String)
+function load_pointing_vectors(fileName::AbstractString)
   df = readtable(fileName, skipstart=0, separator=',', header=false)
   const nVectors = size(df)[1]
   p = zeros(nVectors,3)
@@ -239,7 +239,7 @@ function load_pointing_vectors(fileName::String)
   return p, rRay, nVectors
 end
 
-function loadPointsToIterate(fileName::String)
+function loadPointsToIterate(fileName::AbstractString)
   df = readtable(fileName, skipstart=0, separator=',', header=false)
   const nCoordinates = size(df)[1]
   sc_points = zeros(nCoordinates,3)
@@ -270,7 +270,7 @@ function triLinearInterpolation(cell::Cell, point::Array{Float64,1})
   return c
 end
 
-function doIntegration(oct::Block, pFileName::String)
+function doIntegration(oct::Block, pFileName::AbstractString)
     println(" - start 3d los calculation")
     # pVector = pointing of vector, rRay = coordinates of origin of ray
     pVectors, rRay, nRays = load_pointing_vectors(pFileName)
@@ -318,7 +318,7 @@ function doIntegration(oct::Block, pFileName::String)
     return n
 end
 
-function doIntegrationShadow(oct::Block, pFileName::String)
+function doIntegrationShadow(oct::Block, pFileName::AbstractString)
     println(" - start 3d los calculation")
     # pVector = pointing of vector, rRay = coordinates of origin of ray
     pVectors, rRay, nRays = load_pointing_vectors(pFileName)
@@ -376,7 +376,7 @@ function doIntegrationShadow(oct::Block, pFileName::String)
 end
 
 
-function doIntegrationOld(oct::Block, pFileName::String)
+function doIntegrationOld(oct::Block, pFileName::AbstractString)
     println(" - start 3d los calculation")
     # pVector = pointing of vector, rRay = coordinates of origin of ray
     pVectors, rRay, nRays = load_pointing_vectors(pFileName)
@@ -500,7 +500,7 @@ function doIntegrationParallel(I)
 
 end
 
-function doInSituCalculation(oct::Block, pFileName::String)
+function doInSituCalculation(oct::Block, pFileName::AbstractString)
   rRay = loadPointsToIterate(pFileName)
   nPoints = size(rRay)[1]
   colDensity = zeros(Float64, nPoints)
@@ -515,7 +515,7 @@ function doInSituCalculation(oct::Block, pFileName::String)
 
 end
 
-function calcBrightnessFromNucleus(pFileName::String)
+function calcBrightnessFromNucleus(pFileName::AbstractString)
 
     path = dirname(pFileName)
     pVectors, rRay, nRays = load_pointing_vectors(pFileName)
