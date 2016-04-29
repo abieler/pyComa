@@ -191,8 +191,14 @@ if iDim == 3:
 
         print "selecting cases from lat lon of sun"
         kk = 0
-        for llat, llon in zip(lat_sun, lon_sun):
-            sql = "SELECT data_prefix FROM select3D WHERE dsmc_case='%s' ORDER BY abs( (((latitude-(%.1f)) + 180) %% 360) - 180), abs( (((longitude-(%.1f)) + 180) %% 360) - 180) LIMIT 1;" % (dsmc_case,llat, llon)
+        #for llat, llon in zip(lat_sun, lon_sun):
+        for tt, llon in zip(dates_SC, lon_sun):
+            # new version where case is selected by being closest in time
+            sql = "SELECT data_prefix, abs(julianday(date(datetime))- julianday('%s')) AS 'delta_t' FROM select3D WHERE dsmc_case='%s' ORDER BY delta_t, abs( (((longitude-(%.1f)) + 180) %% 360) - 180) LIMIT 1;" %(tt, dsmc_case, llon);
+
+            # old version where selected by latitude and longitude difference.
+            #sql = "SELECT data_prefix FROM select3D WHERE dsmc_case='%s' ORDER BY abs( (((latitude-(%.1f)) + 180) %% 360) - 180), abs( (((longitude-(%.1f)) + 180) %% 360) - 180) LIMIT 1;" % (dsmc_case,llat, llon)
+
             cur.execute(sql)
             runName = cur.fetchone()[0]
             runs[runName][0].append(dates_SC[kk])
