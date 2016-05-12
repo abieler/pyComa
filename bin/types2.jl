@@ -56,7 +56,7 @@ function load_AMPS_data(fileName::AbstractString)
       nodeCoordinates[i-nHeaderRows,3] = z
       numberDensity[i-nHeaderRows] = n
     elseif (i > (nNodes+nHeaderRows))
-      ijk = [int(value) for value in matchall(r"(\d+)", line)]
+      ijk = Int[parse(Int, value) for value in matchall(r"(\d+)", line)]
       for index in 1:8
         cubeIndices[i-nNodes-nHeaderRows, index] = ijk[index]
       end
