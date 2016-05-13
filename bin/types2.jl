@@ -33,8 +33,8 @@ function load_AMPS_data(fileName::AbstractString)
   while !eof(f)
     line = readline(f)
     if ismatch(r"ZONE ", line)
-      nNodes, nCells = [int(value) for value in matchall(r"(\d+)", line)]
-      nBlocks = int(nCells / nCellsPerBlock)
+      nNodes, nCells = [parse(Int, value) for value in matchall(r"(\d+)", line)]
+      nBlocks = round(Int, nCells / nCellsPerBlock)
       println("nNodes: ", nNodes)
       println("nCells: ", nCells)
       break
@@ -50,7 +50,7 @@ function load_AMPS_data(fileName::AbstractString)
   while !eof(f)
     line = readline(f)
     if (i <= (nNodes+nHeaderRows)) && (i>nHeaderRows)
-      x,y,z,n = [float(value) for value in matchall(r"(-?\d.\d+[eE][+-]\d+)", line)[[1,2,3,4]]]
+      x,y,z,n = [parse(Float64, value) for value in matchall(r"(-?\d.\d+[eE][+-]\d+)", line)[[1,2,3,4]]]
       nodeCoordinates[i-nHeaderRows,1] = x
       nodeCoordinates[i-nHeaderRows,2] = y
       nodeCoordinates[i-nHeaderRows,3] = z
@@ -103,7 +103,7 @@ function build_cells(nodes::Array{Float64,3}, cubeIndices::Array{Int64,2}, numbe
       @inbounds origin[i,k] = nodes[i,1,k] + halfSize[k]
     end
     volume = lCell[1] * lCell[2] * lCell[3]
-    @inbounds allCells[i] = Cell(vec(origin[i,1:3]),halfSize,reshape(nodes[i,1:8,1:3], (8,3)),volume, vec(nodeDensities[i,1:8]))
+    @inbounds allCells[i] = Cell(vec(origin[i,1:3]), halfSize,reshape(nodes[i,1:8,1:3], (8,3)),volume, vec(nodeDensities[i,1:8]))
   end
   return allCells
 end
@@ -546,7 +546,7 @@ function calcBrightnessFromNucleus(pFileName::AbstractString)
     rSun_hat = zeros(Float64, 3)    
     rRosetta = zeros(Float64,3)
     for i=1:3
-      rSun_hat[i]= float(d[i])
+      rSun_hat[i]= parse(Float64, d[i])
       rRosetta[i] = rRay[1,i]
     end
 
